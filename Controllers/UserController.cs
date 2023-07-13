@@ -1,4 +1,5 @@
 ﻿using MangaHomeService.Models;
+using MangaHomeService.Models.FormData;
 using MangaHomeService.Services.Interfaces;
 using MangaHomeService.Utils;
 using Microsoft.AspNetCore.Mvc;
@@ -9,7 +10,7 @@ using System.Text;
 
 namespace MangaHomeService.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/[controller]/[action]")]
     [ApiController]
     public class UserController : ControllerBase
     {
@@ -23,7 +24,29 @@ namespace MangaHomeService.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Post(User inputUser)
+        public async Task<IActionResult> Register(UserRegisterData inputUser)
+        {
+            try
+            {
+                if (!string.IsNullOrEmpty(inputUser.Email) && !string.IsNullOrEmpty(inputUser.Password) && !string.IsNullOrEmpty(inputUser.Name))
+                {
+                    await _userService.Add(inputUser.Name, inputUser.Email, inputUser.Password, 4); //Register as visitor
+                    return Ok();
+                }
+                else
+                {
+                    return BadRequest();
+                }
+            }
+            catch(Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Login(UserLoginData inputUser)
         {
             if(!string.IsNullOrEmpty(inputUser.Email) && !string.IsNullOrEmpty(inputUser.Password)) 
             {
