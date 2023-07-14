@@ -2,6 +2,7 @@
 using MangaHomeService.Services.Interfaces;
 using MangaHomeService.Utils;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -90,6 +91,41 @@ namespace MangaHomeService.Controllers
 
         [Authorize]
         [HttpPost]
+        public async Task<IActionResult> ChangePassword(UserChangePasswordData inputData)
+        {
+            if (inputData != null)
+            {
+                if(string.IsNullOrEmpty(inputData.oldPassword) || string.IsNullOrEmpty(inputData.newPassword) 
+                    || string.IsNullOrEmpty(inputData.repeatNewPassword)) 
+                {
+                    return BadRequest("Missing required fields");
+                }
+
+                if(inputData.newPassword != inputData.repeatNewPassword)
+                {
+                    return BadRequest("Password and confirmation are not matched");
+                }
+
+                string currentUserId = Functions.GetCurrentUserId();
+                var user = _userService.Get(currentUserId);
+                if (user != null)
+                {
+                    await _userService.Update(id: currentUserId, password: inputData.newPassword);
+                }
+                else
+                {
+                    return BadRequest();
+                }
+                return Ok();
+            }
+            else
+            {
+                return BadRequest();
+            }
+        }
+
+        [Authorize]
+        [HttpPost]
         public async Task<IActionResult> UpdateProfilePicture(string profilePicture)
         {
             if (!string.IsNullOrEmpty(profilePicture)) 
@@ -98,18 +134,8 @@ namespace MangaHomeService.Controllers
                 {
                     return BadRequest("File size exceeded 2MB limit");
                 }
-                string currentUser = "";
-                var identity = User.Identity as ClaimsIdentity;
-                if (identity != null)
-                {
-                    IEnumerable<Claim> claims = identity.Claims;
-                    currentUser = claims.FirstOrDefault(c => c.Type == "UserId")?.Value ?? "";
-                }
-                else
-                {
-                    throw new Exception();
-                }
-                await _userService.UpdateProfilePicture(currentUser, profilePicture);
+                string currentUser = Functions.GetCurrentUserId();
+                await _userService.Update(id : currentUser, profilePicture : profilePicture);
                 return Ok();
             }
             else 
@@ -118,5 +144,82 @@ namespace MangaHomeService.Controllers
             }
         }
 
+        [Authorize]
+        [HttpPost]
+        public async Task<IActionResult> UpdateName(string name)
+        {
+            if (!string.IsNullOrEmpty(name))
+            {
+                string currentUserId = Functions.GetCurrentUserId();
+                var user = _userService.Get(currentUserId);
+                if (user != null)
+                {
+                    await _userService.Update(id: currentUserId, name: name);
+                }
+                else
+                {
+                    return BadRequest();
+                }
+                return Ok();
+            }
+            else
+            {
+                return BadRequest();
+            }
+        }
+
+        [Authorize]
+        [HttpPost]
+        public async Task<IActionResult> UpdateEmail(string email)
+        {
+            if (!string.IsNullOrEmpty(email))
+            {
+                string currentUserId = Functions.GetCurrentUserId();
+                var user = _userService.Get(currentUserId);
+                if (user != null)
+                {
+                    await _userService.Update(id: currentUserId, email: email, emailConfirmed: false);
+                }
+                else
+                {
+                    return BadRequest();
+                }
+                return Ok();
+            }
+            else
+            {
+                return BadRequest();
+            }
+        }
+
+        [AllowAnonymous]
+        [HttpPost]
+        public async Task<IActionResult> ConfirmEmail(string id)
+        {
+            if (!string.IsNullOrEmpty(id))
+            {
+                var user = _userService.Get(id);
+                if (user != null)
+                {
+                    await _userService.Update(id: id, emailConfirmed: true);
+                }
+                else
+                {
+                    return BadRequest();
+                }
+                return Ok();
+            }
+            else
+            {
+                return BadRequest();
+            }
+        }
+
+        [AllowAnonymous]
+        [HttpPost]
+        public async Task<IActionResult> SendConfirmationEmail(string id)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

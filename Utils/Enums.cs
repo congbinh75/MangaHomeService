@@ -1,6 +1,6 @@
 ﻿namespace MangaHomeService.Utils
 {
-    public class Enums
+    public static class Enums
     {
         public enum Roles
         {

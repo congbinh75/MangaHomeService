@@ -12,14 +12,17 @@ namespace MangaHomeService.Models
         public string? ProfilePicture { get; set; }
         public int Role { get; set; }
         public byte[]? Salt { get; set; }
-        public static ClaimsIdentity Identity { get; internal set; }
+        public static ClaimsIdentity? Identity { get; internal set; }
 
         public User() { }
-        public User(string name, string email, string password, int role)
+        public User(string name, string email, string password, bool emailConfirmed, string profilePicture, byte[] salt, int role)
         {
             Name = name;
             Email = email;
             Password = password;
+            EmailConfirmed = emailConfirmed;
+            ProfilePicture = profilePicture;
+            Salt = salt;
             Role = role;
         }
     }

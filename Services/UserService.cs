@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 using System.Security.Cryptography;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
+using System.Collections.Generic;
+using Microsoft.AspNetCore.Identity;
 
 namespace MangaHomeService.Services
 {
@@ -28,25 +30,31 @@ namespace MangaHomeService.Services
                         throw new Exception("Email already registered");
                     }
 
-                    byte[] salt = RandomNumberGenerator.GetBytes(128 / 8);
-                    string hassedPassword = Convert.ToBase64String(KeyDerivation.Pbkdf2(
-                        password: password,
-                        salt: salt,
-                        prf: KeyDerivationPrf.HMACSHA256,
-                        iterationCount: 100000,
-                        numBytesRequested: 256 / 8));
-
-                    User newUser = new User(name, email, hassedPassword, role);
-                    newUser.Salt = salt;
-                    newUser.EmailConfirmed = false;
-                    newUser.ProfilePicture = "";
-
+                    (string hashed, byte[] salt) passAndSalt = HashPassword(password);
+                    User newUser = new User(
+                        name, email, passAndSalt.hashed, emailConfirmed: false, profilePicture : "", passAndSalt.salt, role);
                     await dbContext.Users.AddAsync(newUser);
                     await dbContext.SaveChangesAsync();
                     return newUser;
                 }
             }
             catch (Exception ex) 
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public async Task<User?> Get(string id)
+        {
+            try
+            {
+                using (var dbContext = _contextFactory.CreateDbContext())
+                {
+                    User? user = await dbContext.Users.Where(u => u.Id == id).FirstOrDefaultAsync();
+                    return user;
+                }
+            }
+            catch (Exception ex)
             {
                 throw new Exception(ex.Message);
             }
@@ -59,18 +67,9 @@ namespace MangaHomeService.Services
                 using (var dbContext = _contextFactory.CreateDbContext())
                 {
                     User? user = await dbContext.Users.Where(u => u.Email == email).FirstOrDefaultAsync();
-                    if (user != null)
+                    if (user != null && HashPassword(password, user.Salt).hashedPassword.Equals(user.Password))
                     {
-                        string hassed = Convert.ToBase64String(KeyDerivation.Pbkdf2(
-                            password: password,
-                            salt: user.Salt ?? new byte[8],
-                            prf: KeyDerivationPrf.HMACSHA256,
-                            iterationCount: 100000,
-                            numBytesRequested: 256 / 8));
-                        if (hassed.Equals(user.Password))
-                        {
-                            return user;
-                        }
+                        return user;
                     }
                     return null;
                 }
@@ -81,7 +80,8 @@ namespace MangaHomeService.Services
             }
         }
 
-        public async Task UpdateProfilePicture(string userId, string profilePicture)
+        public async Task Update(string userId, string? name = null, string? email = null, string? password = null, 
+            bool? emailConfirmed = null, string? profilePicture = null, int? role = null)
         {
             try
             {
@@ -92,7 +92,30 @@ namespace MangaHomeService.Services
                     {
                         throw new Exception();
                     }
-                    user.ProfilePicture = profilePicture;
+
+                    var newName = name == null ? user.Name : name;
+                    var newEmail = email == null ? user.Email : email;
+                    var newRole = role == null ? user.Role : role;
+                    var newEmailConfirmed = emailConfirmed == null ? user.EmailConfirmed : emailConfirmed;
+                    var newProfilePicture = profilePicture == null ? user.ProfilePicture : profilePicture;
+
+                    var newPassword = user.Password;
+                    var newSalt = user.Salt;
+                    if (password != null)
+                    {
+                        (string hassed, byte[] salt) passAndSalt = HashPassword(password);
+                        newPassword = passAndSalt.hassed;
+                        newSalt = passAndSalt.salt;
+                    }
+
+                    user.Name = newName;
+                    user.Email = email;
+                    user.Role = (int)newRole;
+                    user.EmailConfirmed = (bool)newEmailConfirmed;
+                    user.ProfilePicture = newProfilePicture;
+                    user.Password = newPassword;
+                    user.Salt = newSalt;
+
                     await dbContext.SaveChangesAsync();
                 }
             }
@@ -100,6 +123,45 @@ namespace MangaHomeService.Services
             {
                 throw new Exception(ex.Message);
             }
+        }
+
+        public async Task Delete(string id)
+        {
+            try
+            {
+                using (var dbContext = _contextFactory.CreateDbContext())
+                {
+                    var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == id);
+                    if (user != null) 
+                    {
+                        dbContext.Users.Remove(user);
+                        await dbContext.SaveChangesAsync();
+                    }
+                    else
+                    {
+                        throw new Exception();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        private (string hashedPassword, byte[] salt) HashPassword(string password, byte[]? salt = null)
+        {
+            if (salt == null)
+            {
+                salt = RandomNumberGenerator.GetBytes(128 / 8);
+            }
+            string hassed = Convert.ToBase64String(KeyDerivation.Pbkdf2(
+                    password: password,
+                    salt: salt,
+                    prf: KeyDerivationPrf.HMACSHA256,
+                    iterationCount: 100000,
+                    numBytesRequested: 256 / 8));
+            return (hassed, salt);
         }
     }
 }
