@@ -2,8 +2,8 @@
 {
     public class UserChangePasswordData
     {
-        public string oldPassword { get; set; }
-        public string newPassword { get; set; }
-        public string repeatNewPassword { get; set; }
+        public string? oldPassword { get; set; }
+        public string? newPassword { get; set; }
+        public string? repeatNewPassword { get; set; }
     }
 }
