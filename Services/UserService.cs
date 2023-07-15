@@ -18,13 +18,14 @@ namespace MangaHomeService.Services
             _contextFactory = contextFactory;
         }
 
-        public async Task<User> Add(string name, string email, string password, int role)
+        public async Task<User> Add(string name, string email, string password, string roleName)
         {
             try
             {
                 using (var dbContext = _contextFactory.CreateDbContext()) 
                 {
                     User? existingUser = await dbContext.Users.FirstOrDefaultAsync(u => u.Email == email);
+                    Role? role = await dbContext.Roles.FirstOrDefaultAsync(r => r.Name == roleName);
                     if (existingUser != null)
                     {
                         throw new Exception("Email already registered");
@@ -81,13 +82,14 @@ namespace MangaHomeService.Services
         }
 
         public async Task Update(string userId, string? name = null, string? email = null, string? password = null, 
-            bool? emailConfirmed = null, string? profilePicture = null, int? role = null)
+            bool? emailConfirmed = null, string? profilePicture = null, string? roleName = null)
         {
             try
             {
                 using (var dbContext = _contextFactory.CreateDbContext())
                 {
                     var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == userId);
+                    var role = await dbContext.Roles.FirstOrDefaultAsync(r => r.Name == roleName);
                     if (user == null) 
                     {
                         throw new Exception();
@@ -95,7 +97,7 @@ namespace MangaHomeService.Services
 
                     var newName = name == null ? user.Name : name;
                     var newEmail = email == null ? user.Email : email;
-                    var newRole = role == null ? user.Role : role;
+                    var newRole = roleName == null ? user.Role : role;
                     var newEmailConfirmed = emailConfirmed == null ? user.EmailConfirmed : emailConfirmed;
                     var newProfilePicture = profilePicture == null ? user.ProfilePicture : profilePicture;
 
@@ -110,7 +112,7 @@ namespace MangaHomeService.Services
 
                     user.Name = newName;
                     user.Email = email;
-                    user.Role = (int)newRole;
+                    user.Role = newRole;
                     user.EmailConfirmed = (bool)newEmailConfirmed;
                     user.ProfilePicture = newProfilePicture;
                     user.Password = newPassword;

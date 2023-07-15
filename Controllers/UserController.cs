@@ -4,6 +4,7 @@ using MangaHomeService.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -32,7 +33,7 @@ namespace MangaHomeService.Controllers
             {
                 if (!string.IsNullOrEmpty(inputUser.Email) && !string.IsNullOrEmpty(inputUser.Password) && !string.IsNullOrEmpty(inputUser.Name))
                 {
-                    await _userService.Add(inputUser.Name, inputUser.Email, inputUser.Password, 4); //Register as visitor
+                    await _userService.Add(inputUser.Name, inputUser.Email, inputUser.Password, "Visitor"); //Register as visitor
                     return Ok();
                 }
                 else
@@ -63,8 +64,8 @@ namespace MangaHomeService.Controllers
                         new Claim(JwtRegisteredClaimNames.Iat, DateTime.UtcNow.ToString()),
                         new Claim("UserId", user?.Id ?? ""),
                         new Claim("DisplayName", user?.Name ?? ""),
-                        new Claim("Email", user ?.Email ?? ""),
-                        new Claim(ClaimTypes.Role, ((Roles)(user?.Role ?? 4)).ToString())
+                        new Claim("Email", user?.Email ?? ""),
+                        new Claim(ClaimTypes.Role, user?.Role?.Name ?? "")
                     };
 
                     var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
