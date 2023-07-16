@@ -3,9 +3,6 @@ using MangaHomeService.Services.Interfaces;
 using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 using System.Security.Cryptography;
 using Microsoft.EntityFrameworkCore;
-using System.Security.Claims;
-using System.Collections.Generic;
-using Microsoft.AspNetCore.Identity;
 
 namespace MangaHomeService.Services
 {
@@ -143,6 +140,25 @@ namespace MangaHomeService.Services
                     {
                         throw new Exception();
                     }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public async Task AddRole(string name, string description)
+        {
+            try
+            {
+                using (var dbContext = _contextFactory.CreateDbContext())
+                {
+                    Role role = new Role();
+                    role.Name = name;
+                    role.Description = description;
+                    await dbContext.Roles.AddAsync(role);
+                    await dbContext.SaveChangesAsync();
                 }
             }
             catch (Exception ex)

@@ -222,5 +222,13 @@ namespace MangaHomeService.Controllers
         {
             throw new NotImplementedException();
         }
+
+        [AllowAnonymous]
+        [HttpPost]
+        public async Task<IActionResult> AddRole(UserAddRoleData data)
+        {
+            await _userService.AddRole(data.Name, data.Description);
+            return Ok();
+        }
     }
 }

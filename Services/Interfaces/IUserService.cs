@@ -11,5 +11,6 @@ namespace MangaHomeService.Services.Interfaces
         Task Update(string id, string? name = null, string? email = null, string? password = null, bool? emailConfirmed = null, 
             string? profilePicture = null, string? roleName = null);
         Task Delete(string id);
+        Task AddRole(string name, string description);
     }
 }
