@@ -3,6 +3,7 @@ using System;
 using MangaHomeService.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,10 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MangaHomeService.Migrations
 {
     [DbContext(typeof(MangaHomeDbContext))]
-    partial class MangaHomeDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230716082852_AddDynamicRoles")]
+    partial class AddDynamicRoles
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -47,7 +49,12 @@ namespace MangaHomeService.Migrations
                     b.Property<DateTime?>("UpdatedTime")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("UserId")
+                        .HasColumnType("text");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("Roles", "MangaHome");
                 });
@@ -93,34 +100,16 @@ namespace MangaHomeService.Migrations
                     b.ToTable("Users", "MangaHome");
                 });
 
-            modelBuilder.Entity("RoleUser", b =>
+            modelBuilder.Entity("MangaHomeService.Models.Role", b =>
                 {
-                    b.Property<string>("RolesId")
-                        .HasColumnType("text");
-
-                    b.Property<string>("UsersId")
-                        .HasColumnType("text");
-
-                    b.HasKey("RolesId", "UsersId");
-
-                    b.HasIndex("UsersId");
-
-                    b.ToTable("RoleUser", "MangaHome");
+                    b.HasOne("MangaHomeService.Models.User", null)
+                        .WithMany("Roles")
+                        .HasForeignKey("UserId");
                 });
 
-            modelBuilder.Entity("RoleUser", b =>
+            modelBuilder.Entity("MangaHomeService.Models.User", b =>
                 {
-                    b.HasOne("MangaHomeService.Models.Role", null)
-                        .WithMany()
-                        .HasForeignKey("RolesId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("MangaHomeService.Models.User", null)
-                        .WithMany()
-                        .HasForeignKey("UsersId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.Navigation("Roles");
                 });
 #pragma warning restore 612, 618
         }

@@ -9,7 +9,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using static MangaHomeService.Utils.Enums;
+using System.Text.Json;
 
 namespace MangaHomeService.Controllers
 {
@@ -33,7 +33,8 @@ namespace MangaHomeService.Controllers
             {
                 if (!string.IsNullOrEmpty(inputUser.Email) && !string.IsNullOrEmpty(inputUser.Password) && !string.IsNullOrEmpty(inputUser.Name))
                 {
-                    await _userService.Add(inputUser.Name, inputUser.Email, inputUser.Password, "Visitor"); //Register as visitor
+                    await _userService.Add(inputUser.Name, inputUser.Email, inputUser.Password, 
+                        new List<string> { });
                     return Ok();
                 }
                 else
@@ -62,10 +63,10 @@ namespace MangaHomeService.Controllers
                         new Claim(JwtRegisteredClaimNames.Sub, _configuration["Jwt:Subject"]),
                         new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                         new Claim(JwtRegisteredClaimNames.Iat, DateTime.UtcNow.ToString()),
-                        new Claim("UserId", user?.Id ?? ""),
-                        new Claim("DisplayName", user?.Name ?? ""),
-                        new Claim("Email", user?.Email ?? ""),
-                        new Claim(ClaimTypes.Role, user?.Role?.Name ?? "")
+                        new Claim("UserId", user.Id),
+                        new Claim("DisplayName", user.Name),
+                        new Claim("Email", user.Email),
+                        new Claim(ClaimTypes.Role, JsonSerializer.Serialize(user.Roles))
                     };
 
                     var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));

@@ -15,14 +15,14 @@ namespace MangaHomeService.Services
             _contextFactory = contextFactory;
         }
 
-        public async Task<User> Add(string name, string email, string password, string roleName)
+        public async Task<User> Add(string name, string email, string password, List<string>? roleNames)
         {
             try
             {
                 using (var dbContext = _contextFactory.CreateDbContext()) 
                 {
                     User? existingUser = await dbContext.Users.FirstOrDefaultAsync(u => u.Email == email);
-                    Role? role = await dbContext.Roles.FirstOrDefaultAsync(r => r.Name == roleName);
+                    List<Role> roles = await dbContext.Roles.Where(r => roleNames.Contains(r.Name)).ToListAsync();
                     if (existingUser != null)
                     {
                         throw new Exception("Email already registered");
@@ -30,7 +30,7 @@ namespace MangaHomeService.Services
 
                     (string hashed, byte[] salt) passAndSalt = HashPassword(password);
                     User newUser = new User(
-                        name, email, passAndSalt.hashed, emailConfirmed: false, profilePicture : "", passAndSalt.salt, role);
+                        name, email, passAndSalt.hashed, emailConfirmed: false, profilePicture : "", passAndSalt.salt, roles);
                     await dbContext.Users.AddAsync(newUser);
                     await dbContext.SaveChangesAsync();
                     return newUser;
@@ -79,14 +79,14 @@ namespace MangaHomeService.Services
         }
 
         public async Task Update(string userId, string? name = null, string? email = null, string? password = null, 
-            bool? emailConfirmed = null, string? profilePicture = null, string? roleName = null)
+            bool? emailConfirmed = null, string? profilePicture = null, List<string>? roleNames = null)
         {
             try
             {
                 using (var dbContext = _contextFactory.CreateDbContext())
                 {
                     var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == userId);
-                    var role = await dbContext.Roles.FirstOrDefaultAsync(r => r.Name == roleName);
+                    var roles = await dbContext.Roles.Where(r => roleNames.Contains(r.Name)).ToListAsync();
                     if (user == null) 
                     {
                         throw new Exception();
@@ -94,7 +94,7 @@ namespace MangaHomeService.Services
 
                     var newName = name == null ? user.Name : name;
                     var newEmail = email == null ? user.Email : email;
-                    var newRole = roleName == null ? user.Role : role;
+                    var newRoles = roleNames == null ? user.Roles : roles;
                     var newEmailConfirmed = emailConfirmed == null ? user.EmailConfirmed : emailConfirmed;
                     var newProfilePicture = profilePicture == null ? user.ProfilePicture : profilePicture;
 
@@ -109,7 +109,7 @@ namespace MangaHomeService.Services
 
                     user.Name = newName;
                     user.Email = email;
-                    user.Role = newRole;
+                    user.Roles = newRoles;
                     user.EmailConfirmed = (bool)newEmailConfirmed;
                     user.ProfilePicture = newProfilePicture;
                     user.Password = newPassword;
