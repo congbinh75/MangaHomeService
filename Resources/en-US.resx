@@ -117,13 +117,37 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="ERRDESC_MISSING_INPUT_DATA" xml:space="preserve">
+  <data name="ERR_MISSING_INPUT_DATA" xml:space="preserve">
     <value>Missing input data</value>
   </data>
-  <data name="ROLEDESC_UPDATE_ROLES" xml:space="preserve">
-    <value>Add, update or remove roles.</value>
+  <data name="PERDESC_UPDATE_CHAPTERS" xml:space="preserve">
+    <value>Add, update or remove chapters.</value>
   </data>
-  <data name="ROLE_UPDATE_ROLES" xml:space="preserve">
-    <value>Update roles</value>
+  <data name="PERDESC_UPDATE_PAGES" xml:space="preserve">
+    <value>Add, update or remove pages.</value>
+  </data>
+  <data name="PERDESC_UPDATE_ROLES_PERMISSIONS" xml:space="preserve">
+    <value>Add or remove permissions from roles.</value>
+  </data>
+  <data name="PERDESC_UPDATE_TITLES" xml:space="preserve">
+    <value>Add, update or remove titles</value>
+  </data>
+  <data name="PERDESC_UPDATE_VOLUMES" xml:space="preserve">
+    <value>Add, update or remove volumes.</value>
+  </data>
+  <data name="PER_UPDATE_CHAPTERS" xml:space="preserve">
+    <value>Update chapters</value>
+  </data>
+  <data name="PER_UPDATE_PAGES" xml:space="preserve">
+    <value>Update pages</value>
+  </data>
+  <data name="PER_UPDATE_ROLES_PERMISSIONS" xml:space="preserve">
+    <value>Update permissions of roles</value>
+  </data>
+  <data name="PER_UPDATE_TITLES" xml:space="preserve">
+    <value>Update titles</value>
+  </data>
+  <data name="PER_UPDATE_VOLUMES" xml:space="preserve">
+    <value>Update volumes</value>
   </data>
 </root>

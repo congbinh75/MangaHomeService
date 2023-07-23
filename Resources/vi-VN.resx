@@ -117,13 +117,37 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="ERRDESC_MISSING_INPUT_DATA" xml:space="preserve">
+  <data name="ERR_MISSING_INPUT_DATA" xml:space="preserve">
     <value>Dữ liệu đầu vào rỗng</value>
   </data>
-  <data name="ROLEDESC_UPDATE_ROLES" xml:space="preserve">
-    <value>Thêm, xoá, sửa quyền</value>
+  <data name="PERDESC_UPDATE_CHAPTERS" xml:space="preserve">
+    <value>Thêm, xoá, sửa chương.</value>
   </data>
-  <data name="ROLE_UPDATE_ROLES" xml:space="preserve">
-    <value>Cập nhật quyền</value>
+  <data name="PERDESC_UPDATE_PAGES" xml:space="preserve">
+    <value>Thêm, xoá, sửa trang.</value>
+  </data>
+  <data name="PERDESC_UPDATE_ROLES_PERMISSIONS" xml:space="preserve">
+    <value>Thêm hoặc xoá quyền cho role.</value>
+  </data>
+  <data name="PERDESC_UPDATE_TITLES" xml:space="preserve">
+    <value>Thêm, xoá, sửa tựa truyện.</value>
+  </data>
+  <data name="PERDESC_UPDATE_VOLUMES" xml:space="preserve">
+    <value>Thêm, xoá, sửa tập.</value>
+  </data>
+  <data name="PER_UPDATE_CHAPTERS" xml:space="preserve">
+    <value>Cập nhật chương</value>
+  </data>
+  <data name="PER_UPDATE_PAGES" xml:space="preserve">
+    <value>Cập nhật trang</value>
+  </data>
+  <data name="PER_UPDATE_ROLES_PERMISSIONS" xml:space="preserve">
+    <value>Cập nhật quyền cho role</value>
+  </data>
+  <data name="PER_UPDATE_TITLES" xml:space="preserve">
+    <value>Cập nhật tựa truyện</value>
+  </data>
+  <data name="PER_UPDATE_VOLUMES" xml:space="preserve">
+    <value>Cập nhật tập</value>
   </data>
 </root>

@@ -2,16 +2,12 @@
 using MangaHomeService.Services.Interfaces;
 using MangaHomeService.Utils;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
-using System.Net;
 using System.Security.Claims;
 using System.Text;
-using System.Text.Json;
 
 namespace MangaHomeService.Controllers
 {
@@ -20,10 +16,13 @@ namespace MangaHomeService.Controllers
     public class UserController : ControllerBase
     {
         private IConfiguration _configuration;
-        private IStringLocalizer _stringLocalizer;
+        private IStringLocalizer<UserController> _stringLocalizer;
         private IUserService _userService;
 
-        public UserController(IConfiguration configuration, IStringLocalizer stringLocalizer, IUserService userService) 
+        public UserController(
+            IConfiguration configuration, 
+            IStringLocalizer<UserController> stringLocalizer, 
+            IUserService userService) 
         {
             _configuration = configuration;
             _stringLocalizer = stringLocalizer;
@@ -35,15 +34,15 @@ namespace MangaHomeService.Controllers
         {
             try
             {
-                if (!string.IsNullOrEmpty(inputUser.Email) && !string.IsNullOrEmpty(inputUser.Password) && !string.IsNullOrEmpty(inputUser.Name))
+                if (!string.IsNullOrEmpty(inputUser.Email) && !string.IsNullOrEmpty(inputUser.Password) 
+                    && !string.IsNullOrEmpty(inputUser.Name))
                 {
-                    await _userService.Add(inputUser.Name, inputUser.Email, inputUser.Password, 
-                        new List<string> { });
+                    await _userService.Add(inputUser.Name, inputUser.Email, inputUser.Password, "");
                     return Ok();
                 }
                 else
                 {
-                    return BadRequest(_stringLocalizer["ERRDESC_MISSING_INPUT_DATA"]);
+                    return BadRequest(_stringLocalizer["ERR_MISSING_INPUT_DATA"]);
                 }
             }
             catch(Exception ex)
@@ -56,42 +55,51 @@ namespace MangaHomeService.Controllers
         [HttpPost]
         public async Task<IActionResult> Login(UserLoginData inputUser)
         {
-            if(!string.IsNullOrEmpty(inputUser.Email) && !string.IsNullOrEmpty(inputUser.Password)) 
+            try
             {
-                var user = await _userService.Get(inputUser.Email, inputUser.Password);
-
-                if (user != null) 
+                if (!string.IsNullOrEmpty(inputUser.Email) && !string.IsNullOrEmpty(inputUser.Password))
                 {
-                    var claims = new[]
+                    var user = await _userService.Get(inputUser.Email, inputUser.Password);
+
+                    if (user != null)
                     {
+                        var permissions = await _userService.GetPermissions(user.Id);
+
+                        var claims = new[]
+                        {
                         new Claim(JwtRegisteredClaimNames.Sub, _configuration["Jwt:Subject"]),
                         new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                         new Claim(JwtRegisteredClaimNames.Iat, DateTime.UtcNow.ToString()),
                         new Claim("UserId", user.Id),
                         new Claim("DisplayName", user.Name),
                         new Claim("Email", user.Email),
-                        new Claim(ClaimTypes.Role, JsonSerializer.Serialize(user.Roles))
+                        new Claim(ClaimTypes.Role, permissions.Select(x => x.Name).ToArray().ToString())
                     };
 
-                    var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
-                    var signIn = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-                    var token = new JwtSecurityToken(
-                        _configuration["Jwt:Issuer"],
-                        _configuration["Jwt:Audience"],
-                        claims,
-                        expires: DateTime.UtcNow.AddSeconds(10),
-                        signingCredentials: signIn);
+                        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+                        var signIn = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+                        var token = new JwtSecurityToken(
+                            _configuration["Jwt:Issuer"],
+                            _configuration["Jwt:Audience"],
+                            claims,
+                            expires: DateTime.UtcNow.AddSeconds(10),
+                            signingCredentials: signIn);
 
-                    return Ok(new JwtSecurityTokenHandler().WriteToken(token));
+                        return Ok(new JwtSecurityTokenHandler().WriteToken(token));
+                    }
+                    else
+                    {
+                        return BadRequest("Invalid credentials");
+                    }
                 }
-                else 
+                else
                 {
-                    return BadRequest("Invalid credentials");
+                    return BadRequest(_stringLocalizer["ERR_MISSING_INPUT_DATA"]);
                 }
             }
-            else
+            catch (Exception ex)
             {
-                return BadRequest();
+                return BadRequest(ex.Message);
             }
         }
 
@@ -122,18 +130,18 @@ namespace MangaHomeService.Controllers
                     }
                     else
                     {
-                        return Request.CreateResponse(HttpStatusCode.NotFound, "");
+                        return NotFound();
                     }
                     return Ok();
                 }
                 else
                 {
-                    return BadRequest();
+                    return BadRequest(_stringLocalizer["ERR_MISSING_INPUT_DATA"]);
                 }
             }
             catch (Exception ex)
             {
-                return BadRequest();
+                return BadRequest(ex.Message);
             }
 
         }
@@ -142,19 +150,26 @@ namespace MangaHomeService.Controllers
         [HttpPost]
         public async Task<IActionResult> UpdateProfilePicture(string profilePicture)
         {
-            if (!string.IsNullOrEmpty(profilePicture)) 
+            try
             {
-                if (4 * (profilePicture.Length / 3) > Constants.ProfilePictureBytesLimit)
+                if (!string.IsNullOrEmpty(profilePicture))
                 {
-                    return BadRequest("File size exceeded 2MB limit");
+                    if (4 * (profilePicture.Length / 3) > Constants.ProfilePictureBytesLimit)
+                    {
+                        return BadRequest("File size exceeded 2MB limit");
+                    }
+                    string currentUser = Functions.GetCurrentUserId();
+                    await _userService.Update(id: currentUser, profilePicture: profilePicture);
+                    return Ok();
                 }
-                string currentUser = Functions.GetCurrentUserId();
-                await _userService.Update(id : currentUser, profilePicture : profilePicture);
-                return Ok();
+                else
+                {
+                    return BadRequest(_stringLocalizer["ERR_MISSING_INPUT_DATA"]);
+                }
             }
-            else 
-            { 
-                return BadRequest(); 
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
             }
         }
 
@@ -162,62 +177,15 @@ namespace MangaHomeService.Controllers
         [HttpPost]
         public async Task<IActionResult> UpdateName(string name)
         {
-            if (!string.IsNullOrEmpty(name))
+            try
             {
-                string currentUserId = Functions.GetCurrentUserId();
-                var user = _userService.Get(currentUserId);
-                if (user != null)
+                if (!string.IsNullOrEmpty(name))
                 {
-                    await _userService.Update(id: currentUserId, name: name);
-                }
-                else
-                {
-                    return BadRequest();
-                }
-                return Ok();
-            }
-            else
-            {
-                return BadRequest();
-            }
-        }
-
-        [Authorize]
-        [HttpPost]
-        public async Task<IActionResult> UpdateEmail(string email)
-        {
-            if (!string.IsNullOrEmpty(email))
-            {
-                string currentUserId = Functions.GetCurrentUserId();
-                var user = _userService.Get(currentUserId);
-                if (user != null)
-                {
-                    await _userService.Update(id: currentUserId, email: email, emailConfirmed: false);
-                }
-                else
-                {
-                    return BadRequest();
-                }
-                return Ok();
-            }
-            else
-            {
-                return BadRequest();
-            }
-        }
-
-        [AllowAnonymous]
-        [HttpPost]
-        public async Task<IActionResult> ConfirmEmail(string id)
-        {
-            if (!string.IsNullOrEmpty(id))
-            {
-                try
-                {
-                    var user = _userService.Get(id);
+                    string currentUserId = Functions.GetCurrentUserId();
+                    var user = _userService.Get(currentUserId);
                     if (user != null)
                     {
-                        await _userService.Update(id: id, emailConfirmed: true);
+                        await _userService.Update(id: currentUserId, name: name);
                     }
                     else
                     {
@@ -225,14 +193,82 @@ namespace MangaHomeService.Controllers
                     }
                     return Ok();
                 }
-                catch (Exception ex)
+                else
                 {
-                    return BadRequest();
+                    return BadRequest(_stringLocalizer[ "ERR_MISSING_INPUT_DATA"]);
                 }
             }
-            else
+            catch (Exception ex)
             {
-                return BadRequest();
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [Authorize]
+        [HttpPost]
+        public async Task<IActionResult> UpdateEmail(string email)
+        {
+            try
+            {
+                if (!string.IsNullOrEmpty(email))
+                {
+                    string currentUserId = Functions.GetCurrentUserId();
+                    var user = _userService.Get(currentUserId);
+                    if (user != null)
+                    {
+                        await _userService.Update(id: currentUserId, email: email, emailConfirmed: false);
+                    }
+                    else
+                    {
+                        return BadRequest();
+                    }
+                    return Ok();
+                }
+                else
+                {
+                    return BadRequest(_stringLocalizer["ERR_MISSING_INPUT_DATA"]);
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [AllowAnonymous]
+        [HttpPost]
+        public async Task<IActionResult> ConfirmEmail(string id)
+        {
+            try
+            {
+                if (!string.IsNullOrEmpty(id))
+                {
+                    try
+                    {
+                        var user = _userService.Get(id);
+                        if (user != null)
+                        {
+                            await _userService.Update(id: id, emailConfirmed: true);
+                        }
+                        else
+                        {
+                            return BadRequest();
+                        }
+                        return Ok();
+                    }
+                    catch (Exception ex)
+                    {
+                        return BadRequest(ex.Message);
+                    }
+                }
+                else
+                {
+                    return BadRequest(_stringLocalizer["ERR_MISSING_INPUT_DATA"]);
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
             }
         }
 
@@ -245,7 +281,7 @@ namespace MangaHomeService.Controllers
 
         [AllowAnonymous]
         [HttpPost]
-        public async Task<IActionResult> AddRole(UserAddRoleData data)
+        public async Task<IActionResult> AddRole(AddRoleData data)
         {
             try
             {
@@ -256,7 +292,50 @@ namespace MangaHomeService.Controllers
                 }
                 else
                 {
-                    return BadRequest(_stringLocalizer["ERRDESC_MISSING_INPUT_DATA"]);
+                    return BadRequest(_stringLocalizer["ERR_MISSING_INPUT_DATA"]);
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [AllowAnonymous]
+        [HttpPost]
+        public async Task<IActionResult> UpdateRole(AddRoleData data)
+        {
+            try
+            {
+                if (data != null)
+                {
+                    await _userService.AddRole(data.Name, data.Description);
+                    return Ok();
+                }
+                else
+                {
+                    return BadRequest(_stringLocalizer["ERR_MISSING_INPUT_DATA"]);
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UpdateRolesPermissions(UpdateUserRoleData data)
+        {
+            try
+            {
+                if (data != null)
+                {
+                    await _userService.UpdateRolesPermissions(data.UserId, data.RoleIds);
+                    return Ok();
+                }
+                else
+                {
+                    return BadRequest(_stringLocalizer["ERR_MISSING_INPUT_DATA"]);
                 }
             }
             catch (Exception ex)
