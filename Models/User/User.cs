@@ -12,6 +12,7 @@ namespace MangaHomeService.Models
         public string? ProfilePicture { get; set; }
         public Role Role { get; set; }
         public byte[]? Salt { get; set; }
+        public List<Group> Groups { get; set; }
         public static ClaimsIdentity? Identity { get; internal set; }
 
         public User() { }
