@@ -28,6 +28,10 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
 });
 builder.Services.AddDbContextFactory<MangaHomeDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("MangaHome")));
+builder.Services.AddLocalization(options =>
+{
+    options.ResourcesPath = "Resources";
+});
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
