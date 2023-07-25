@@ -30,7 +30,12 @@ namespace MangaHomeService.Services
             }
         }
 
-        public Task<List<Title>> Search(string keyword, int count, int page)
+        public async Task<List<Title>> Search(string keyword, int count, int page)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task<List<Title>> Search(string name, List<string> authors, List<string> artists, List<string> genreIds, List<Theme> themeIds, string originalLanguageId, List<string> languageIds, List<int> statuses)
         {
             throw new NotImplementedException();
         }
