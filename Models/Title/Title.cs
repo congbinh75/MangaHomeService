@@ -10,6 +10,7 @@ namespace MangaHomeService.Models
         public string Author { get; set; }
         public string Artist { get; set; }
         public TitleStatus Status { get; set; }
+        public List<Gerne> Gernes { get; set; }
         public List<Chapter> Chapters { get; set; }
         public List<Comment> Comments { get; set; }
 
