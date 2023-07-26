@@ -15,8 +15,10 @@ namespace MangaHomeService.Models
         public int RatingVotes { get; set; }
         public int Views { get; set; }
         public int Bookmark { get; set; }
+        public List<TitleOtherName> OtherNames { get; set; }
         public Language OriginalLanguage { get; set; }
         public List<Genre> Gernes { get; set; }
+        public List<Theme> Themes { get; set; }
         public List<Chapter> Chapters { get; set; }
         public List<Comment> Comments { get; set; }
 

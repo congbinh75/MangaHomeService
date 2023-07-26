@@ -16,6 +16,7 @@ namespace MangaHomeService.Models
         public DbSet<Chapter> Chapters { get; set; }
         public DbSet<Comment> Comments { get; set; }
         public DbSet<Genre> Genres { get; set; }
+        public DbSet<Theme> Themes { get; set; } 
         public DbSet<ChapterTracking> ChapterTrackings { get; set; }
         public DbSet<TitleRating> TitleRatings { get; set; }
         public DbSet<Member> Members { get; set; }
