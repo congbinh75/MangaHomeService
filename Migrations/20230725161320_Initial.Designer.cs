@@ -3,6 +3,7 @@ using System;
 using MangaHomeService.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,10 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MangaHomeService.Migrations
 {
     [DbContext(typeof(MangaHomeDbContext))]
-    partial class MangaHomeDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230725161320_Initial")]
+    partial class Initial
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -408,37 +410,6 @@ namespace MangaHomeService.Migrations
                     b.ToTable("Roles", "MangaHome");
                 });
 
-            modelBuilder.Entity("MangaHomeService.Models.Theme", b =>
-                {
-                    b.Property<string>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("text");
-
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("CreatedTime")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("UpdatedBy")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("UpdatedTime")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Themes", "MangaHome");
-                });
-
             modelBuilder.Entity("MangaHomeService.Models.Title", b =>
                 {
                     b.Property<string>("Id")
@@ -500,39 +471,6 @@ namespace MangaHomeService.Migrations
                     b.HasIndex("OriginalLanguageId");
 
                     b.ToTable("Titles", "MangaHome");
-                });
-
-            modelBuilder.Entity("MangaHomeService.Models.TitleOtherName", b =>
-                {
-                    b.Property<string>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("text");
-
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("CreatedTime")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("OtherName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("TitleId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("UpdatedBy")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("UpdatedTime")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("TitleId");
-
-                    b.ToTable("TitleOtherName", "MangaHome");
                 });
 
             modelBuilder.Entity("MangaHomeService.Models.TitleRating", b =>
@@ -664,21 +602,6 @@ namespace MangaHomeService.Migrations
                     b.ToTable("PermissionRole", "MangaHome");
                 });
 
-            modelBuilder.Entity("ThemeTitle", b =>
-                {
-                    b.Property<string>("ThemesId")
-                        .HasColumnType("text");
-
-                    b.Property<string>("TitlesId")
-                        .HasColumnType("text");
-
-                    b.HasKey("ThemesId", "TitlesId");
-
-                    b.HasIndex("TitlesId");
-
-                    b.ToTable("ThemeTitle", "MangaHome");
-                });
-
             modelBuilder.Entity("GenreTitle", b =>
                 {
                     b.HasOne("MangaHomeService.Models.Genre", null)
@@ -807,17 +730,6 @@ namespace MangaHomeService.Migrations
                     b.Navigation("OriginalLanguage");
                 });
 
-            modelBuilder.Entity("MangaHomeService.Models.TitleOtherName", b =>
-                {
-                    b.HasOne("MangaHomeService.Models.Title", "Title")
-                        .WithMany("OtherNames")
-                        .HasForeignKey("TitleId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Title");
-                });
-
             modelBuilder.Entity("MangaHomeService.Models.TitleRating", b =>
                 {
                     b.HasOne("MangaHomeService.Models.User", "User")
@@ -862,21 +774,6 @@ namespace MangaHomeService.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("ThemeTitle", b =>
-                {
-                    b.HasOne("MangaHomeService.Models.Theme", null)
-                        .WithMany()
-                        .HasForeignKey("ThemesId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("MangaHomeService.Models.Title", null)
-                        .WithMany()
-                        .HasForeignKey("TitlesId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("MangaHomeService.Models.Chapter", b =>
                 {
                     b.Navigation("Comments");
@@ -894,8 +791,6 @@ namespace MangaHomeService.Migrations
                     b.Navigation("Chapters");
 
                     b.Navigation("Comments");
-
-                    b.Navigation("OtherNames");
                 });
 
             modelBuilder.Entity("MangaHomeService.Models.User", b =>

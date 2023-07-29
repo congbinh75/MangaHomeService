@@ -2,13 +2,12 @@
 {
     public static class Enums
     {
-        public enum Roles
+        public enum TitleStatus
         {
-            Admin = 0,
-            Moderator = 1,
-            Captain = 2,
-            Uploader = 3,
-            Visitor = 4
+            NotYetReleased = 0,
+            OnGoing = 1,
+            Completed = 2,
+            Abandoned = 3
         }
     }
 }
