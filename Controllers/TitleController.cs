@@ -5,10 +5,11 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using MangaHomeService.Utils;
+using MangaHomeService.Models.FormData;
 
 namespace MangaHomeService.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/[controller]/[action]")]
     [ApiController]
     public class TitleController : ControllerBase
     {
@@ -54,8 +55,8 @@ namespace MangaHomeService.Controllers
         {
             try
             {
-                var hottestTitles = _titleService.Search(sortByHottest: true);
-                var lastestTitles = _titleService.Search(sortByLastest: true);
+                var hottestTitles = _titleService.AdvancedSearch(sortByHottest: true);
+                var lastestTitles = _titleService.AdvancedSearch(sortByLastest: true);
 
                 return Ok(new { hottestTitles, lastestTitles });
             }
@@ -67,13 +68,14 @@ namespace MangaHomeService.Controllers
 
         [AllowAnonymous]
         [HttpGet]
-        public async Task<IActionResult> GetTitlesByGenre(string genreId, int count, int page)
+        public async Task<IActionResult> GetTitlesByGenre(GetTitlesByGenreFormData getTitlesByGenreFormData)
         {
             try
             {
-                if (!string.IsNullOrEmpty(genreId.Trim()))
+                if (!string.IsNullOrEmpty(getTitlesByGenreFormData.GenreId.Trim()))
                 {
-                    var titles = _titleService.Search(genreIds: new List<string>() { genreId.Trim() }, count: count, page: page);
+                    var titles = _titleService.AdvancedSearch(genreIds: new List<string>() { getTitlesByGenreFormData.GenreId.Trim() }, 
+                        pageNumber: getTitlesByGenreFormData.PageNumber, pageSize: getTitlesByGenreFormData.PageSize);
                     return Ok(titles);
                 }
                 else
@@ -89,13 +91,14 @@ namespace MangaHomeService.Controllers
 
         [AllowAnonymous]
         [HttpGet]
-        public async Task<IActionResult> GetTitlesByTheme(string themeId, int count, int page)
+        public async Task<IActionResult> GetTitlesByTheme(GetTitlesByThemeFormData getTitlesByThemeFormData)
         {
             try
             {
-                if (!string.IsNullOrEmpty(themeId.Trim()))
+                if (!string.IsNullOrEmpty(getTitlesByThemeFormData.ThemeId.Trim()))
                 {
-                    var titles = _titleService.Search(themeIds: new List<string>() { themeId.Trim() }, count: count, page: page);
+                    var titles = _titleService.AdvancedSearch(themeIds: new List<string>() { getTitlesByThemeFormData.ThemeId.Trim() }, 
+                        pageNumber: getTitlesByThemeFormData.PageNumber, pageSize: getTitlesByThemeFormData.PageSize);
                     return Ok(titles);
                 }
                 else
@@ -111,11 +114,12 @@ namespace MangaHomeService.Controllers
 
         [AllowAnonymous]
         [HttpGet]
-        public async Task<IActionResult> Search(string keyword, int count, int page)
+        public async Task<IActionResult> Search(SearchFormData searchFormData)
         {
             try
             {
-                var titles = await _titleService.Search(keyword: keyword.Trim(), count: count, page: page);
+                var titles = await _titleService.Search(keyword: searchFormData.Keyword.Trim(), 
+                    pageNumber: searchFormData.PageNumber, pageSize: searchFormData.PageSize);
                 return Ok(titles);
             }
             catch (Exception ex)
@@ -126,16 +130,21 @@ namespace MangaHomeService.Controllers
 
         [AllowAnonymous]
         [HttpGet]
-        public async Task<IActionResult> Search(string name = "", string author = "", string artist = "", List<string>? genreIds = null,
-            List<string>? themeIds = null, string originalLanguageId = "", List<string>? languageIds = null, List<int>? statuses = null,
-            bool sortByLastest = false, bool sortByHottest = false, int count = Constants.TitlesPerPage, int page = 1)
+        public async Task<IActionResult> AdvancedSearch(AdvancedSearchFormData advancedSearchFormData)
         {
             try
             {
-                var titles = await _titleService.Search(name: name.Trim(), author: author.Trim(), artist: artist.Trim(), 
-                    genreIds: genreIds?.Select(x => x.Trim()).ToList(), themeIds: themeIds?.Select(x => x.Trim()).ToList(), 
-                    languageIds: languageIds?.Select(x => x.Trim()).ToList(), statuses: statuses, 
-                    sortByLastest: sortByLastest, sortByHottest: sortByHottest, count: count, page: page);
+                var titles = await _titleService.AdvancedSearch(name: advancedSearchFormData.Name.Trim(), 
+                    author: advancedSearchFormData.Author.Trim(), 
+                    artist: advancedSearchFormData.Artist.Trim(), 
+                    genreIds: advancedSearchFormData.GenreIds?.Select(x => x.Trim()).ToList(), 
+                    themeIds: advancedSearchFormData.ThemeIds?.Select(x => x.Trim()).ToList(), 
+                    languageIds: advancedSearchFormData.LanguageIds?.Select(x => x.Trim()).ToList(), 
+                    statuses: advancedSearchFormData.Statuses, 
+                    sortByLastest: advancedSearchFormData.SortByLastest, 
+                    sortByHottest: advancedSearchFormData.SortByHottest, 
+                    pageNumber: advancedSearchFormData.PageNumber, 
+                    pageSize: advancedSearchFormData.PageSize);
                 return Ok(titles);
             }
             catch (Exception ex)

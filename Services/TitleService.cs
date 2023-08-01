@@ -32,22 +32,22 @@ namespace MangaHomeService.Services
             }
         }
 
-        public async Task<List<Title>> Search(string keyword, int count, int page)
+        public async Task<List<Title>> Search(string keyword, int pageNumber = 1, int pageSize = Constants.TitlesPerPage)
         {
             using (var dbContext = _contextFactory.CreateDbContext())
             {
                 var titles = await dbContext.Titles.Where(x => x.Name.Contains(keyword.Trim()) 
                 || x.OtherNames.Any(y => y.OtherName.Contains(keyword.Trim())) 
                 || x.Author.Contains(keyword.Trim())
-                || x.Artist.Contains(keyword.Trim())).ToListAsync();
+                || x.Artist.Contains(keyword.Trim())).Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync();
 
                 return titles;
             } 
         }
 
-        public async Task<List<Title>> Search(string name = "", string author = "", string artist = "", List<string>? genreIds = null, 
+        public async Task<List<Title>> AdvancedSearch(string name = "", string author = "", string artist = "", List<string>? genreIds = null, 
             List<string>? themeIds = null, string originalLanguageId = "", List<string>? languageIds = null, List<int>? statuses = null, 
-            bool sortByLastest = false, bool sortByHottest = false, int count = Constants.TitlesPerPage, int page = 1)
+            bool sortByLastest = false, bool sortByHottest = false, int pageNumber = 1, int pageSize = Constants.TitlesPerPage)
         {
             using (var dbContext = _contextFactory.CreateDbContext())
             {
@@ -105,7 +105,7 @@ namespace MangaHomeService.Services
                     titles = titles.OrderByDescending(x => x.Views).ToList();
                 }
 
-                titles = titles.Skip(count * (page - 1)).Take(count).ToList();
+                titles = titles.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToList();
                 return titles;
             }
         }
