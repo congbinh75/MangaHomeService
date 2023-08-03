@@ -6,6 +6,7 @@ namespace MangaHomeService.Controllers
     [ApiController]
     public class AdminController : Controller
     {
+        [HttpPost]
         public async Task<IActionResult> AddLanguage()
         {
             return View();
