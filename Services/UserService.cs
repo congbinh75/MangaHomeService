@@ -113,111 +113,22 @@ namespace MangaHomeService.Services
             }
         }
 
-        public async Task AddRole(string name, string description)
+        private (string hashedPassword, byte[] salt) HashPassword(string password, byte[]? salt = null)
         {
-            using (var dbContext = _contextFactory.CreateDbContext())
+            if (salt == null)
             {
-                Role role = new Role();
-                role.Name = name;
-                role.Description = description;
-                await dbContext.Roles.AddAsync(role);
-                await dbContext.SaveChangesAsync();
+                salt = RandomNumberGenerator.GetBytes(128 / 8);
             }
+            string hassed = Convert.ToBase64String(KeyDerivation.Pbkdf2(
+                    password: password,
+                    salt: salt,
+                    prf: KeyDerivationPrf.HMACSHA256,
+                    iterationCount: 100000,
+                    numBytesRequested: 256 / 8));
+            return (hassed, salt);
         }
 
-        public async Task UpdateRole(string id, string name, string description)
-        {
-            using (var dbContext = _contextFactory.CreateDbContext())
-            {
-                if (id == null)
-                {
-                    throw new Exception();
-                }
-                var role = await dbContext.Roles.FirstOrDefaultAsync(r => r.Id == id);
-                role.Name = name;
-                role.Description = description;
-                await dbContext.SaveChangesAsync();
-            }
-        }
-
-        public async Task RemoveRole(string id)
-        {
-            using (var dbContext = _contextFactory.CreateDbContext())
-            {
-                if (id == null)
-                {
-                    throw new Exception();
-                }
-                var role = await dbContext.Roles.FirstOrDefaultAsync(r => r.Id == id);
-                dbContext.Roles.Remove(role);
-                await dbContext.SaveChangesAsync();
-            }
-        }
-
-        public async Task AddPermission(string name, string description)
-        {
-            using (var dbContext = _contextFactory.CreateDbContext())
-            {
-                Permission permission = new Permission();
-                permission.Name = name;
-                permission.Description = description;
-                await dbContext.Permissions.AddAsync(permission);
-                await dbContext.SaveChangesAsync();
-            }
-        }
-
-        public async Task UpdatePermission(string id, string name, string description)
-        {
-            using (var dbContext = _contextFactory.CreateDbContext())
-            {
-                if (id == null)
-                {
-                    throw new Exception();
-                }
-                var permission = await dbContext.Permissions.FirstOrDefaultAsync(p => p.Id == id);
-                permission.Name = name;
-                permission.Description = description;
-                await dbContext.SaveChangesAsync();
-            }
-        }
-
-        public async Task RemovePermission(string id)
-        {
-            using (var dbContext = _contextFactory.CreateDbContext())
-            {
-                if (id == null)
-                {
-                    throw new Exception();
-                }
-                var permission = await dbContext.Permissions.FirstOrDefaultAsync(p => p.Id == id);
-                dbContext.Permissions.Remove(permission);
-                await dbContext.SaveChangesAsync();
-            }
-        }
-
-        public async Task UpdateRolesPermissions(string roleId, List<string> permissionIds)
-        {
-            using (var dbContext = _contextFactory.CreateDbContext())
-            {
-                var permissions = await dbContext.Permissions.
-                    Where(p => permissionIds.Distinct().Contains(p.Id)).ToListAsync();
-                if (permissions.Count() != permissionIds.Distinct().Count())
-                {
-                    throw new Exception();
-                }
-
-                var role = await dbContext.Roles.FirstOrDefaultAsync(r => r.Id == roleId);
-                if (role == null)
-                {
-                    throw new Exception();
-                }
-
-                role.Permissions = permissions;
-                await dbContext.SaveChangesAsync();
-            }
-        }
-
-        public async Task<List<Permission>> GetPermissions(string userId)
+        public async Task<List<Permission>> GetPermissionsOfUser(string userId)
         {
             using (var dbContext = _contextFactory.CreateDbContext())
             {
@@ -232,21 +143,6 @@ namespace MangaHomeService.Services
                     return role.Permissions;
                 }
             }
-        }
-
-        private (string hashedPassword, byte[] salt) HashPassword(string password, byte[]? salt = null)
-        {
-            if (salt == null)
-            {
-                salt = RandomNumberGenerator.GetBytes(128 / 8);
-            }
-            string hassed = Convert.ToBase64String(KeyDerivation.Pbkdf2(
-                    password: password,
-                    salt: salt,
-                    prf: KeyDerivationPrf.HMACSHA256,
-                    iterationCount: 100000,
-                    numBytesRequested: 256 / 8));
-            return (hassed, salt);
         }
     }
 }

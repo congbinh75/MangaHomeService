@@ -18,15 +18,21 @@ namespace MangaHomeService.Controllers
         private IConfiguration _configuration;
         private IStringLocalizer<UserController> _stringLocalizer;
         private IUserService _userService;
+        private IRoleService _roleService;
+        private IPermissionService _permissionService;
 
         public UserController(
             IConfiguration configuration, 
             IStringLocalizer<UserController> stringLocalizer, 
-            IUserService userService) 
+            IUserService userService,
+            IRoleService roleService,
+            IPermissionService permissionService) 
         {
             _configuration = configuration;
             _stringLocalizer = stringLocalizer;
             _userService = userService;
+            _roleService = roleService;
+            _permissionService = permissionService;
         }
 
         [HttpPost]
@@ -63,7 +69,7 @@ namespace MangaHomeService.Controllers
 
                     if (user != null)
                     {
-                        var permissions = await _userService.GetPermissions(user.Id);
+                        var permissions = await _userService.GetPermissionsOfUser(user.Id);
 
                         var claims = new[]
                         {
@@ -287,7 +293,7 @@ namespace MangaHomeService.Controllers
             {
                 if (data != null)
                 {
-                    await _userService.AddRole(data.Name, data.Description);
+                    await _roleService.Add(data.Name, data.Description);
                     return Ok();
                 }
                 else
@@ -303,13 +309,13 @@ namespace MangaHomeService.Controllers
 
         [AllowAnonymous]
         [HttpPost]
-        public async Task<IActionResult> UpdateRole(AddRoleData data)
+        public async Task<IActionResult> UpdateRole(UpdateRoleData data)
         {
             try
             {
                 if (data != null)
                 {
-                    await _userService.AddRole(data.Name, data.Description);
+                    await _roleService.Update(data.Id, data.Name, data.IsActive, data.Description);
                     return Ok();
                 }
                 else

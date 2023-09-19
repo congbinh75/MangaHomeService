@@ -109,5 +109,26 @@ namespace MangaHomeService.Services
                 return titles;
             }
         }
+
+        public async Task Add(string name, string description = "", string artwork = "", string author = "", string artist = "", 
+            Enums.TitleStatus status = Enums.TitleStatus.NotYetReleased, double rating = 0, int ratingVotes = 0, int views = 0, 
+            int bookmarks = 0, List<TitleOtherName> otherNames = null, Language originalLanguage = null, List<Genre> genres = null, 
+            List<Theme> themes = null, List<Chapter> chapters = null, List<Comment> comments = null)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task Update(string id, string name = "", string description = "", string artwork = "", string author = "", 
+            string artist = "", Enums.TitleStatus status = Enums.TitleStatus.NotYetReleased, double rating = 0, int ratingVotes = 0, 
+            int views = 0, int bookmarks = 0, List<TitleOtherName> otherNames = null, Language originalLanguage = null, 
+            List<Genre> genres = null, List<Theme> themes = null, List<Chapter> chapters = null, List<Comment> comments = null)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task Delete(string id)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
