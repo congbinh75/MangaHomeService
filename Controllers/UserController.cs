@@ -336,7 +336,7 @@ namespace MangaHomeService.Controllers
             {
                 if (data != null)
                 {
-                    await _userService.UpdateRolesPermissions(data.UserId, data.RoleIds);
+                    await _roleService.UpdateRolesPermissions(data.UserId, data.RoleIds);
                     return Ok();
                 }
                 else

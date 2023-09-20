@@ -12,13 +12,13 @@ namespace MangaHomeService.Services.Interfaces
             List<string>? themeIds = null, string originalLanguageId = "", List<string>? languageIds = null, List<int>? statuses = null,
             bool sortByLastest = false, bool sortByHottest = false, int pageNumber = 1, int pageSize = Constants.TitlesPerPage);
         Task Add(string name, string description = "", string artwork = "", string author = "", string artist = "", TitleStatus status = 0, 
-            double rating = 0, int ratingVotes = 0, int views = 0, int bookmarks = 0, List<TitleOtherName> otherNames = null, 
-            Language originalLanguage = null, List<Genre> genres = null, List<Theme> themes = null, List<Chapter> chapters = null, 
-            List<Comment> comments = null);
+            double rating = 0, int ratingVotes = 0, int views = 0, int bookmarks = 0, List<TitleOtherName>? otherNames = null, 
+            Language? originalLanguage = null, List<Genre>? genres = null, List<Theme>? themes = null, List<Chapter>? chapters = null, 
+            List<Comment>? comments = null);
         Task Update(string id, string name = "", string description = "", string artwork = "", string author = "", string artist = "", 
             TitleStatus status = 0, double rating = 0, int ratingVotes = 0, int views = 0, int bookmarks = 0, 
-            List<TitleOtherName> otherNames = null, Language originalLanguage = null, List<Genre> genres = null, List<Theme> themes = null, 
-            List<Chapter> chapters = null, List<Comment> comments = null);
+            List<TitleOtherName>? otherNames = null, Language? originalLanguage = null, List<Genre>? genres = null, List<Theme>? themes = null, 
+            List<Chapter>? chapters = null, List<Comment>? comments = null);
         Task Delete(string id);
     }
 }

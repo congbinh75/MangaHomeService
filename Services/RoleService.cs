@@ -23,18 +23,11 @@ namespace MangaHomeService.Services
             }
         }
 
-        public async Task<List<Role>> GetAll(bool inactiveIncluded = false)
+        public async Task<List<Role>> GetAll()
         {
             using (var dbContext = _contextFactory.CreateDbContext())
             {
-                if (inactiveIncluded) 
-                {
-                    return await dbContext.Roles.ToListAsync();
-                }
-                else
-                {
-                    return await dbContext.Roles.Where(r => r.IsActive == true).ToListAsync();
-                }
+                return await dbContext.Roles.ToListAsync();
             }
         }
 
@@ -45,13 +38,12 @@ namespace MangaHomeService.Services
                 Role role = new Role();
                 role.Name = name;
                 role.Description = description;
-                role.IsActive = true;
                 await dbContext.Roles.AddAsync(role);
                 await dbContext.SaveChangesAsync();
             }
         }
 
-        public async Task Update(string id, string name, bool isActive, string description)
+        public async Task Update(string id, string name, string description)
         {
             using (var dbContext = _contextFactory.CreateDbContext())
             {
@@ -60,10 +52,12 @@ namespace MangaHomeService.Services
                     throw new Exception();
                 }
                 var role = await dbContext.Roles.FirstOrDefaultAsync(r => r.Id == id);
-                role.Name = name;
-                role.Description = description;
-                role.IsActive = isActive;
-                await dbContext.SaveChangesAsync();
+                if (role != null) 
+                {
+                    role.Name = name;
+                    role.Description = description;
+                    await dbContext.SaveChangesAsync();
+                }
             }
         }
 
@@ -76,8 +70,11 @@ namespace MangaHomeService.Services
                     throw new Exception();
                 }
                 var role = await dbContext.Roles.FirstOrDefaultAsync(r => r.Id == id);
-                dbContext.Roles.Remove(role);
-                await dbContext.SaveChangesAsync();
+                if (role != null)
+                {
+                    dbContext.Roles.Remove(role);
+                    await dbContext.SaveChangesAsync();
+                }    
             }
         }
 

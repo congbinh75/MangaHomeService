@@ -120,14 +120,8 @@
   <data name="ERR_MISSING_INPUT_DATA" xml:space="preserve">
     <value>Missing input data</value>
   </data>
-  <data name="PERDESC_CREATE_TITLES" xml:space="preserve">
-    <value>Add titles</value>
-  </data>
-  <data name="PERDESC_CREATE_VOLUMES" xml:space="preserve">
-    <value>Add volumes</value>
-  </data>
-  <data name="PERDESC_REMOVE_TITLES" xml:space="preserve">
-    <value>Remove titles</value>
+  <data name="ERR_PASSWORD_CONFIRMATION_NOT_MATCH" xml:space="preserve">
+    <value>Password and confirmation not match</value>
   </data>
   <data name="PERDESC_UPDATE_CHAPTERS" xml:space="preserve">
     <value>Add, update or remove chapters.</value>
@@ -146,15 +140,6 @@
   </data>
   <data name="PERDESC_VIEW_TITLES" xml:space="preserve">
     <value>View titles</value>
-  </data>
-  <data name="PER_CREATE_TITLES" xml:space="preserve">
-    <value>Add titles</value>
-  </data>
-  <data name="PER_CREATE_VOLUMES" xml:space="preserve">
-    <value>Add volumes</value>
-  </data>
-  <data name="PER_REMOVE_TITLES" xml:space="preserve">
-    <value>Remove titles</value>
   </data>
   <data name="PER_UPDATE_CHAPTERS" xml:space="preserve">
     <value>Update chapters</value>

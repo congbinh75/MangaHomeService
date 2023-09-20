@@ -120,6 +120,9 @@
   <data name="ERR_MISSING_INPUT_DATA" xml:space="preserve">
     <value>Dữ liệu đầu vào rỗng</value>
   </data>
+  <data name="ERR_PASSWORD_CONFIRMATION_NOT_MATCH" xml:space="preserve">
+    <value>Mật khẩu và xác nhận mật khẩu không trùng khớp</value>
+  </data>
   <data name="PERDESC_UPDATE_CHAPTERS" xml:space="preserve">
     <value>Thêm, xoá, sửa chương.</value>
   </data>

@@ -15,15 +15,20 @@ namespace MangaHomeService.Services
             _contextFactory = contextFactory;
         }
 
-        public async Task<User> Add(string name, string email, string password, string roleName)
+        public async Task<User> Add(string name, string email, string password, string roleId)
         {
             using (var dbContext = _contextFactory.CreateDbContext())
             {
                 var existingUser = await dbContext.Users.FirstOrDefaultAsync(u => u.Email == email);
-                var role = await dbContext.Roles.Where(r => r.Name == roleName).FirstOrDefaultAsync();
                 if (existingUser != null)
                 {
                     throw new Exception("Email already registered");
+                }
+
+                var role = await dbContext.Roles.Where(r => r.Id == roleId).FirstOrDefaultAsync();
+                if (role == null)
+                {
+                    throw new Exception("Role not found");
                 }
 
                 (string hashed, byte[] salt) passAndSalt = HashPassword(password);
@@ -57,7 +62,7 @@ namespace MangaHomeService.Services
             }
         }
 
-        public async Task Update(string userId, string? name = null, string? email = null, string? password = null,
+        public async Task<bool> Update(string userId, string? name = null, string? email = null, string? password = null,
             bool? emailConfirmed = null, string? profilePicture = null, string? roleName = null)
         {
             using (var dbContext = _contextFactory.CreateDbContext())
@@ -93,23 +98,22 @@ namespace MangaHomeService.Services
                 user.Salt = newSalt;
 
                 await dbContext.SaveChangesAsync();
+                return true;
             }
         }
 
-        public async Task Delete(string id)
+        public async Task<bool> Delete(string id)
         {
             using (var dbContext = _contextFactory.CreateDbContext())
             {
                 var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == id);
-                if (user != null)
+                if (user == null)
                 {
-                    dbContext.Users.Remove(user);
-                    await dbContext.SaveChangesAsync();
+                    throw new NullReferenceException(nameof(user));
                 }
-                else
-                {
-                    throw new Exception();
-                }
+                dbContext.Users.Remove(user);
+                await dbContext.SaveChangesAsync();
+                return true;
             }
         }
 

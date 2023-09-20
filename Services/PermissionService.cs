@@ -22,18 +22,11 @@ namespace MangaHomeService.Services
             }
         }
 
-        public async Task<List<Permission>> GetAll(bool inactiveIncluded = false)
+        public async Task<List<Permission>> GetAll()
         {
             using (var dbContext = _contextFactory.CreateDbContext())
             {
-                if (inactiveIncluded)
-                {
-                    return await dbContext.Permissions.ToListAsync();
-                }
-                else
-                {
-                    return await dbContext.Permissions.Where(r => r.IsActive == true).ToListAsync();
-                }
+                return await dbContext.Permissions.ToListAsync();
             }
         }
 
@@ -49,7 +42,7 @@ namespace MangaHomeService.Services
             }
         }
 
-        public async Task Update(string id, string name, bool isActive, string description)
+        public async Task Update(string id, string name, string description)
         {
             using (var dbContext = _contextFactory.CreateDbContext())
             {
@@ -58,10 +51,12 @@ namespace MangaHomeService.Services
                     throw new Exception();
                 }
                 var permission = await dbContext.Permissions.FirstOrDefaultAsync(p => p.Id == id);
-                permission.Name = name;
-                permission.Description = description;
-                permission.IsActive = isActive;
-                await dbContext.SaveChangesAsync();
+                if (permission != null)
+                {
+                    permission.Name = name;
+                    permission.Description = description;
+                    await dbContext.SaveChangesAsync();
+                }
             }
         }
 
@@ -74,8 +69,11 @@ namespace MangaHomeService.Services
                     throw new Exception();
                 }
                 var permission = await dbContext.Permissions.FirstOrDefaultAsync(p => p.Id == id);
-                dbContext.Permissions.Remove(permission);
-                await dbContext.SaveChangesAsync();
+                if (permission != null)
+                {
+                    dbContext.Permissions.Remove(permission);
+                    await dbContext.SaveChangesAsync();
+                }
             }
         }
     }
