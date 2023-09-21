@@ -6,8 +6,8 @@ namespace MangaHomeService.Services.Interfaces
     {
         Task<Permission?> Get(string id);
         Task<List<Permission>> GetAll();
-        Task Add(string name, string description);
-        Task Update(string id, string name, string description);
-        Task Remove(string id);
+        Task<Permission> Add(string name, string description);
+        Task<Permission> Update(string id, string name, string description);
+        Task<bool> Remove(string id);
     }
 }

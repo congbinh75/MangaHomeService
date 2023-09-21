@@ -123,34 +123,7 @@
   <data name="ERR_PASSWORD_CONFIRMATION_NOT_MATCH" xml:space="preserve">
     <value>Mật khẩu và xác nhận mật khẩu không trùng khớp</value>
   </data>
-  <data name="PERDESC_UPDATE_CHAPTERS" xml:space="preserve">
-    <value>Thêm, xoá, sửa chương.</value>
-  </data>
-  <data name="PERDESC_UPDATE_PAGES" xml:space="preserve">
-    <value>Thêm, xoá, sửa trang.</value>
-  </data>
-  <data name="PERDESC_UPDATE_ROLES_PERMISSIONS" xml:space="preserve">
-    <value>Thêm hoặc xoá quyền cho role.</value>
-  </data>
-  <data name="PERDESC_UPDATE_TITLES" xml:space="preserve">
-    <value>Thêm, xoá, sửa tựa truyện.</value>
-  </data>
-  <data name="PERDESC_UPDATE_VOLUMES" xml:space="preserve">
-    <value>Thêm, xoá, sửa tập.</value>
-  </data>
-  <data name="PER_UPDATE_CHAPTERS" xml:space="preserve">
-    <value>Cập nhật chương</value>
-  </data>
-  <data name="PER_UPDATE_PAGES" xml:space="preserve">
-    <value>Cập nhật trang</value>
-  </data>
-  <data name="PER_UPDATE_ROLES_PERMISSIONS" xml:space="preserve">
-    <value>Cập nhật quyền cho role</value>
-  </data>
-  <data name="PER_UPDATE_TITLES" xml:space="preserve">
-    <value>Cập nhật tựa truyện</value>
-  </data>
-  <data name="PER_UPDATE_VOLUMES" xml:space="preserve">
-    <value>Cập nhật tập</value>
+  <data name="ERR_USER_EXISTED" xml:space="preserve">
+    <value>Email đã được đăng ký.</value>
   </data>
 </root>

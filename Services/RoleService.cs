@@ -1,8 +1,6 @@
 ﻿using MangaHomeService.Models;
 using MangaHomeService.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Internal;
-using System.Linq;
 
 namespace MangaHomeService.Services
 {
@@ -31,7 +29,7 @@ namespace MangaHomeService.Services
             }
         }
 
-        public async Task Add(string name, string description)
+        public async Task<Role> Add(string name, string description)
         {
             using (var dbContext = _contextFactory.CreateDbContext())
             {
@@ -40,45 +38,42 @@ namespace MangaHomeService.Services
                 role.Description = description;
                 await dbContext.Roles.AddAsync(role);
                 await dbContext.SaveChangesAsync();
+                return role;
             }
         }
 
-        public async Task Update(string id, string name, string description)
+        public async Task<Role> Update(string id, string name, string description)
         {
             using (var dbContext = _contextFactory.CreateDbContext())
             {
-                if (id == null)
-                {
-                    throw new Exception();
-                }
                 var role = await dbContext.Roles.FirstOrDefaultAsync(r => r.Id == id);
-                if (role != null) 
+                if (role == null) 
                 {
-                    role.Name = name;
-                    role.Description = description;
-                    await dbContext.SaveChangesAsync();
+                    throw new ArgumentException(nameof(id));
                 }
+                role.Name = name;
+                role.Description = description;
+                await dbContext.SaveChangesAsync();
+                return role;
             }
         }
 
-        public async Task Remove(string id)
+        public async Task<bool> Remove(string id)
         {
             using (var dbContext = _contextFactory.CreateDbContext())
             {
-                if (id == null)
-                {
-                    throw new Exception();
-                }
                 var role = await dbContext.Roles.FirstOrDefaultAsync(r => r.Id == id);
-                if (role != null)
+                if (role == null)
                 {
-                    dbContext.Roles.Remove(role);
-                    await dbContext.SaveChangesAsync();
-                }    
+                    throw new ArgumentException(nameof(id));
+                }
+                dbContext.Roles.Remove(role);
+                await dbContext.SaveChangesAsync();
+                return true;
             }
         }
 
-        public async Task UpdateRolesPermissions(string roleId, List<string> permissionIds)
+        public async Task<Role> UpdatePermissionsOfRole(string roleId, List<string> permissionIds)
         {
             using (var dbContext = _contextFactory.CreateDbContext())
             {
@@ -86,17 +81,18 @@ namespace MangaHomeService.Services
                     Where(p => permissionIds.Distinct().Contains(p.Id)).ToListAsync();
                 if (permissions.Count() != permissionIds.Distinct().Count())
                 {
-                    throw new Exception();
+                    throw new ArgumentException(nameof(permissionIds));
                 }
 
                 var role = await dbContext.Roles.FirstOrDefaultAsync(r => r.Id == roleId);
                 if (role == null)
                 {
-                    throw new Exception();
+                    throw new ArgumentException(nameof(roleId));
                 }
 
                 role.Permissions = permissions;
                 await dbContext.SaveChangesAsync();
+                return role;
             }
         }
     }

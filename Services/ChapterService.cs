@@ -16,11 +16,6 @@ namespace MangaHomeService.Services
         public async Task<Chapter> Add(double number, Title title, Group group, Volume? volume = null, Language? language = null, 
             List<Page>? pages = null, List<Comment>? comments = null)
         {
-            if (number < 0 || title == null || group == null ) 
-            {
-                throw new ArgumentNullException();
-            }
-
             using (var dbContext = _contextFactory.CreateDbContext())
             {
                 Chapter chapter = new Chapter();
@@ -39,20 +34,17 @@ namespace MangaHomeService.Services
         }
 
         public async Task<bool> Delete(string id)
-        {
-            if (string.IsNullOrEmpty(id))
-            {
-                throw new ArgumentNullException("chapterId");
-            }
-            
+        {   
             using (var dbContext = _contextFactory.CreateDbContext()) 
             {
-                var chapter = await dbContext.Chapters.Where(c => c.Id == id).Include(c => c.Pages).Include(c => c.Comments).FirstOrDefaultAsync();
+                var chapter = await dbContext.Chapters.Where(c => c.Id == id).Include(c => c.Pages).Include(c => c.Comments).
+                    FirstOrDefaultAsync();
                 if (chapter == null) 
                 {
                     throw new NullReferenceException(nameof(chapter));
                 }
                 dbContext.Chapters.Remove(chapter);
+                await dbContext.SaveChangesAsync();
                 return true;
             }
         }
@@ -73,7 +65,7 @@ namespace MangaHomeService.Services
             }
         }
 
-        public async Task<bool> Update(string id, double number = -1, Title? title = null, Group? group = null, Volume? volume = null, 
+        public async Task<Chapter> Update(string id, double number = -1, Title? title = null, Group? group = null, Volume? volume = null, 
             Language? language = null, List<Page>? pages = null, List<Comment>? comments = null)
         {
             using (var dbContext = _contextFactory.CreateDbContext())
@@ -101,7 +93,7 @@ namespace MangaHomeService.Services
                 chapter.Comments = newComments;
 
                 await dbContext.SaveChangesAsync();
-                return true;
+                return chapter;
             }
         }
     }

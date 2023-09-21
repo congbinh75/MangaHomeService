@@ -315,7 +315,7 @@ namespace MangaHomeService.Controllers
             {
                 if (data != null)
                 {
-                    await _roleService.Update(data.Id, data.Name, data.IsActive, data.Description);
+                    await _roleService.Update(data.Id, data.Name, data.Description);
                     return Ok();
                 }
                 else
@@ -330,13 +330,13 @@ namespace MangaHomeService.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> UpdateRolesPermissions(UpdateUserRoleData data)
+        public async Task<IActionResult> UpdatePermissionsOfRole(UpdateUserRoleData data)
         {
             try
             {
                 if (data != null)
                 {
-                    await _roleService.UpdateRolesPermissions(data.UserId, data.RoleIds);
+                    await _roleService.UpdatePermissionsOfRole(data.UserId, data.RoleIds);
                     return Ok();
                 }
                 else

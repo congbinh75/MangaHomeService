@@ -1,9 +1,8 @@
-﻿using MangaHomeService.Models;
-using static MangaHomeService.Utils.Enums;
+﻿using static MangaHomeService.Utils.Enums;
 
 namespace MangaHomeService.Models
 {
-    public class Title : BaseModel
+    public class TitleModel : BaseModel
     {
         public string Name { get; set; }
         public string Description { get; set; }
@@ -22,21 +21,5 @@ namespace MangaHomeService.Models
         public List<Chapter>? Chapters { get; set; }
         public List<Comment>? Comments { get; set; }
         public bool IsAprroved { get; set; }
-
-        public Title() { }
-        public Title(string name, string description, string artwork, string author, string artist, int status, double rating, 
-            List<Chapter> chapters, List<Comment> comments, bool isApproved) 
-        {
-            Name = name;
-            Description = description;
-            Artwork = artwork;
-            Author = author;
-            Artist = artist;
-            Status = (TitleStatus)status;
-            Chapters = chapters;
-            Comments = comments;
-            Rating = rating;
-            IsAprroved = isApproved;
-        }
     }
 }

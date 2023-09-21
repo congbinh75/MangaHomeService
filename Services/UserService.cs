@@ -3,6 +3,7 @@ using MangaHomeService.Services.Interfaces;
 using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 using System.Security.Cryptography;
 using Microsoft.EntityFrameworkCore;
+using System.Data;
 
 namespace MangaHomeService.Services
 {
@@ -22,13 +23,13 @@ namespace MangaHomeService.Services
                 var existingUser = await dbContext.Users.FirstOrDefaultAsync(u => u.Email == email);
                 if (existingUser != null)
                 {
-                    throw new Exception("Email already registered");
+                    throw new ArgumentException();
                 }
 
                 var role = await dbContext.Roles.Where(r => r.Id == roleId).FirstOrDefaultAsync();
                 if (role == null)
                 {
-                    throw new Exception("Role not found");
+                    throw new NullReferenceException(nameof(role));
                 }
 
                 (string hashed, byte[] salt) passAndSalt = HashPassword(password);
@@ -40,11 +41,15 @@ namespace MangaHomeService.Services
             }
         }
 
-        public async Task<User?> Get(string id)
+        public async Task<User> Get(string id)
         {
             using (var dbContext = _contextFactory.CreateDbContext())
             {
                 User? user = await dbContext.Users.Where(u => u.Id == id).FirstOrDefaultAsync();
+                if (user == null)
+                {
+                    throw new ArgumentException(nameof(id));
+                }
                 return user;
             }
         }
@@ -62,7 +67,7 @@ namespace MangaHomeService.Services
             }
         }
 
-        public async Task<bool> Update(string userId, string? name = null, string? email = null, string? password = null,
+        public async Task<User> Update(string userId, string? name = null, string? email = null, string? password = null,
             bool? emailConfirmed = null, string? profilePicture = null, string? roleName = null)
         {
             using (var dbContext = _contextFactory.CreateDbContext())
@@ -98,7 +103,7 @@ namespace MangaHomeService.Services
                 user.Salt = newSalt;
 
                 await dbContext.SaveChangesAsync();
-                return true;
+                return user;
             }
         }
 

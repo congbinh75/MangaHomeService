@@ -1,7 +1,6 @@
 ﻿using MangaHomeService.Models;
 using MangaHomeService.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Internal;
 
 namespace MangaHomeService.Services
 {
@@ -30,7 +29,7 @@ namespace MangaHomeService.Services
             }
         }
 
-        public async Task Add(string name, string description)
+        public async Task<Permission> Add(string name, string description)
         {
             using (var dbContext = _contextFactory.CreateDbContext())
             {
@@ -39,41 +38,38 @@ namespace MangaHomeService.Services
                 permission.Description = description;
                 await dbContext.Permissions.AddAsync(permission);
                 await dbContext.SaveChangesAsync();
+                return permission;
             }
         }
 
-        public async Task Update(string id, string name, string description)
+        public async Task<Permission> Update(string id, string name, string description)
         {
             using (var dbContext = _contextFactory.CreateDbContext())
             {
-                if (id == null)
-                {
-                    throw new Exception();
-                }
                 var permission = await dbContext.Permissions.FirstOrDefaultAsync(p => p.Id == id);
-                if (permission != null)
+                if (permission == null)
                 {
-                    permission.Name = name;
-                    permission.Description = description;
-                    await dbContext.SaveChangesAsync();
+                    throw new ArgumentException(nameof(id));
                 }
+                permission.Name = name;
+                permission.Description = description;
+                await dbContext.SaveChangesAsync();
+                return permission;
             }
         }
 
-        public async Task Remove(string id)
+        public async Task<bool> Remove(string id)
         {
             using (var dbContext = _contextFactory.CreateDbContext())
             {
-                if (id == null)
-                {
-                    throw new Exception();
-                }
                 var permission = await dbContext.Permissions.FirstOrDefaultAsync(p => p.Id == id);
-                if (permission != null)
+                if (permission == null)
                 {
-                    dbContext.Permissions.Remove(permission);
-                    await dbContext.SaveChangesAsync();
+                    throw new ArgumentException(nameof(id));
                 }
+                dbContext.Permissions.Remove(permission);
+                await dbContext.SaveChangesAsync();
+                return true;
             }
         }
     }
