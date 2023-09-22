@@ -14,17 +14,18 @@ namespace MangaHomeService.Models
         public double Rating { get; set; }
         public int RatingVotes { get; set; }
         public int Views { get; set; }
-        public int Bookmark { get; set; }
-        public List<TitleOtherName> OtherNames { get; set; }
-        public Language OriginalLanguage { get; set; }
-        public List<Genre> Gernes { get; set; }
-        public List<Theme> Themes { get; set; }
-        public List<Chapter> Chapters { get; set; }
-        public List<Comment> Comments { get; set; }
+        public int Bookmarks { get; set; }
+        public List<TitleOtherName>? OtherNames { get; set; }
+        public Language? OriginalLanguage { get; set; }
+        public List<Genre>? Gernes { get; set; }
+        public List<Theme>? Themes { get; set; }
+        public List<Chapter>? Chapters { get; set; }
+        public List<Comment>? Comments { get; set; }
+        public bool IsAprroved { get; set; }
 
         public Title() { }
         public Title(string name, string description, string artwork, string author, string artist, int status, double rating, 
-            List<Chapter> chapters, List<Comment> comments) 
+            List<Chapter> chapters, List<Comment> comments, bool isApproved) 
         {
             Name = name;
             Description = description;
@@ -35,6 +36,7 @@ namespace MangaHomeService.Models
             Chapters = chapters;
             Comments = comments;
             Rating = rating;
+            IsAprroved = isApproved;
         }
     }
 }

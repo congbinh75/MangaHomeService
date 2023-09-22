@@ -120,58 +120,10 @@
   <data name="ERR_MISSING_INPUT_DATA" xml:space="preserve">
     <value>Missing input data</value>
   </data>
-  <data name="PERDESC_CREATE_TITLES" xml:space="preserve">
-    <value>Add titles</value>
+  <data name="ERR_PASSWORD_CONFIRMATION_NOT_MATCH" xml:space="preserve">
+    <value>Password and confirmation not match</value>
   </data>
-  <data name="PERDESC_CREATE_VOLUMES" xml:space="preserve">
-    <value>Add volumes</value>
-  </data>
-  <data name="PERDESC_REMOVE_TITLES" xml:space="preserve">
-    <value>Remove titles</value>
-  </data>
-  <data name="PERDESC_UPDATE_CHAPTERS" xml:space="preserve">
-    <value>Add, update or remove chapters.</value>
-  </data>
-  <data name="PERDESC_UPDATE_PAGES" xml:space="preserve">
-    <value>Add, update or remove pages.</value>
-  </data>
-  <data name="PERDESC_UPDATE_ROLES_PERMISSIONS" xml:space="preserve">
-    <value>Add or remove permissions from roles.</value>
-  </data>
-  <data name="PERDESC_UPDATE_TITLES" xml:space="preserve">
-    <value>Add, update or remove titles</value>
-  </data>
-  <data name="PERDESC_UPDATE_VOLUMES" xml:space="preserve">
-    <value>Add, update or remove volumes.</value>
-  </data>
-  <data name="PERDESC_VIEW_TITLES" xml:space="preserve">
-    <value>View titles</value>
-  </data>
-  <data name="PER_CREATE_TITLES" xml:space="preserve">
-    <value>Add titles</value>
-  </data>
-  <data name="PER_CREATE_VOLUMES" xml:space="preserve">
-    <value>Add volumes</value>
-  </data>
-  <data name="PER_REMOVE_TITLES" xml:space="preserve">
-    <value>Remove titles</value>
-  </data>
-  <data name="PER_UPDATE_CHAPTERS" xml:space="preserve">
-    <value>Update chapters</value>
-  </data>
-  <data name="PER_UPDATE_PAGES" xml:space="preserve">
-    <value>Update pages</value>
-  </data>
-  <data name="PER_UPDATE_ROLES_PERMISSIONS" xml:space="preserve">
-    <value>Update permissions of roles</value>
-  </data>
-  <data name="PER_UPDATE_TITLES" xml:space="preserve">
-    <value>Update titles</value>
-  </data>
-  <data name="PER_UPDATE_VOLUMES" xml:space="preserve">
-    <value>Update volumes</value>
-  </data>
-  <data name="PER_VIEW_TITLES" xml:space="preserve">
-    <value>View titles</value>
+  <data name="ERR_USER_EXISTED" xml:space="preserve">
+    <value>Email already registered</value>
   </data>
 </root>

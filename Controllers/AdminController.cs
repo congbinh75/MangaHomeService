@@ -9,7 +9,7 @@ namespace MangaHomeService.Controllers
         [HttpPost]
         public async Task<IActionResult> AddLanguage()
         {
-            return View();
+            throw new NotImplementedException();
         }
     }
 }
