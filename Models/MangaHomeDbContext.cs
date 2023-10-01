@@ -20,6 +20,8 @@ namespace MangaHomeService.Models
         public DbSet<ChapterTracking> ChapterTrackings { get; set; }
         public DbSet<TitleRating> TitleRatings { get; set; }
         public DbSet<Member> Members { get; set; }
+        public DbSet<TitleRequest> TitleRequests { get; set; }
+        public DbSet<ChapterRequest> ChapterRequests { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

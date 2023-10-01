@@ -21,7 +21,7 @@ namespace MangaHomeService.Models
         public List<Theme>? Themes { get; set; }
         public List<Chapter>? Chapters { get; set; }
         public List<Comment>? Comments { get; set; }
-        public bool IsAprroved { get; set; }
+        public bool? IsAprroved { get; set; }
 
         public Title() { }
         public Title(string name, string description, string artwork, string author, string artist, int status, double rating, 

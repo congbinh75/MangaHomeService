@@ -131,6 +131,7 @@ namespace MangaHomeService.Services
                 title.Chapters = chapters;
                 title.Comments = comments;
                 title.IsAprroved = isApproved;
+
                 await dbContext.Titles.AddAsync(title);
                 await dbContext.SaveChangesAsync();
                 return title;
@@ -158,6 +159,43 @@ namespace MangaHomeService.Services
                 dbContext.Titles.Remove(title);
                 await dbContext.SaveChangesAsync();
                 return true;
+            }
+        }
+
+        public async Task<Tuple<Title, TitleRequest>> Submit(string name, string description = "", string artwork = "", string author = "", string artist = "",
+            Enums.TitleStatus status = Enums.TitleStatus.NotYetReleased, double rating = 0, int ratingVotes = 0, int views = 0,
+            int bookmarks = 0, List<TitleOtherName>? otherNames = null, Language? originalLanguage = null, List<Genre>? genres = null,
+            List<Theme>? themes = null, List<Chapter>? chapters = null, List<Comment>? comments = null, bool isApproved = false)
+        {
+            using (var dbContext = _contextFactory.CreateDbContext())
+            {
+                var title = await Add(name, description, artwork, author, artist, status, rating, ratingVotes, views, bookmarks, otherNames, originalLanguage, genres, 
+                    themes, chapters, comments, isApproved);
+                var submitUser = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == Functions.GetCurrentUserId());
+                var request = new TitleRequest();
+                request.Title = title;
+                request.User = submitUser;
+
+                await dbContext.TitleRequests.AddAsync(request);
+                await dbContext.SaveChangesAsync();
+                return (Tuple.Create(title, request));
+            }
+        }
+
+        public async Task<Tuple<Title, TitleRequest>> ApproveOrRejectRequest(string requestId, bool isApproved)
+        {
+            using (var dbContext = _contextFactory.CreateDbContext())
+            {
+                var request = await dbContext.TitleRequests.Where(r => r.Id == requestId).Include(r => r.Title).FirstOrDefaultAsync();
+                if (request.IsApproved != null || request.Title.IsAprroved != null)
+                {
+                    throw new ArgumentException();
+                }
+
+                request.IsApproved = isApproved;
+                request.Title.IsAprroved = isApproved;
+                await dbContext.SaveChangesAsync();
+                return (Tuple.Create(request.Title, request));
             }
         }
     }

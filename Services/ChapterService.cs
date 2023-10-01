@@ -1,5 +1,6 @@
 ﻿using MangaHomeService.Models;
 using MangaHomeService.Services.Interfaces;
+using MangaHomeService.Utils;
 using Microsoft.EntityFrameworkCore;
 
 namespace MangaHomeService.Services
@@ -14,7 +15,7 @@ namespace MangaHomeService.Services
         }
 
         public async Task<Chapter> Add(double number, Title title, Group group, Volume? volume = null, Language? language = null, 
-            List<Page>? pages = null, List<Comment>? comments = null)
+            List<Page>? pages = null, List<Comment>? comments = null, bool? isApproved = null)
         {
             using (var dbContext = _contextFactory.CreateDbContext())
             {
@@ -26,6 +27,7 @@ namespace MangaHomeService.Services
                 chapter.Language = language;
                 chapter.Pages = pages;
                 chapter.Comments = comments;
+                chapter.IsApproved = isApproved;
 
                 await dbContext.Chapters.AddAsync(chapter);
                 await dbContext.SaveChangesAsync();
@@ -91,9 +93,46 @@ namespace MangaHomeService.Services
                 chapter.Language = newLanguage;
                 chapter.Pages = newPages;
                 chapter.Comments = newComments;
+                chapter.IsApproved = null;
 
                 await dbContext.SaveChangesAsync();
                 return chapter;
+            }
+        }
+
+        public async Task<Tuple<Chapter, ChapterRequest>> Submit(double number, Title title, Group group, Volume? volume = null, Language? language = null,
+            List<Page>? pages = null, List<Comment>? comments = null)
+        {
+            using (var dbContext = _contextFactory.CreateDbContext())
+            {
+                var chapter = await Add(number, title, group, volume, language, pages, comments);
+                var submitUser = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == Functions.GetCurrentUserId());
+                var request = new ChapterRequest();
+                request.Chapter = chapter;
+                request.User = submitUser;
+                request.Group = group;
+                request.IsApproved = null;
+
+                await dbContext.ChapterRequests.AddAsync(request);
+                await dbContext.SaveChangesAsync();
+                return(Tuple.Create(chapter, request));
+            }
+        }
+
+        public async Task<Tuple<Chapter, ChapterRequest>> ApproveOrRejectRequest(string requestId, bool isApproved)
+        {
+            using (var dbContext = _contextFactory.CreateDbContext())
+            {
+                var request = await dbContext.ChapterRequests.Where(r => r.Id == requestId).Include(r => r.Chapter).FirstOrDefaultAsync();
+                if (request.IsApproved != null || request.Chapter.IsApproved != null)
+                {
+                    throw new ArgumentException();
+                }
+                
+                request.IsApproved = isApproved;
+                request.Chapter.IsApproved = isApproved;
+                await dbContext.SaveChangesAsync();
+                return (Tuple.Create(request.Chapter, request));
             }
         }
     }

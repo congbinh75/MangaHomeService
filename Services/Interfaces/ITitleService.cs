@@ -20,5 +20,10 @@ namespace MangaHomeService.Services.Interfaces
             List<TitleOtherName>? otherNames = null, Language? originalLanguage = null, List<Genre>? genres = null, List<Theme>? themes = null, 
             List<Chapter>? chapters = null, List<Comment>? comments = null, bool isApproved = false);
         Task<bool> Delete(string id);
+        Task<Tuple<Title, TitleRequest>> Submit(string name, string description = "", string artwork = "", string author = "", string artist = "",
+            Enums.TitleStatus status = Enums.TitleStatus.NotYetReleased, double rating = 0, int ratingVotes = 0, int views = 0,
+            int bookmarks = 0, List<TitleOtherName>? otherNames = null, Language? originalLanguage = null, List<Genre>? genres = null,
+            List<Theme>? themes = null, List<Chapter>? chapters = null, List<Comment>? comments = null, bool isApproved = false);
+        Task<Tuple<Title, TitleRequest>> ApproveOrRejectRequest(string requestId, bool isApproved);
     }
 }
