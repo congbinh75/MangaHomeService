@@ -22,6 +22,7 @@ namespace MangaHomeService.Models
         public DbSet<Member> Members { get; set; }
         public DbSet<TitleRequest> TitleRequests { get; set; }
         public DbSet<ChapterRequest> ChapterRequests { get; set; }
+        public DbSet<Language> Languages { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

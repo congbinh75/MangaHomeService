@@ -14,11 +14,16 @@ namespace MangaHomeService.Services
             _contextFactory = contextFactory;
         }
 
-        public async Task<Chapter> Add(double number, Title title, Group group, Volume? volume = null, Language? language = null, 
+        public async Task<Chapter> Add(double number, string titleId, string groupId, string? volumeId = null, string? languageId = null, 
             List<Page>? pages = null, List<Comment>? comments = null, bool? isApproved = null)
         {
             using (var dbContext = _contextFactory.CreateDbContext())
             {
+                var title = await dbContext.Titles.FirstOrDefaultAsync(t => t.Id == titleId);
+                var group = await dbContext.Groups.FirstOrDefaultAsync(g => g.Id == groupId);
+                var volume = volumeId == null ? null : await dbContext.Volumes.FirstOrDefaultAsync(v => v.Id == volumeId);
+                var language = languageId == null ? null : await dbContext.Languages.FirstOrDefaultAsync(l => l.Id == languageId);
+
                 Chapter chapter = new Chapter();
                 chapter.Number = number;
                 chapter.Title = title;
@@ -67,8 +72,8 @@ namespace MangaHomeService.Services
             }
         }
 
-        public async Task<Chapter> Update(string id, double number = -1, Title? title = null, Group? group = null, Volume? volume = null, 
-            Language? language = null, List<Page>? pages = null, List<Comment>? comments = null)
+        public async Task<Chapter> Update(string id, double number = -1, string? titleId = null, string? groupId = null, 
+            string? volumeId = null, string? languageId = null, List<Page>? pages = null, List<Comment>? comments = null)
         {
             using (var dbContext = _contextFactory.CreateDbContext())
             {
@@ -79,10 +84,10 @@ namespace MangaHomeService.Services
                 }
 
                 var newNumber = number > 0 ? number : chapter.Number;
-                var newTitle = title != null ? title : chapter.Title;
-                var newGroup = group != null ? group : chapter.Group;
-                var newVolume = volume != null ? volume : chapter.Volume;
-                var newLanguage = language != null ? language : chapter.Language;
+                var newTitle = titleId != null ? await dbContext.Titles.FirstOrDefaultAsync(t => t.Id == titleId) : chapter.Title;
+                var newGroup = groupId != null ? await dbContext.Groups.FirstOrDefaultAsync(g => g.Id == groupId) : chapter.Group;
+                var newVolume = volumeId != null ? await dbContext.Volumes.FirstOrDefaultAsync(v => v.Id == volumeId) : chapter.Volume;
+                var newLanguage = languageId != null ? await dbContext.Languages.FirstOrDefaultAsync(l => l.Id == languageId) : chapter.Language;
                 var newPages = pages != null ? pages : chapter.Pages;
                 var newComments = comments != null ? comments : chapter.Comments;
 
@@ -100,13 +105,15 @@ namespace MangaHomeService.Services
             }
         }
 
-        public async Task<Tuple<Chapter, ChapterRequest>> Submit(double number, Title title, Group group, Volume? volume = null, Language? language = null,
-            List<Page>? pages = null, List<Comment>? comments = null)
+        public async Task<Tuple<Chapter, ChapterRequest>> Submit(double number, string titleId, string groupId, string? volumeId = null, 
+            string? languageId = null, List<Page>? pages = null, List<Comment>? comments = null, bool? isApproved = null)
         {
             using (var dbContext = _contextFactory.CreateDbContext())
             {
-                var chapter = await Add(number, title, group, volume, language, pages, comments);
+                var chapter = await Add(number, titleId, groupId, volumeId, languageId, pages, comments);
                 var submitUser = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == Functions.GetCurrentUserId());
+                var group = await dbContext.Groups.FirstOrDefaultAsync(g => g.Id == groupId);
+
                 var request = new ChapterRequest();
                 request.Chapter = chapter;
                 request.User = submitUser;
