@@ -4,13 +4,13 @@
     {
         public User User { get; set; }
         public Group Group { get; set; }
-        public bool IsLeader { get; set; }
+        public Role Role { get; set; }
         public Member() { }
-        public Member(User user, Group group, bool isLeader) 
+        public Member(User user, Group group, Role role) 
         {
             User = user;
             Group = group;
-            IsLeader = isLeader;
+            Role = role;
         }
     }
 }
