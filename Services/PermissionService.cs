@@ -15,7 +15,7 @@ namespace MangaHomeService.Services
 
         public async Task<Permission?> Get(string id)
         {
-            using (var dbContext = _contextFactory.CreateDbContext())
+            using (var dbContext = await _contextFactory.CreateDbContextAsync())
             {
                 return await dbContext.Permissions.Where(r => r.Id == id).FirstOrDefaultAsync();
             }
@@ -23,7 +23,7 @@ namespace MangaHomeService.Services
 
         public async Task<List<Permission>> GetAll()
         {
-            using (var dbContext = _contextFactory.CreateDbContext())
+            using (var dbContext = await _contextFactory.CreateDbContextAsync())
             {
                 return await dbContext.Permissions.ToListAsync();
             }
@@ -31,7 +31,7 @@ namespace MangaHomeService.Services
 
         public async Task<Permission> Add(string name, string description)
         {
-            using (var dbContext = _contextFactory.CreateDbContext())
+            using (var dbContext = await _contextFactory.CreateDbContextAsync())
             {
                 Permission permission = new Permission();
                 permission.Name = name;
@@ -44,7 +44,7 @@ namespace MangaHomeService.Services
 
         public async Task<Permission> Update(string id, string name, string description)
         {
-            using (var dbContext = _contextFactory.CreateDbContext())
+            using (var dbContext = await _contextFactory.CreateDbContextAsync())
             {
                 var permission = await dbContext.Permissions.FirstOrDefaultAsync(p => p.Id == id);
                 if (permission == null)
@@ -60,7 +60,7 @@ namespace MangaHomeService.Services
 
         public async Task<bool> Remove(string id)
         {
-            using (var dbContext = _contextFactory.CreateDbContext())
+            using (var dbContext = await _contextFactory.CreateDbContextAsync())
             {
                 var permission = await dbContext.Permissions.FirstOrDefaultAsync(p => p.Id == id);
                 if (permission == null)

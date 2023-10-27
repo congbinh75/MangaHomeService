@@ -18,7 +18,7 @@ namespace MangaHomeService.Services
 
         public async Task<User> Add(string name, string email, string password, string roleId)
         {
-            using (var dbContext = _contextFactory.CreateDbContext())
+            using (var dbContext = await _contextFactory.CreateDbContextAsync())
             {
                 var existingUser = await dbContext.Users.FirstOrDefaultAsync(u => u.Email == email);
                 if (existingUser != null)
@@ -43,7 +43,7 @@ namespace MangaHomeService.Services
 
         public async Task<User> Get(string id)
         {
-            using (var dbContext = _contextFactory.CreateDbContext())
+            using (var dbContext = await _contextFactory.CreateDbContextAsync())
             {
                 User? user = await dbContext.Users.Where(u => u.Id == id).FirstOrDefaultAsync();
                 if (user == null)
@@ -56,7 +56,7 @@ namespace MangaHomeService.Services
 
         public async Task<User?> Get(string email, string password)
         {
-            using (var dbContext = _contextFactory.CreateDbContext())
+            using (var dbContext = await _contextFactory.CreateDbContextAsync())
             {
                 User? user = await dbContext.Users.Where(u => u.Email == email).FirstOrDefaultAsync();
                 if (user != null && HashPassword(password, user.Salt).hashedPassword.Equals(user.Password))
@@ -70,7 +70,7 @@ namespace MangaHomeService.Services
         public async Task<User> Update(string userId, string? name = null, string? email = null, string? password = null,
             bool? emailConfirmed = null, string? profilePicture = null, string? roleName = null)
         {
-            using (var dbContext = _contextFactory.CreateDbContext())
+            using (var dbContext = await _contextFactory.CreateDbContextAsync())
             {
                 var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == userId);
                 var role = await dbContext.Roles.Where(r => r.Name == roleName).FirstOrDefaultAsync();
@@ -109,7 +109,7 @@ namespace MangaHomeService.Services
 
         public async Task<bool> Delete(string id)
         {
-            using (var dbContext = _contextFactory.CreateDbContext())
+            using (var dbContext = await _contextFactory.CreateDbContextAsync())
             {
                 var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == id);
                 if (user == null)
@@ -139,7 +139,7 @@ namespace MangaHomeService.Services
 
         public async Task<List<Permission>> GetPermissionsOfUser(string userId)
         {
-            using (var dbContext = _contextFactory.CreateDbContext())
+            using (var dbContext = await _contextFactory.CreateDbContextAsync())
             {
                 if (string.IsNullOrEmpty(userId))
                 {

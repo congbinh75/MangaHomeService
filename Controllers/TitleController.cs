@@ -40,7 +40,7 @@ namespace MangaHomeService.Controllers
                 }
                 else
                 {
-                    return BadRequest(_stringLocalizer["ERR_MISSING_INPUT_DATA"]);
+                    return BadRequest(_stringLocalizer["ERR_INVALID_INPUT_DATA"]);
                 }
             }
             catch (Exception ex)
@@ -72,15 +72,27 @@ namespace MangaHomeService.Controllers
         {
             try
             {
+                int pageNumber = 0;
+                if (!int.TryParse(getTitlesByGenreFormData.PageNumber, out pageNumber))
+                {
+                    return BadRequest();
+                }
+
+                int pageSize = 0;
+                if (!int.TryParse(getTitlesByGenreFormData.PageSize, out pageSize))
+                {
+                    return BadRequest();
+                }
+
                 if (!string.IsNullOrEmpty(getTitlesByGenreFormData.GenreId.Trim()))
                 {
                     var titles = _titleService.AdvancedSearch(genreIds: new List<string>() { getTitlesByGenreFormData.GenreId.Trim() }, 
-                        pageNumber: getTitlesByGenreFormData.PageNumber, pageSize: getTitlesByGenreFormData.PageSize);
+                        pageNumber: pageNumber, pageSize: pageSize);
                     return Ok(titles);
                 }
                 else
                 {
-                    return BadRequest(_stringLocalizer["ERR_MISSING_INPUT_DATA"]);
+                    return BadRequest(_stringLocalizer["ERR_INVALID_INPUT_DATA"]);
                 }
             }
             catch (Exception ex)
@@ -95,15 +107,27 @@ namespace MangaHomeService.Controllers
         {
             try
             {
+                int pageNumber = 0;
+                if (!int.TryParse(getTitlesByThemeFormData.PageNumber, out pageNumber))
+                {
+                    return BadRequest();
+                }
+
+                int pageSize = 0;
+                if (!int.TryParse(getTitlesByThemeFormData.PageSize, out pageSize))
+                {
+                    return BadRequest();
+                }
+
                 if (!string.IsNullOrEmpty(getTitlesByThemeFormData.ThemeId.Trim()))
                 {
                     var titles = _titleService.AdvancedSearch(themeIds: new List<string>() { getTitlesByThemeFormData.ThemeId.Trim() }, 
-                        pageNumber: getTitlesByThemeFormData.PageNumber, pageSize: getTitlesByThemeFormData.PageSize);
+                        pageNumber: pageNumber, pageSize: pageSize);
                     return Ok(titles);
                 }
                 else
                 {
-                    return BadRequest(_stringLocalizer["ERR_MISSING_INPUT_DATA"]);
+                    return BadRequest(_stringLocalizer["ERR_INVALID_INPUT_DATA"]);
                 }
             }
             catch (Exception ex)
@@ -114,12 +138,23 @@ namespace MangaHomeService.Controllers
 
         [AllowAnonymous]
         [HttpGet]
-        public async Task<IActionResult> Search(SearchFormData searchFormData)
+        public async Task<IActionResult> Search(TitleSearchFormData searchFormData)
         {
             try
             {
-                var titles = await _titleService.Search(keyword: searchFormData.Keyword.Trim(), 
-                    pageNumber: searchFormData.PageNumber, pageSize: searchFormData.PageSize);
+                int pageNumber = 0;
+                if (!int.TryParse(searchFormData.PageNumber, out pageNumber)) 
+                {
+                    return BadRequest(); 
+                }
+
+                int pageSize = 0;
+                if (!int.TryParse (searchFormData.PageSize, out pageSize)) 
+                {
+                    return BadRequest();
+                }
+
+                var titles = await _titleService.Search(keyword: searchFormData.Keyword.Trim(), pageNumber: pageNumber, pageSize: pageSize);
                 return Ok(titles);
             }
             catch (Exception ex)
@@ -130,17 +165,28 @@ namespace MangaHomeService.Controllers
 
         [AllowAnonymous]
         [HttpGet]
-        public async Task<IActionResult> AdvancedSearch(AdvancedSearchFormData advancedSearchFormData)
+        public async Task<IActionResult> AdvancedSearch(AdvancedTitleSearchFormData advancedSearchFormData)
         {
             try
             {
+                int status = 0;
+                List<int> statuses = new List<int>();
+                foreach (string num in advancedSearchFormData.Statuses)
+                {
+                    if (!int.TryParse((string)num, out status))
+                    {
+                        return BadRequest();
+                    }
+                    statuses.Add(status);
+                }
+
                 var titles = await _titleService.AdvancedSearch(name: advancedSearchFormData.Name.Trim(), 
                     author: advancedSearchFormData.Author.Trim(), 
                     artist: advancedSearchFormData.Artist.Trim(), 
                     genreIds: advancedSearchFormData.GenreIds?.Select(x => x.Trim()).ToList(), 
                     themeIds: advancedSearchFormData.ThemeIds?.Select(x => x.Trim()).ToList(), 
                     languageIds: advancedSearchFormData.LanguageIds?.Select(x => x.Trim()).ToList(), 
-                    statuses: advancedSearchFormData.Statuses, 
+                    statuses: statuses, 
                     sortByLastest: advancedSearchFormData.SortByLastest, 
                     sortByHottest: advancedSearchFormData.SortByHottest, 
                     pageNumber: advancedSearchFormData.PageNumber, 

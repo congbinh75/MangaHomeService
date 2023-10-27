@@ -25,6 +25,7 @@ namespace MangaHomeService.Models
         public DbSet<Language> Languages { get; set; }
         public DbSet<GroupRole> GroupRoles { get; set; }
         public DbSet<GroupPermission> GroupPermissions { get; set; }
+        public DbSet<Page> Pages { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

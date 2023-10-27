@@ -3,7 +3,7 @@
     public class GetTitlesByGenreFormData
     {
         public string GenreId { get; set; }
-        public int PageNumber { get; set; }
-        public int PageSize { get; set; }
+        public string PageNumber { get; set; }
+        public string PageSize { get; set; }
     }
 }

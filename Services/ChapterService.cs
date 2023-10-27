@@ -17,7 +17,7 @@ namespace MangaHomeService.Services
         public async Task<Chapter> Add(double number, string titleId, string groupId, string? volumeId = null, string? languageId = null, 
             List<Page>? pages = null, List<Comment>? comments = null, bool? isApproved = null)
         {
-            using (var dbContext = _contextFactory.CreateDbContext())
+            using (var dbContext = await _contextFactory.CreateDbContextAsync())
             {
                 var title = await dbContext.Titles.FirstOrDefaultAsync(t => t.Id == titleId);
                 var group = await dbContext.Groups.FirstOrDefaultAsync(g => g.Id == groupId);
@@ -42,7 +42,7 @@ namespace MangaHomeService.Services
 
         public async Task<bool> Delete(string id)
         {   
-            using (var dbContext = _contextFactory.CreateDbContext()) 
+            using (var dbContext = await _contextFactory.CreateDbContextAsync()) 
             {
                 var chapter = await dbContext.Chapters.Where(c => c.Id == id).Include(c => c.Pages).Include(c => c.Comments).
                     FirstOrDefaultAsync();
@@ -58,15 +58,15 @@ namespace MangaHomeService.Services
 
         public async Task<Chapter?> Get(string id)
         {
-            using (var dbContext = _contextFactory.CreateDbContext())
+            using (var dbContext = await _contextFactory.CreateDbContextAsync())
             {
-                return await dbContext.Chapters.FirstOrDefaultAsync(c => c.Id == id);
+                return await dbContext.Chapters.Where(c => c.Id == id).Include(c => c.Pages).FirstOrDefaultAsync();
             }
         }
 
         public async Task<List<Chapter>> GetByTitle(string titleId)
         {
-            using (var dbContext = _contextFactory.CreateDbContext())
+            using (var dbContext = await _contextFactory.CreateDbContextAsync())
             {
                 return await dbContext.Chapters.Where(c => c.Title.Id == titleId).OrderByDescending(c => c.Number).ToListAsync();
             }
@@ -75,7 +75,7 @@ namespace MangaHomeService.Services
         public async Task<Chapter> Update(string id, double number = -1, string? titleId = null, string? groupId = null, 
             string? volumeId = null, string? languageId = null, List<Page>? pages = null, List<Comment>? comments = null)
         {
-            using (var dbContext = _contextFactory.CreateDbContext())
+            using (var dbContext = await _contextFactory.CreateDbContextAsync())
             {
                 var chapter = await dbContext.Chapters.FirstOrDefaultAsync(c => c.Id == id);
                 if (chapter == null)
@@ -108,7 +108,7 @@ namespace MangaHomeService.Services
         public async Task<Tuple<Chapter, ChapterRequest>> Submit(double number, string titleId, string groupId, string? volumeId = null, 
             string? languageId = null, List<Page>? pages = null, List<Comment>? comments = null, bool? isApproved = null)
         {
-            using (var dbContext = _contextFactory.CreateDbContext())
+            using (var dbContext = await _contextFactory.CreateDbContextAsync())
             {
                 var chapter = await Add(number, titleId, groupId, volumeId, languageId, pages, comments);
                 var submitUser = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == Functions.GetCurrentUserId());
@@ -128,7 +128,7 @@ namespace MangaHomeService.Services
 
         public async Task<Tuple<Chapter, ChapterRequest>> ApproveOrRejectRequest(string requestId, bool isApproved)
         {
-            using (var dbContext = _contextFactory.CreateDbContext())
+            using (var dbContext = await _contextFactory.CreateDbContextAsync())
             {
                 var request = await dbContext.ChapterRequests.Where(r => r.Id == requestId).Include(r => r.Chapter).FirstOrDefaultAsync();
                 if (request.IsApproved != null || request.Chapter.IsApproved != null)

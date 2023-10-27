@@ -48,7 +48,7 @@ namespace MangaHomeService.Controllers
                 }
                 else
                 {
-                    return BadRequest(_stringLocalizer["ERR_MISSING_INPUT_DATA"]);
+                    return BadRequest(_stringLocalizer["ERR_INVALID_INPUT_DATA"]);
                 }
             }
             catch(Exception ex)
@@ -100,7 +100,7 @@ namespace MangaHomeService.Controllers
                 }
                 else
                 {
-                    return BadRequest(_stringLocalizer["ERR_MISSING_INPUT_DATA"]);
+                    return BadRequest(_stringLocalizer["ERR_INVALID_INPUT_DATA"]);
                 }
             }
             catch (Exception ex)
@@ -142,7 +142,7 @@ namespace MangaHomeService.Controllers
                 }
                 else
                 {
-                    return BadRequest(_stringLocalizer["ERR_MISSING_INPUT_DATA"]);
+                    return BadRequest(_stringLocalizer["ERR_INVALID_INPUT_DATA"]);
                 }
             }
             catch (Exception ex)
@@ -170,7 +170,7 @@ namespace MangaHomeService.Controllers
                 }
                 else
                 {
-                    return BadRequest(_stringLocalizer["ERR_MISSING_INPUT_DATA"]);
+                    return BadRequest(_stringLocalizer["ERR_INVALID_INPUT_DATA"]);
                 }
             }
             catch (Exception ex)
@@ -201,7 +201,7 @@ namespace MangaHomeService.Controllers
                 }
                 else
                 {
-                    return BadRequest(_stringLocalizer[ "ERR_MISSING_INPUT_DATA"]);
+                    return BadRequest(_stringLocalizer[ "ERR_INVALID_INPUT_DATA"]);
                 }
             }
             catch (Exception ex)
@@ -232,7 +232,7 @@ namespace MangaHomeService.Controllers
                 }
                 else
                 {
-                    return BadRequest(_stringLocalizer["ERR_MISSING_INPUT_DATA"]);
+                    return BadRequest(_stringLocalizer["ERR_INVALID_INPUT_DATA"]);
                 }
             }
             catch (Exception ex)
@@ -269,7 +269,7 @@ namespace MangaHomeService.Controllers
                 }
                 else
                 {
-                    return BadRequest(_stringLocalizer["ERR_MISSING_INPUT_DATA"]);
+                    return BadRequest(_stringLocalizer["ERR_INVALID_INPUT_DATA"]);
                 }
             }
             catch (Exception ex)
@@ -298,7 +298,7 @@ namespace MangaHomeService.Controllers
                 }
                 else
                 {
-                    return BadRequest(_stringLocalizer["ERR_MISSING_INPUT_DATA"]);
+                    return BadRequest(_stringLocalizer["ERR_INVALID_INPUT_DATA"]);
                 }
             }
             catch (Exception ex)
@@ -320,7 +320,7 @@ namespace MangaHomeService.Controllers
                 }
                 else
                 {
-                    return BadRequest(_stringLocalizer["ERR_MISSING_INPUT_DATA"]);
+                    return BadRequest(_stringLocalizer["ERR_INVALID_INPUT_DATA"]);
                 }
             }
             catch (Exception ex)
@@ -341,7 +341,7 @@ namespace MangaHomeService.Controllers
                 }
                 else
                 {
-                    return BadRequest(_stringLocalizer["ERR_MISSING_INPUT_DATA"]);
+                    return BadRequest(_stringLocalizer["ERR_INVALID_INPUT_DATA"]);
                 }
             }
             catch (Exception ex)

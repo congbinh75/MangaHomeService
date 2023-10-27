@@ -1,8 +1,8 @@
 ﻿namespace MangaHomeService.Models.FormData
 {
-    public class GetTitlesByThemeFormData
+    public class TitleSearchFormData
     {
-        public string ThemeId { get; set; }
+        public string Keyword { get; set; }
         public string PageNumber { get; set; }
         public string PageSize { get; set; }
     }

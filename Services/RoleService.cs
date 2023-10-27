@@ -15,7 +15,7 @@ namespace MangaHomeService.Services
 
         public async Task<Role?> Get(string id)
         {
-            using (var dbContext = _contextFactory.CreateDbContext()) 
+            using (var dbContext = await _contextFactory.CreateDbContextAsync()) 
             {
                 return await dbContext.Roles.Where(r => r.Id == id).FirstOrDefaultAsync();
             }
@@ -23,7 +23,7 @@ namespace MangaHomeService.Services
 
         public async Task<List<Role>> GetAll()
         {
-            using (var dbContext = _contextFactory.CreateDbContext())
+            using (var dbContext = await _contextFactory.CreateDbContextAsync())
             {
                 return await dbContext.Roles.ToListAsync();
             }
@@ -31,7 +31,7 @@ namespace MangaHomeService.Services
 
         public async Task<Role> Add(string name, string description)
         {
-            using (var dbContext = _contextFactory.CreateDbContext())
+            using (var dbContext = await _contextFactory.CreateDbContextAsync())
             {
                 Role role = new Role();
                 role.Name = name;
@@ -44,7 +44,7 @@ namespace MangaHomeService.Services
 
         public async Task<Role> Update(string id, string name, string description)
         {
-            using (var dbContext = _contextFactory.CreateDbContext())
+            using (var dbContext = await _contextFactory.CreateDbContextAsync())
             {
                 var role = await dbContext.Roles.FirstOrDefaultAsync(r => r.Id == id);
                 if (role == null) 
@@ -60,7 +60,7 @@ namespace MangaHomeService.Services
 
         public async Task<bool> Remove(string id)
         {
-            using (var dbContext = _contextFactory.CreateDbContext())
+            using (var dbContext = await _contextFactory.CreateDbContextAsync())
             {
                 var role = await dbContext.Roles.FirstOrDefaultAsync(r => r.Id == id);
                 if (role == null)
@@ -75,7 +75,7 @@ namespace MangaHomeService.Services
 
         public async Task<Role> UpdatePermissionsOfRole(string roleId, List<string> permissionIds)
         {
-            using (var dbContext = _contextFactory.CreateDbContext())
+            using (var dbContext = await _contextFactory.CreateDbContextAsync())
             {
                 var permissions = await dbContext.Permissions.
                     Where(p => permissionIds.Distinct().Contains(p.Id)).ToListAsync();

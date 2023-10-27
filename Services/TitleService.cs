@@ -17,7 +17,7 @@ namespace MangaHomeService.Services
 
         public async Task<Title> Get(string id)
         {
-            using (var dbContext = _contextFactory.CreateDbContext())
+            using (var dbContext = await _contextFactory.CreateDbContextAsync())
             {
                 var title = await dbContext.Titles.Where(x => x.Id == id).Include(x => x.Chapters).FirstOrDefaultAsync();
                 if (title == null) 
@@ -30,7 +30,7 @@ namespace MangaHomeService.Services
 
         public async Task<List<Title>> Search(string keyword, int pageNumber = 1, int pageSize = Constants.TitlesPerPage)
         {
-            using (var dbContext = _contextFactory.CreateDbContext())
+            using (var dbContext = await _contextFactory.CreateDbContextAsync())
             {
                 var titles = await dbContext.Titles.Where(x => x.Name.Contains(keyword.Trim()) 
                 || x.OtherNames.Any(y => y.OtherName.Contains(keyword.Trim())) 
@@ -45,7 +45,7 @@ namespace MangaHomeService.Services
             List<string>? themeIds = null, string originalLanguageId = "", List<string>? languageIds = null, List<int>? statuses = null, 
             bool sortByLastest = false, bool sortByHottest = false, int pageNumber = 1, int pageSize = Constants.TitlesPerPage)
         {
-            using (var dbContext = _contextFactory.CreateDbContext())
+            using (var dbContext = await _contextFactory.CreateDbContextAsync())
             {
                 var titles = await dbContext.Titles
                     .Include(x => x.OtherNames)
@@ -111,7 +111,7 @@ namespace MangaHomeService.Services
             int bookmarks = 0, List<TitleOtherName>? otherNames = null, Language? originalLanguage = null, List<Genre>? genres = null, 
             List<Theme>? themes = null, List<Chapter>? chapters = null, List<Comment>? comments = null, bool isApproved = false)
         {
-            using (var dbContext = _contextFactory.CreateDbContext())
+            using (var dbContext = await _contextFactory.CreateDbContextAsync())
             {
                 var title = new Title();
                 title.Name = name;
@@ -149,7 +149,7 @@ namespace MangaHomeService.Services
 
         public async Task<bool> Delete(string id)
         {
-            using (var dbContext = _contextFactory.CreateDbContext())
+            using (var dbContext = await _contextFactory.CreateDbContextAsync())
             {
                 var title = await dbContext.Titles.Where(t => t.Id == id).FirstOrDefaultAsync();
                 if (title == null) 
@@ -167,7 +167,7 @@ namespace MangaHomeService.Services
             int bookmarks = 0, List<TitleOtherName>? otherNames = null, Language? originalLanguage = null, List<Genre>? genres = null,
             List<Theme>? themes = null, List<Chapter>? chapters = null, List<Comment>? comments = null, bool isApproved = false)
         {
-            using (var dbContext = _contextFactory.CreateDbContext())
+            using (var dbContext = await _contextFactory.CreateDbContextAsync())
             {
                 var title = await Add(name, description, artwork, author, artist, status, rating, ratingVotes, views, bookmarks, otherNames, originalLanguage, genres, 
                     themes, chapters, comments, isApproved);
@@ -184,7 +184,7 @@ namespace MangaHomeService.Services
 
         public async Task<Tuple<Title, TitleRequest>> ApproveOrRejectRequest(string requestId, bool isApproved)
         {
-            using (var dbContext = _contextFactory.CreateDbContext())
+            using (var dbContext = await _contextFactory.CreateDbContextAsync())
             {
                 var request = await dbContext.TitleRequests.Where(r => r.Id == requestId).Include(r => r.Title).FirstOrDefaultAsync();
                 if (request.IsApproved != null || request.Title.IsAprroved != null)
