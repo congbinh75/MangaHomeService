@@ -7,8 +7,7 @@ namespace MangaHomeService.Services.Interfaces
         Task<Role?> Get(string id);
         Task<List<Role>> GetAll();
         Task<Role> Add(string name, string description);
-        Task<Role> Update(string id, string name, string description);
+        Task<Role> Update(string id, string? name = null, string? description = null, List<string>? permissionIds = null);
         Task<bool> Remove(string id);
-        Task<Role> UpdatePermissionsOfRole(string roleId, List<string> permissionIds);
     }
 }

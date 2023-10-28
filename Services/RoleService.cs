@@ -42,7 +42,7 @@ namespace MangaHomeService.Services
             }
         }
 
-        public async Task<Role> Update(string id, string name, string description)
+        public async Task<Role> Update(string id, string? name = null, string? description = null, List<string>? permissionIds = null)
         {
             using (var dbContext = await _contextFactory.CreateDbContextAsync())
             {
@@ -51,8 +51,21 @@ namespace MangaHomeService.Services
                 {
                     throw new ArgumentException(nameof(id));
                 }
-                role.Name = name;
-                role.Description = description;
+
+                var permissions = role.Permissions.ToList();
+                if (permissionIds != null)
+                {
+                    permissions = await dbContext.Permissions.
+                        Where(p => permissionIds.Distinct().Contains(p.Id)).ToListAsync();
+                    if (permissions.Count() != permissionIds.Distinct().Count())
+                    {
+                        throw new ArgumentException(nameof(permissionIds));
+                    }
+                }
+
+                role.Permissions = permissions;
+                role.Name = name != null ? name : role.Name;
+                role.Description = description != null ? description : role.Description;
                 await dbContext.SaveChangesAsync();
                 return role;
             }
@@ -70,29 +83,6 @@ namespace MangaHomeService.Services
                 dbContext.Roles.Remove(role);
                 await dbContext.SaveChangesAsync();
                 return true;
-            }
-        }
-
-        public async Task<Role> UpdatePermissionsOfRole(string roleId, List<string> permissionIds)
-        {
-            using (var dbContext = await _contextFactory.CreateDbContextAsync())
-            {
-                var permissions = await dbContext.Permissions.
-                    Where(p => permissionIds.Distinct().Contains(p.Id)).ToListAsync();
-                if (permissions.Count() != permissionIds.Distinct().Count())
-                {
-                    throw new ArgumentException(nameof(permissionIds));
-                }
-
-                var role = await dbContext.Roles.FirstOrDefaultAsync(r => r.Id == roleId);
-                if (role == null)
-                {
-                    throw new ArgumentException(nameof(roleId));
-                }
-
-                role.Permissions = permissions;
-                await dbContext.SaveChangesAsync();
-                return role;
             }
         }
     }

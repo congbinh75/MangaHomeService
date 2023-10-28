@@ -5,7 +5,7 @@ namespace MangaHomeService.Services.Interfaces
 {
     public interface IUserService
     {
-        Task<User> Add(string name, string email, string password, string? roleName = null);
+        Task<User> Add(string name, string email, string password, string roleName = "");
         Task<User> Get(string id);
         Task<User?> Get(string email, string password);
         Task<User> Update(string id, string? name = null, string? email = null, string? password = null, bool? emailConfirmed = null, 

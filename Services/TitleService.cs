@@ -139,12 +139,44 @@ namespace MangaHomeService.Services
         }
 
         public async Task<Title> Update(string id, string name = "", string description = "", string artwork = "", string author = "", 
-            string artist = "", Enums.TitleStatus status = Enums.TitleStatus.NotYetReleased, double rating = 0, int ratingVotes = 0, 
-            int views = 0, int bookmarks = 0, List<TitleOtherName>? otherNames = null, Language? originalLanguage = null, 
+            string artist = "", Enums.TitleStatus? status = null, double rating = -1, int ratingVotes = -1, 
+            int views = -1, int bookmarks = -1, List<TitleOtherName>? otherNames = null, string originalLanguageId = "", 
             List<Genre>? genres = null, List<Theme>? themes = null, List<Chapter>? chapters = null, List<Comment>? comments = null, 
-            bool isApproved = false)
+            bool? isApproved = null)
         {
-            throw new NotImplementedException();
+            using (var dbContext = await _contextFactory.CreateDbContextAsync()) 
+            {
+                var title = await dbContext.Titles.FirstOrDefaultAsync(t => t.Id == id);
+                if (title == null) 
+                {
+                    throw new NullReferenceException(nameof(title));
+                }
+
+                title.Name = !string.IsNullOrEmpty(name) ? name : title.Name;
+                title.Description = !string.IsNullOrEmpty(description) ? description : title.Description;
+                title.Artwork = !string.IsNullOrEmpty(artwork) ? artwork : title.Artwork;
+                title.Artist = !string.IsNullOrEmpty(artist) ? artist : title.Artist;
+                title.OtherNames = otherNames != null ? otherNames : title.OtherNames;
+                title.Gernes = genres != null ? genres : title.Gernes;
+                title.Themes = themes != null ? themes : title.Themes;
+                title.Chapters = chapters != null ? chapters : title.Chapters;
+                title.Comments = comments != null ? comments : title.Comments;
+                title.Status = status != null ? (Enums.TitleStatus)status : title.Status;
+                title.IsAprroved = isApproved != null ? (bool)isApproved : title.IsAprroved;
+
+                if (!string.IsNullOrEmpty(originalLanguageId))
+                {
+                    var originalLanguage = await dbContext.Languages.FirstOrDefaultAsync(l => l.Id == id);
+                    if (originalLanguage != null)
+                    {
+                        throw new NullReferenceException(nameof(originalLanguage));
+                    }
+                    title.OriginalLanguage = originalLanguage;
+                }
+
+                await dbContext.SaveChangesAsync();
+                return title;
+            }
         }
 
         public async Task<bool> Delete(string id)
@@ -162,27 +194,28 @@ namespace MangaHomeService.Services
             }
         }
 
-        public async Task<Tuple<Title, TitleRequest>> Submit(string name, string description = "", string artwork = "", string author = "", string artist = "",
-            Enums.TitleStatus status = Enums.TitleStatus.NotYetReleased, double rating = 0, int ratingVotes = 0, int views = 0,
-            int bookmarks = 0, List<TitleOtherName>? otherNames = null, Language? originalLanguage = null, List<Genre>? genres = null,
-            List<Theme>? themes = null, List<Chapter>? chapters = null, List<Comment>? comments = null, bool isApproved = false)
+        public async Task<TitleRequest> Submit(string titleId)
         {
             using (var dbContext = await _contextFactory.CreateDbContextAsync())
             {
-                var title = await Add(name, description, artwork, author, artist, status, rating, ratingVotes, views, bookmarks, otherNames, originalLanguage, genres, 
-                    themes, chapters, comments, isApproved);
                 var submitUser = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == Functions.GetCurrentUserId());
+                var title = await dbContext.Titles.Where(t => t.Id == titleId && t.IsAprroved == false).FirstOrDefaultAsync();
+                if (title == null)
+                {
+                    throw new NullReferenceException(nameof(titleId));
+                }
+
                 var request = new TitleRequest();
                 request.Title = title;
                 request.User = submitUser;
 
                 await dbContext.TitleRequests.AddAsync(request);
                 await dbContext.SaveChangesAsync();
-                return (Tuple.Create(title, request));
+                return request;
             }
         }
 
-        public async Task<Tuple<Title, TitleRequest>> ApproveOrRejectRequest(string requestId, bool isApproved)
+        public async Task<TitleRequest> ApproveOrRejectRequest(string requestId, bool isApproved)
         {
             using (var dbContext = await _contextFactory.CreateDbContextAsync())
             {
@@ -195,7 +228,7 @@ namespace MangaHomeService.Services
                 request.IsApproved = isApproved;
                 request.Title.IsAprroved = isApproved;
                 await dbContext.SaveChangesAsync();
-                return (Tuple.Create(request.Title, request));
+                return request;
             }
         }
     }

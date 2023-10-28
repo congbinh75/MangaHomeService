@@ -59,7 +59,7 @@ namespace MangaHomeService.Controllers
                     || !string.IsNullOrEmpty(formData.TitleId.Trim()) 
                     || !string.IsNullOrEmpty(formData.GroupId.Trim()))
                 {
-                    var chapter = await _chapterService.Add(number, formData.TitleId, formData.GroupId);
+                    var chapter = await _chapterService.Add(number, formData.TitleId, formData.GroupId, formData.VolumeId, formData.LanguageId);
                     return Ok(chapter);
                 }
                 else
