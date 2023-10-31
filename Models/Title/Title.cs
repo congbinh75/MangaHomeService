@@ -5,11 +5,11 @@ namespace MangaHomeService.Models
 {
     public class Title : BaseModel
     {
-        public string Name { get; set; }
-        public string Description { get; set; }
-        public string Artwork { get; set; }
-        public string Author { get; set; }
-        public string Artist { get; set; }
+        public string? Name { get; set; }
+        public string? Description { get; set; }
+        public string? Artwork { get; set; }
+        public Author? Author { get; set; }
+        public Artist? Artist { get; set; }
         public TitleStatus Status { get; set; }
         public double Rating { get; set; }
         public int RatingVotes { get; set; }
@@ -22,21 +22,5 @@ namespace MangaHomeService.Models
         public List<Chapter>? Chapters { get; set; }
         public List<Comment>? Comments { get; set; }
         public bool? IsAprroved { get; set; }
-
-        public Title() { }
-        public Title(string name, string description, string artwork, string author, string artist, int status, double rating, 
-            List<Chapter> chapters, List<Comment> comments, bool isApproved) 
-        {
-            Name = name;
-            Description = description;
-            Artwork = artwork;
-            Author = author;
-            Artist = artist;
-            Status = (TitleStatus)status;
-            Chapters = chapters;
-            Comments = comments;
-            Rating = rating;
-            IsAprroved = isApproved;
-        }
     }
 }

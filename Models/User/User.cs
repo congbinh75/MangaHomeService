@@ -1,5 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-using System.Security.Claims;
+﻿using System.Security.Claims;
 
 namespace MangaHomeService.Models
 {
@@ -12,19 +11,7 @@ namespace MangaHomeService.Models
         public string? ProfilePicture { get; set; }
         public Role? Role { get; set; }
         public byte[]? Salt { get; set; }
-        public List<Group> Groups { get; set; }
+        public List<Group>? Groups { get; set; }
         public static ClaimsIdentity? Identity { get; internal set; }
-
-        public User() { }
-        public User(string name, string email, string password, bool emailConfirmed, string profilePicture, byte[] salt, Role role)
-        {
-            Name = name;
-            Email = email;
-            Password = password;
-            EmailConfirmed = emailConfirmed;
-            ProfilePicture = profilePicture;
-            Salt = salt;
-            Role = role;
-        }
     }
 }

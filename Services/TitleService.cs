@@ -34,8 +34,8 @@ namespace MangaHomeService.Services
             {
                 var titles = await dbContext.Titles.Where(x => x.Name.Contains(keyword.Trim()) 
                 || x.OtherNames.Any(y => y.OtherName.Contains(keyword.Trim())) 
-                || x.Author.Contains(keyword.Trim())
-                || x.Artist.Contains(keyword.Trim())).Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync();
+                || x.Author.Name.Contains(keyword.Trim())
+                || x.Artist.Name.Contains(keyword.Trim())).Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync();
 
                 return titles;
             } 
@@ -61,12 +61,12 @@ namespace MangaHomeService.Services
 
                 if (!string.IsNullOrEmpty(author))
                 {
-                    titles = titles.Where(x => x.Author.Contains(author)).ToList();
+                    titles = titles.Where(x => x.Author.Name.Contains(author)).ToList();
                 }
 
                 if (!string.IsNullOrEmpty(artist))
                 {
-                    titles = titles.Where(x => x.Artist.Contains(artist)).ToList();
+                    titles = titles.Where(x => x.Artist.Name.Contains(artist)).ToList();
                 }
 
                 if(genreIds != null && genreIds.Count > 0)
@@ -106,7 +106,7 @@ namespace MangaHomeService.Services
             }
         }
 
-        public async Task<Title> Add(string name, string description = "", string artwork = "", string author = "", string artist = "", 
+        public async Task<Title> Add(string name, string description = "", string artwork = "", Author author = null, Artist artist = null, 
             Enums.TitleStatus status = Enums.TitleStatus.NotYetReleased, double rating = 0, int ratingVotes = 0, int views = 0, 
             int bookmarks = 0, List<TitleOtherName>? otherNames = null, Language? originalLanguage = null, List<Genre>? genres = null, 
             List<Theme>? themes = null, List<Chapter>? chapters = null, List<Comment>? comments = null, bool isApproved = false)
