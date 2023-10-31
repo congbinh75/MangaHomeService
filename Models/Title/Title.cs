@@ -10,6 +10,7 @@ namespace MangaHomeService.Models
         public string? Artwork { get; set; }
         public Author? Author { get; set; }
         public Artist? Artist { get; set; }
+        public List<Demographic>? Demographics { get; set; }
         public TitleStatus Status { get; set; }
         public double Rating { get; set; }
         public int RatingVotes { get; set; }

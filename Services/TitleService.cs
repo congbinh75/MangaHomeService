@@ -3,6 +3,7 @@ using MangaHomeService.Services.Interfaces;
 using MangaHomeService.Utils;
 using Microsoft.EntityFrameworkCore;
 using System.Xml.Linq;
+using static MangaHomeService.Utils.Enums;
 
 namespace MangaHomeService.Services
 {
@@ -42,8 +43,8 @@ namespace MangaHomeService.Services
         }
 
         public async Task<List<Title>> AdvancedSearch(string name = "", string author = "", string artist = "", List<string>? genreIds = null, 
-            List<string>? themeIds = null, string originalLanguageId = "", List<string>? languageIds = null, List<int>? statuses = null, 
-            bool sortByLastest = false, bool sortByHottest = false, int pageNumber = 1, int pageSize = Constants.TitlesPerPage)
+            List<string>? themeIds = null, List<string>? demographicsIds = null, string originalLanguageId = "", List<string>? languageIds = null, 
+            List<int>? statuses = null, bool sortByLastest = false, bool sortByHottest = false, int pageNumber = 1, int pageSize = Constants.TitlesPerPage)
         {
             using (var dbContext = await _contextFactory.CreateDbContextAsync())
             {
@@ -81,6 +82,12 @@ namespace MangaHomeService.Services
                     titles = titles.Where(x => themes.All(y => x.Themes.Contains(y))).ToList();
                 }
 
+                if (demographicsIds != null && demographicsIds.Count > 0)
+                {
+                    var demographics = await dbContext.Demographics.Where(x => demographicsIds.Contains(x.Id)).ToListAsync();
+                    titles = titles.Where(x => demographics.All(y => x.Demographics.Contains(y))).ToList();
+                }
+
                 if (!string.IsNullOrEmpty(originalLanguageId))
                 {
                     titles = titles.Where(x => x.OriginalLanguage.Id == originalLanguageId).ToList();
@@ -106,13 +113,55 @@ namespace MangaHomeService.Services
             }
         }
 
-        public async Task<Title> Add(string name, string description = "", string artwork = "", Author author = null, Artist artist = null, 
-            Enums.TitleStatus status = Enums.TitleStatus.NotYetReleased, double rating = 0, int ratingVotes = 0, int views = 0, 
-            int bookmarks = 0, List<TitleOtherName>? otherNames = null, Language? originalLanguage = null, List<Genre>? genres = null, 
-            List<Theme>? themes = null, List<Chapter>? chapters = null, List<Comment>? comments = null, bool isApproved = false)
+        public async Task<Title> Add(string name, string description = "", string artwork = "", string author = "", string artist = "",
+            TitleStatus status = TitleStatus.NotYetReleased, double rating = 0, int ratingVotes = 0, int views = 0, int bookmarks = 0, 
+            List<string>? otherNamesIds = null, string? originalLanguageId = null, List<string>? genresIds = null, List<string>? themesIds = null, 
+            List<string>? demographicsIds = null, List<string>? chaptersId = null, List<string>? commentsIds = null, bool isApproved = false)
         {
             using (var dbContext = await _contextFactory.CreateDbContextAsync())
             {
+                var otherNames = new List<TitleOtherName>();
+                if (otherNamesIds != null)
+                {
+                    foreach (var otherNameId in otherNamesIds)
+                    {
+                        var otherName = await dbContext.TitleOtherNames.FirstOrDefaultAsync(t => t.Id == otherNameId);
+                        if (otherName == null) 
+                        {
+                            throw new NullReferenceException(nameof(otherName));
+                        }
+                        otherNames.Add(otherName);
+                    }
+                }
+
+                var genres = new List<Genre>();
+                if (genresIds != null)
+                {
+                    foreach (var genreId in genresIds)
+                    {
+                        var genre = await dbContext.Genres.FirstOrDefaultAsync(g => g.Id == genreId);
+                        if (genre == null)
+                        {
+                            throw new NullReferenceException(nameof(genre));
+                        }
+                        genres.Add(genre);
+                    }
+                }
+
+                var themes = new List<Theme>();
+                if (themesIds != null)
+                {
+                    foreach (var themeId in themesIds)
+                    {
+                        var theme = await dbContext.Themes.FirstOrDefaultAsync(g => g.Id == themeId);
+                        if (theme == null)
+                        {
+                            throw new NullReferenceException(nameof(theme));
+                        }
+                        themes.Add(theme);
+                    }
+                }
+
                 var title = new Title();
                 title.Name = name;
                 title.Description = description;
@@ -123,6 +172,7 @@ namespace MangaHomeService.Services
                 title.Rating = rating;
                 title.RatingVotes = ratingVotes;
                 title.Views = views;
+                title.OtherNames = otherNames;
                 title.Bookmarks = bookmarks;
                 title.OtherNames = otherNames;
                 title.OriginalLanguage = originalLanguage;
@@ -138,11 +188,10 @@ namespace MangaHomeService.Services
             }
         }
 
-        public async Task<Title> Update(string id, string name = "", string description = "", string artwork = "", string author = "", 
-            string artist = "", Enums.TitleStatus? status = null, double rating = -1, int ratingVotes = -1, 
-            int views = -1, int bookmarks = -1, List<TitleOtherName>? otherNames = null, string originalLanguageId = "", 
-            List<Genre>? genres = null, List<Theme>? themes = null, List<Chapter>? chapters = null, List<Comment>? comments = null, 
-            bool? isApproved = null)
+        public async Task<Title> Update(string id, string name = "", string description = "", string artwork = "", string authorId = "", string artistId = "",
+            Enums.TitleStatus? status = null, double rating = -1, int ratingVotes = -1, int views = -1, int bookmarks = -1,
+            List<string>? otherNamesIds = null, string originalLanguageId = "", List<string>? genresIds = null, List<string>? themesIds = null,
+            List<string>? demographicsIds = null, List<string>? chaptersIds = null, List<string>? commentsIds = null, bool? isApproved = null)
         {
             using (var dbContext = await _contextFactory.CreateDbContextAsync()) 
             {
