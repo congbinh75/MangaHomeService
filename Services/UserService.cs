@@ -33,8 +33,14 @@ namespace MangaHomeService.Services
                 }
 
                 (string hashed, byte[] salt) passAndSalt = HashPassword(password);
-                User newUser = new User(
-                    name, email, passAndSalt.hashed, emailConfirmed: false, profilePicture: "", passAndSalt.salt, role);
+                User newUser = new User();
+                newUser.Name = name;
+                newUser.Email = email;
+                newUser.Password = passAndSalt.hashed;
+                newUser.EmailConfirmed = false;
+                newUser.ProfilePicture = "";
+                newUser.Salt = passAndSalt.salt;
+                newUser.Role = role;
                 await dbContext.Users.AddAsync(newUser);
                 await dbContext.SaveChangesAsync();
                 return newUser;
@@ -68,20 +74,25 @@ namespace MangaHomeService.Services
         }
 
         public async Task<User> Update(string userId, string? name = null, string? email = null, string? password = null,
-            bool? emailConfirmed = null, string? profilePicture = null, string? roleName = null)
+            bool? emailConfirmed = null, string? profilePicture = null, string? roleId = null)
         {
             using (var dbContext = await _contextFactory.CreateDbContextAsync())
             {
                 var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == userId);
-                var role = await dbContext.Roles.Where(r => r.Name == roleName).FirstOrDefaultAsync();
                 if (user == null)
                 {
-                    throw new Exception();
+                    throw new ArgumentException(nameof(user));
                 }
 
+                var role = roleId != null ? await dbContext.Roles.Where(r => r.Id == roleId).FirstOrDefaultAsync() : user.Role;
+                if (user == null)
+                {
+                    throw new ArgumentException(nameof(role));
+                }
+
+                var newRole = role;
                 var newName = name == null ? user.Name : name;
                 var newEmail = email == null ? user.Email : email;
-                var newRole = roleName == null ? user.Role : role;
                 var newEmailConfirmed = emailConfirmed == null ? user.EmailConfirmed : emailConfirmed;
                 var newProfilePicture = profilePicture == null ? user.ProfilePicture : profilePicture;
 

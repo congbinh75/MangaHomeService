@@ -113,13 +113,32 @@ namespace MangaHomeService.Services
             }
         }
 
-        public async Task<Title> Add(string name, string description = "", string artwork = "", string author = "", string artist = "",
+        public async Task<Title> Add(string name, string description = "", string artwork = "", string authorId = "", string artistId = "",
             TitleStatus status = TitleStatus.NotYetReleased, double rating = 0, int ratingVotes = 0, int views = 0, int bookmarks = 0, 
             List<string>? otherNamesIds = null, string? originalLanguageId = null, List<string>? genresIds = null, List<string>? themesIds = null, 
-            List<string>? demographicsIds = null, List<string>? chaptersId = null, List<string>? commentsIds = null, bool isApproved = false)
+            List<string>? demographicsIds = null, List<string>? chaptersIds = null, List<string>? commentsIds = null, bool isApproved = false)
         {
             using (var dbContext = await _contextFactory.CreateDbContextAsync())
             {
+                var author = !string.IsNullOrEmpty(authorId) ? await dbContext.Authors.FirstOrDefaultAsync(a => a.Id == authorId) : null;
+                if (!string.IsNullOrEmpty(authorId) && author == null)
+                {
+                    throw new NullReferenceException(nameof(author));
+                }
+
+                var artist = !string.IsNullOrEmpty(artistId) ? await dbContext.Artists.FirstOrDefaultAsync(a => a.Id == artistId) : null;
+                if (!string.IsNullOrEmpty(authorId) && artist == null)
+                {
+                    throw new NullReferenceException(nameof(artist));
+                }
+
+                var originalLanguage = !string.IsNullOrEmpty(artistId) ? 
+                    await dbContext.Languages.FirstOrDefaultAsync(a => a.Id == originalLanguageId) : null;
+                if (!string.IsNullOrEmpty(originalLanguageId) && originalLanguage == null)
+                {
+                    throw new NullReferenceException(nameof(originalLanguage));
+                }
+
                 var otherNames = new List<TitleOtherName>();
                 if (otherNamesIds != null)
                 {
@@ -162,6 +181,49 @@ namespace MangaHomeService.Services
                     }
                 }
 
+                var chapters = new List<Chapter>();
+                if (chaptersIds != null)
+                {
+                    foreach (var chapterId in chaptersIds)
+                    {
+                        var chapter = await dbContext.Chapters.FirstOrDefaultAsync(c => c.Id == chapterId);
+                        if (chapter == null)
+                        {
+                            throw new NullReferenceException(nameof(chapter));
+                        }
+                        chapters.Add(chapter);
+                    }
+                }
+
+
+                var comments = new List<Comment>();
+                if (commentsIds != null)
+                {
+                    foreach (var commentId in commentsIds)
+                    {
+                        var comment = await dbContext.Comments.FirstOrDefaultAsync(c => c.Id == commentId);
+                        if (comment == null)
+                        {
+                            throw new NullReferenceException(nameof(comment));
+                        }
+                        comments.Add(comment);
+                    }
+                }
+
+                var demographics = new List<Demographic>();
+                if (demographicsIds != null)
+                {
+                    foreach (var demographicId in demographicsIds)
+                    {
+                        var demographic = await dbContext.Demographics.FirstOrDefaultAsync(c => c.Id == demographicId);
+                        if (demographic == null)
+                        {
+                            throw new NullReferenceException(nameof(demographic));
+                        }
+                        demographics.Add(demographic);
+                    }
+                }
+
                 var title = new Title();
                 title.Name = name;
                 title.Description = description;
@@ -181,6 +243,7 @@ namespace MangaHomeService.Services
                 title.Chapters = chapters;
                 title.Comments = comments;
                 title.IsAprroved = isApproved;
+                title.Demographics = demographics;
 
                 await dbContext.Titles.AddAsync(title);
                 await dbContext.SaveChangesAsync();
@@ -201,27 +264,124 @@ namespace MangaHomeService.Services
                     throw new NullReferenceException(nameof(title));
                 }
 
+                var author = !string.IsNullOrEmpty(authorId) ? await dbContext.Authors.FirstOrDefaultAsync(a => a.Id == authorId) : null;
+                if (!string.IsNullOrEmpty(authorId) && author == null)
+                {
+                    throw new NullReferenceException(nameof(author));
+                }
+
+                var artist = !string.IsNullOrEmpty(artistId) ? await dbContext.Artists.FirstOrDefaultAsync(a => a.Id == artistId) : null;
+                if (!string.IsNullOrEmpty(authorId) && artist == null)
+                {
+                    throw new NullReferenceException(nameof(artist));
+                }
+
+                var originalLanguage = !string.IsNullOrEmpty(artistId) ?
+                    await dbContext.Languages.FirstOrDefaultAsync(a => a.Id == originalLanguageId) : null;
+                if (!string.IsNullOrEmpty(originalLanguageId) && originalLanguage == null)
+                {
+                    throw new NullReferenceException(nameof(originalLanguage));
+                }
+
+                var otherNames = new List<TitleOtherName>();
+                if (otherNamesIds != null)
+                {
+                    foreach (var otherNameId in otherNamesIds)
+                    {
+                        var otherName = await dbContext.TitleOtherNames.FirstOrDefaultAsync(t => t.Id == otherNameId);
+                        if (otherName == null)
+                        {
+                            throw new NullReferenceException(nameof(otherName));
+                        }
+                        otherNames.Add(otherName);
+                    }
+                }
+
+                var genres = new List<Genre>();
+                if (genresIds != null)
+                {
+                    foreach (var genreId in genresIds)
+                    {
+                        var genre = await dbContext.Genres.FirstOrDefaultAsync(g => g.Id == genreId);
+                        if (genre == null)
+                        {
+                            throw new NullReferenceException(nameof(genre));
+                        }
+                        genres.Add(genre);
+                    }
+                }
+
+                var themes = new List<Theme>();
+                if (themesIds != null)
+                {
+                    foreach (var themeId in themesIds)
+                    {
+                        var theme = await dbContext.Themes.FirstOrDefaultAsync(g => g.Id == themeId);
+                        if (theme == null)
+                        {
+                            throw new NullReferenceException(nameof(theme));
+                        }
+                        themes.Add(theme);
+                    }
+                }
+
+                var chapters = new List<Chapter>();
+                if (chaptersIds != null)
+                {
+                    foreach (var chapterId in chaptersIds)
+                    {
+                        var chapter = await dbContext.Chapters.FirstOrDefaultAsync(c => c.Id == chapterId);
+                        if (chapter == null)
+                        {
+                            throw new NullReferenceException(nameof(chapter));
+                        }
+                        chapters.Add(chapter);
+                    }
+                }
+
+
+                var comments = new List<Comment>();
+                if (commentsIds != null)
+                {
+                    foreach (var commentId in commentsIds)
+                    {
+                        var comment = await dbContext.Comments.FirstOrDefaultAsync(c => c.Id == commentId);
+                        if (comment == null)
+                        {
+                            throw new NullReferenceException(nameof(comment));
+                        }
+                        comments.Add(comment);
+                    }
+                }
+
+                var demographics = new List<Demographic>();
+                if (demographicsIds != null)
+                {
+                    foreach (var demographicId in demographicsIds)
+                    {
+                        var demographic = await dbContext.Demographics.FirstOrDefaultAsync(c => c.Id == demographicId);
+                        if (demographic == null)
+                        {
+                            throw new NullReferenceException(nameof(demographic));
+                        }
+                        demographics.Add(demographic);
+                    }
+                }
+
                 title.Name = !string.IsNullOrEmpty(name) ? name : title.Name;
                 title.Description = !string.IsNullOrEmpty(description) ? description : title.Description;
                 title.Artwork = !string.IsNullOrEmpty(artwork) ? artwork : title.Artwork;
-                title.Artist = !string.IsNullOrEmpty(artist) ? artist : title.Artist;
-                title.OtherNames = otherNames != null ? otherNames : title.OtherNames;
-                title.Gernes = genres != null ? genres : title.Gernes;
-                title.Themes = themes != null ? themes : title.Themes;
-                title.Chapters = chapters != null ? chapters : title.Chapters;
-                title.Comments = comments != null ? comments : title.Comments;
+                title.Artist = artist;
+                title.Author = author;
+                title.OtherNames = otherNames;
+                title.Gernes = genres;
+                title.Themes = themes;
+                title.Chapters = chapters;
+                title.Comments = comments;
                 title.Status = status != null ? (Enums.TitleStatus)status : title.Status;
                 title.IsAprroved = isApproved != null ? (bool)isApproved : title.IsAprroved;
-
-                if (!string.IsNullOrEmpty(originalLanguageId))
-                {
-                    var originalLanguage = await dbContext.Languages.FirstOrDefaultAsync(l => l.Id == id);
-                    if (originalLanguage != null)
-                    {
-                        throw new NullReferenceException(nameof(originalLanguage));
-                    }
-                    title.OriginalLanguage = originalLanguage;
-                }
+                title.OriginalLanguage = originalLanguage;
+                title.Demographics = demographics;
 
                 await dbContext.SaveChangesAsync();
                 return title;
@@ -243,7 +403,7 @@ namespace MangaHomeService.Services
             }
         }
 
-        public async Task<TitleRequest> Submit(string titleId)
+        public async Task<TitleRequest> SubmitRequest(string titleId)
         {
             using (var dbContext = await _contextFactory.CreateDbContextAsync())
             {
@@ -264,7 +424,7 @@ namespace MangaHomeService.Services
             }
         }
 
-        public async Task<TitleRequest> ApproveOrRejectRequest(string requestId, bool isApproved)
+        public async Task<TitleRequest> ReviewRequest(string requestId, bool isApproved)
         {
             using (var dbContext = await _contextFactory.CreateDbContextAsync())
             {

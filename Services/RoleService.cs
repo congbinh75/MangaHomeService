@@ -29,20 +29,33 @@ namespace MangaHomeService.Services
             }
         }
 
-        public async Task<Role> Add(string name, string description)
+        public async Task<Role> Add(string name, string? description = null, List<string>? permissionsIds = null)
         {
             using (var dbContext = await _contextFactory.CreateDbContextAsync())
             {
                 Role role = new Role();
                 role.Name = name;
                 role.Description = description;
+                var permissions = new List<Permission>();
+                if (permissionsIds != null)
+                {
+                    foreach (var permissionId in permissionsIds)
+                    {
+                        var permission = await dbContext.Permissions.FirstOrDefaultAsync(p => p.Id == permissionId);
+                        if (permission == null)
+                        {
+                            throw new ArgumentException(nameof(permission));
+                        }
+                    }
+                }
+                role.Permissions = permissions;
                 await dbContext.Roles.AddAsync(role);
                 await dbContext.SaveChangesAsync();
                 return role;
             }
         }
 
-        public async Task<Role> Update(string id, string? name = null, string? description = null, List<string>? permissionIds = null)
+        public async Task<Role> Update(string id, string? name = null, string? description = null, List<string>? permissionsIds = null)
         {
             using (var dbContext = await _contextFactory.CreateDbContextAsync())
             {
@@ -53,13 +66,15 @@ namespace MangaHomeService.Services
                 }
 
                 var permissions = role.Permissions.ToList();
-                if (permissionIds != null)
+                if (permissionsIds != null)
                 {
-                    permissions = await dbContext.Permissions.
-                        Where(p => permissionIds.Distinct().Contains(p.Id)).ToListAsync();
-                    if (permissions.Count() != permissionIds.Distinct().Count())
+                    foreach (var permissionId in permissionsIds)
                     {
-                        throw new ArgumentException(nameof(permissionIds));
+                        var permission = await dbContext.Permissions.FirstOrDefaultAsync(p => p.Id == permissionId);
+                        if (permission == null)
+                        {
+                            throw new ArgumentException(nameof(permission));
+                        }
                     }
                 }
 

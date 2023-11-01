@@ -10,16 +10,5 @@
         public Group Group { get; set; }
         public List<Comment>? Comments { get; set; }
         public bool? IsApproved { get; set; }
-
-        public Chapter() { }
-        public Chapter(double number, Title title, List<Page> pages, Group group, List<Comment> comments, bool? isApproved)
-        {
-            Number = number;
-            Title = title;
-            Pages = pages;
-            Group = group;
-            Comments = comments;
-            IsApproved = isApproved;
-        }
     }
 }

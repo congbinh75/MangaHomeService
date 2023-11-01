@@ -9,7 +9,7 @@ namespace MangaHomeService.Services.Interfaces
         Task<User> Get(string id);
         Task<User?> Get(string email, string password);
         Task<User> Update(string id, string? name = null, string? email = null, string? password = null, bool? emailConfirmed = null, 
-            string? profilePicture = null, string? roleName = null);
+            string? profilePicture = null, string? roleId = null);
         Task<bool> Delete(string id);
         Task<List<Permission>> GetPermissionsOfUser(string userId);
     }
