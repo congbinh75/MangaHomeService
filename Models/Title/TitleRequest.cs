@@ -4,6 +4,7 @@
     {
         public Title Title { get; set; }
         public User User { get; set; }
-        public bool? IsApproved { get; set; }
+        public bool IsApproved { get; set; }
+        public bool IsReviewed { get; set; }
     }
 }
