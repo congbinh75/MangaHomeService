@@ -2,7 +2,6 @@
 using MangaHomeService.Services.Interfaces;
 using MangaHomeService.Utils;
 using Microsoft.EntityFrameworkCore;
-using Org.BouncyCastle.Asn1.Ocsp;
 
 namespace MangaHomeService.Services
 {
@@ -16,29 +15,29 @@ namespace MangaHomeService.Services
         }
 
         public async Task<Chapter> Add(double number, string titleId, string groupId, string? volumeId = null, string? languageId = null,
-            List<string>? pagesIds = null, List<string>? commentsIds = null, bool? isApproved = null)
+            List<string>? pagesIds = null, List<string>? commentsIds = null, bool isApproved = false)
         {
             using (var dbContext = await _contextFactory.CreateDbContextAsync())
             {
                 var title = await dbContext.Titles.FirstOrDefaultAsync(t => t.Id == titleId);
                 if (title == null)
                 {
-                    throw new NullReferenceException(nameof(title));
+                    throw new ArgumentException(nameof(title));
                 }
                 var group = await dbContext.Groups.FirstOrDefaultAsync(g => g.Id == groupId);
                 if (group == null) 
                 {
-                    throw new NullReferenceException(nameof(group));
+                    throw new ArgumentException(nameof(group));
                 }
                 var volume = volumeId == null ? null : await dbContext.Volumes.FirstOrDefaultAsync(v => v.Id == volumeId);
                 if (volume == null)
                 {
-                    throw new NullReferenceException(nameof(volume));
+                    throw new ArgumentException(nameof(volume));
                 }
                 var language = languageId == null ? null : await dbContext.Languages.FirstOrDefaultAsync(l => l.Id == languageId);
                 if (language == null)
                 {
-                    throw new NullReferenceException(nameof(language));
+                    throw new ArgumentException(nameof(language));
                 }
                 var pages = pagesIds == null ? null : await dbContext.Pages.Where(p => pagesIds.Contains(p.Id)).ToListAsync();
                 var comments = commentsIds == null ? null : await dbContext.Comments.Where(c => commentsIds.Contains(c.Id)).ToListAsync();
@@ -67,7 +66,7 @@ namespace MangaHomeService.Services
                     FirstOrDefaultAsync();
                 if (chapter == null) 
                 {
-                    throw new NullReferenceException(nameof(chapter));
+                    throw new ArgumentException(nameof(chapter));
                 }
                 dbContext.Chapters.Remove(chapter);
                 await dbContext.SaveChangesAsync();
@@ -82,7 +81,7 @@ namespace MangaHomeService.Services
                 var chapter = await dbContext.Chapters.Where(c => c.Id == id).Include(c => c.Pages).FirstOrDefaultAsync();
                 if (chapter == null)
                 {
-                    throw new NullReferenceException(nameof(chapter));
+                    throw new ArgumentException(nameof(chapter));
                 }
                 return chapter;
             }
@@ -95,21 +94,21 @@ namespace MangaHomeService.Services
                 var title = await dbContext.Titles.FirstOrDefaultAsync(t => t.Id == titleId);
                 if (title == null)
                 {
-                    throw new NullReferenceException(nameof(title));
+                    throw new ArgumentException(nameof(title));
                 }
                 return await dbContext.Chapters.Where(c => c.Title.Id == titleId).OrderByDescending(c => c.Number).ToListAsync();
             }
         }
 
-        public async Task<Chapter> Update(string id, double number = 0, string? titleId = null, string? groupId = null, 
-            string? volumeId = null, string? languageId = null, List<string>? pagesIds = null, List<string>? commentsIds = null)
+        public async Task<Chapter> Update(string id, double number = 0, string? titleId = null, string? groupId = null, string? volumeId = null, 
+            string? languageId = null, List<string>? pagesIds = null, List<string>? commentsIds = null, bool? isApproved = null)
         {
             using (var dbContext = await _contextFactory.CreateDbContextAsync())
             {
                 var chapter = await dbContext.Chapters.FirstOrDefaultAsync(c => c.Id == id);
                 if (chapter == null)
                 {
-                    throw new NullReferenceException(nameof(chapter));
+                    throw new ArgumentException(nameof(chapter));
                 }
 
                 var newNumber = number > 0 ? number : chapter.Number;
@@ -119,6 +118,7 @@ namespace MangaHomeService.Services
                 var newLanguage = languageId != null ? await dbContext.Languages.FirstOrDefaultAsync(l => l.Id == languageId) : chapter.Language;
                 var newPages = pagesIds != null ? await dbContext.Pages.Where(p => pagesIds.Contains(p.Id)).ToListAsync() : chapter.Pages;
                 var newComments = commentsIds != null ? await dbContext.Comments.Where(c => commentsIds.Contains(c.Id)).ToListAsync() : chapter.Comments;
+                var newIsApproved = isApproved != null ? isApproved : chapter.IsApproved;
 
                 chapter.Number = newNumber;
                 chapter.Title = newTitle != null ? newTitle : chapter.Title;
@@ -127,7 +127,7 @@ namespace MangaHomeService.Services
                 chapter.Language = newLanguage != null ? newLanguage : chapter.Language;
                 chapter.Pages = newPages;
                 chapter.Comments = newComments;
-                chapter.IsApproved = null;
+                chapter.IsApproved = (bool)newIsApproved;
 
                 await dbContext.SaveChangesAsync();
                 return chapter;
@@ -141,20 +141,21 @@ namespace MangaHomeService.Services
                 var chapter = await dbContext.Chapters.FirstOrDefaultAsync(t => t.Id == titleId);
                 if (chapter == null)
                 {
-                    throw new NullReferenceException(nameof(chapter));
+                    throw new ArgumentException(nameof(chapter));
                 }
                 var submitUser = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == Functions.GetCurrentUserId());
                 var group = await dbContext.Groups.FirstOrDefaultAsync(g => g.Id == groupId);
                 if (group == null)
                 {
-                    throw new NullReferenceException(nameof(group));
+                    throw new ArgumentException(nameof(group));
                 }
 
                 var request = new ChapterRequest();
                 request.Chapter = chapter;
                 request.User = submitUser;
                 request.Group = group;
-                request.IsApproved = null;
+                request.IsApproved = false;
+                request.IsReviewed = false;
 
                 await dbContext.ChapterRequests.AddAsync(request);
                 await dbContext.SaveChangesAsync();
@@ -169,11 +170,11 @@ namespace MangaHomeService.Services
                 var request = await dbContext.ChapterRequests.Where(r => r.Id == id).Include(r => r.Chapter).FirstOrDefaultAsync();
                 if (request == null)
                 {
-                    throw new NullReferenceException(nameof(request));
+                    throw new ArgumentException(nameof(request));
                 }
                 if (request.Chapter == null)
                 {
-                    throw new NullReferenceException(nameof(request.Chapter));
+                    throw new ArgumentException(nameof(request.Chapter));
                 }
                 return request;
             }
@@ -186,15 +187,17 @@ namespace MangaHomeService.Services
                 var request = await dbContext.ChapterRequests.FirstOrDefaultAsync(r => r.Id == requestId);
                 if (request == null)
                 {
-                    throw new NullReferenceException(nameof(request));
+                    throw new ArgumentException(nameof(request));
                 }
-                if (request.IsApproved != null || request.Chapter.IsApproved != null)
+                if (request.IsReviewed)
                 {
                     throw new ArgumentException();
                 }
                 
                 request.IsApproved = isApproved;
                 request.Chapter.IsApproved = isApproved;
+                request.IsReviewed = true;
+
                 await dbContext.SaveChangesAsync();
                 return request;
             }

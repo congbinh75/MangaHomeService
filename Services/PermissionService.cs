@@ -29,20 +29,36 @@ namespace MangaHomeService.Services
             }
         }
 
-        public async Task<Permission> Add(string name, string description)
+        public async Task<Permission> Add(string name, string description, List<string>? rolesIds = null)
         {
             using (var dbContext = await _contextFactory.CreateDbContextAsync())
             {
+                var roles = new List<Role>();
+                if (rolesIds != null)
+                {
+                    foreach (var roleId in rolesIds)
+                    {
+                        var role = await dbContext.Roles.FirstOrDefaultAsync(r => r.Id == roleId);
+                        if (role == null)
+                        {
+                            throw new ArgumentException(nameof(role));
+                        }
+                        roles.Add(role);
+                    }
+                }
+
                 Permission permission = new Permission();
                 permission.Name = name;
                 permission.Description = description;
+                permission.Roles = roles;
+
                 await dbContext.Permissions.AddAsync(permission);
                 await dbContext.SaveChangesAsync();
                 return permission;
             }
         }
 
-        public async Task<Permission> Update(string id, string name, string description)
+        public async Task<Permission> Update(string id, string? name = null, string? description = null, List<string>? rolesIds = null)
         {
             using (var dbContext = await _contextFactory.CreateDbContextAsync())
             {
@@ -51,8 +67,25 @@ namespace MangaHomeService.Services
                 {
                     throw new ArgumentException(nameof(id));
                 }
-                permission.Name = name;
-                permission.Description = description;
+
+                var newRoles = new List<Role>();
+                if (rolesIds != null)
+                {
+                    foreach (var roleId in rolesIds)
+                    {
+                        var role = await dbContext.Roles.FirstOrDefaultAsync(r => r.Id == roleId);
+                        if (role == null)
+                        {
+                            throw new ArgumentException(nameof(role));
+                        }
+                        newRoles.Add(role);
+                    }
+                }
+
+                permission.Name = name != null ? name : permission.Name;
+                permission.Description = description != null ? description : permission.Description;
+                permission.Roles = rolesIds != null ? newRoles : permission.Roles;
+
                 await dbContext.SaveChangesAsync();
                 return permission;
             }

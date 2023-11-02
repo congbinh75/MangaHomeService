@@ -29,7 +29,7 @@ namespace MangaHomeService.Services
                 var role = await dbContext.Roles.Where(r => r.Id == roleId).FirstOrDefaultAsync();
                 if (role == null)
                 {
-                    throw new NullReferenceException(nameof(role));
+                    throw new ArgumentException(nameof(role));
                 }
 
                 (string hashed, byte[] salt) passAndSalt = HashPassword(password);
@@ -125,7 +125,7 @@ namespace MangaHomeService.Services
                 var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == id);
                 if (user == null)
                 {
-                    throw new NullReferenceException(nameof(user));
+                    throw new ArgumentException(nameof(user));
                 }
                 dbContext.Users.Remove(user);
                 await dbContext.SaveChangesAsync();

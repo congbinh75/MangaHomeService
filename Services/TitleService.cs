@@ -2,7 +2,6 @@
 using MangaHomeService.Services.Interfaces;
 using MangaHomeService.Utils;
 using Microsoft.EntityFrameworkCore;
-using System.Xml.Linq;
 using static MangaHomeService.Utils.Enums;
 
 namespace MangaHomeService.Services
@@ -123,20 +122,20 @@ namespace MangaHomeService.Services
                 var author = !string.IsNullOrEmpty(authorId) ? await dbContext.Authors.FirstOrDefaultAsync(a => a.Id == authorId) : null;
                 if (!string.IsNullOrEmpty(authorId) && author == null)
                 {
-                    throw new NullReferenceException(nameof(author));
+                    throw new ArgumentException(nameof(author));
                 }
 
                 var artist = !string.IsNullOrEmpty(artistId) ? await dbContext.Artists.FirstOrDefaultAsync(a => a.Id == artistId) : null;
                 if (!string.IsNullOrEmpty(authorId) && artist == null)
                 {
-                    throw new NullReferenceException(nameof(artist));
+                    throw new ArgumentException(nameof(artist));
                 }
 
                 var originalLanguage = !string.IsNullOrEmpty(artistId) ? 
                     await dbContext.Languages.FirstOrDefaultAsync(a => a.Id == originalLanguageId) : null;
                 if (!string.IsNullOrEmpty(originalLanguageId) && originalLanguage == null)
                 {
-                    throw new NullReferenceException(nameof(originalLanguage));
+                    throw new ArgumentException(nameof(originalLanguage));
                 }
 
                 var otherNames = new List<TitleOtherName>();
@@ -147,7 +146,7 @@ namespace MangaHomeService.Services
                         var otherName = await dbContext.TitleOtherNames.FirstOrDefaultAsync(t => t.Id == otherNameId);
                         if (otherName == null) 
                         {
-                            throw new NullReferenceException(nameof(otherName));
+                            throw new ArgumentException(nameof(otherName));
                         }
                         otherNames.Add(otherName);
                     }
@@ -161,7 +160,7 @@ namespace MangaHomeService.Services
                         var genre = await dbContext.Genres.FirstOrDefaultAsync(g => g.Id == genreId);
                         if (genre == null)
                         {
-                            throw new NullReferenceException(nameof(genre));
+                            throw new ArgumentException(nameof(genre));
                         }
                         genres.Add(genre);
                     }
@@ -175,7 +174,7 @@ namespace MangaHomeService.Services
                         var theme = await dbContext.Themes.FirstOrDefaultAsync(g => g.Id == themeId);
                         if (theme == null)
                         {
-                            throw new NullReferenceException(nameof(theme));
+                            throw new ArgumentException(nameof(theme));
                         }
                         themes.Add(theme);
                     }
@@ -189,7 +188,7 @@ namespace MangaHomeService.Services
                         var chapter = await dbContext.Chapters.FirstOrDefaultAsync(c => c.Id == chapterId);
                         if (chapter == null)
                         {
-                            throw new NullReferenceException(nameof(chapter));
+                            throw new ArgumentException(nameof(chapter));
                         }
                         chapters.Add(chapter);
                     }
@@ -204,7 +203,7 @@ namespace MangaHomeService.Services
                         var comment = await dbContext.Comments.FirstOrDefaultAsync(c => c.Id == commentId);
                         if (comment == null)
                         {
-                            throw new NullReferenceException(nameof(comment));
+                            throw new ArgumentException(nameof(comment));
                         }
                         comments.Add(comment);
                     }
@@ -218,7 +217,7 @@ namespace MangaHomeService.Services
                         var demographic = await dbContext.Demographics.FirstOrDefaultAsync(c => c.Id == demographicId);
                         if (demographic == null)
                         {
-                            throw new NullReferenceException(nameof(demographic));
+                            throw new ArgumentException(nameof(demographic));
                         }
                         demographics.Add(demographic);
                     }
@@ -261,26 +260,26 @@ namespace MangaHomeService.Services
                 var title = await dbContext.Titles.FirstOrDefaultAsync(t => t.Id == id);
                 if (title == null) 
                 {
-                    throw new NullReferenceException(nameof(title));
+                    throw new ArgumentException(nameof(title));
                 }
 
                 var author = !string.IsNullOrEmpty(authorId) ? await dbContext.Authors.FirstOrDefaultAsync(a => a.Id == authorId) : null;
                 if (!string.IsNullOrEmpty(authorId) && author == null)
                 {
-                    throw new NullReferenceException(nameof(author));
+                    throw new ArgumentException(nameof(author));
                 }
 
                 var artist = !string.IsNullOrEmpty(artistId) ? await dbContext.Artists.FirstOrDefaultAsync(a => a.Id == artistId) : null;
                 if (!string.IsNullOrEmpty(authorId) && artist == null)
                 {
-                    throw new NullReferenceException(nameof(artist));
+                    throw new ArgumentException(nameof(artist));
                 }
 
                 var originalLanguage = !string.IsNullOrEmpty(artistId) ?
                     await dbContext.Languages.FirstOrDefaultAsync(a => a.Id == originalLanguageId) : null;
                 if (!string.IsNullOrEmpty(originalLanguageId) && originalLanguage == null)
                 {
-                    throw new NullReferenceException(nameof(originalLanguage));
+                    throw new ArgumentException(nameof(originalLanguage));
                 }
 
                 var otherNames = new List<TitleOtherName>();
@@ -291,7 +290,7 @@ namespace MangaHomeService.Services
                         var otherName = await dbContext.TitleOtherNames.FirstOrDefaultAsync(t => t.Id == otherNameId);
                         if (otherName == null)
                         {
-                            throw new NullReferenceException(nameof(otherName));
+                            throw new ArgumentException(nameof(otherName));
                         }
                         otherNames.Add(otherName);
                     }
@@ -305,7 +304,7 @@ namespace MangaHomeService.Services
                         var genre = await dbContext.Genres.FirstOrDefaultAsync(g => g.Id == genreId);
                         if (genre == null)
                         {
-                            throw new NullReferenceException(nameof(genre));
+                            throw new ArgumentException(nameof(genre));
                         }
                         genres.Add(genre);
                     }
@@ -319,7 +318,7 @@ namespace MangaHomeService.Services
                         var theme = await dbContext.Themes.FirstOrDefaultAsync(g => g.Id == themeId);
                         if (theme == null)
                         {
-                            throw new NullReferenceException(nameof(theme));
+                            throw new ArgumentException(nameof(theme));
                         }
                         themes.Add(theme);
                     }
@@ -333,7 +332,7 @@ namespace MangaHomeService.Services
                         var chapter = await dbContext.Chapters.FirstOrDefaultAsync(c => c.Id == chapterId);
                         if (chapter == null)
                         {
-                            throw new NullReferenceException(nameof(chapter));
+                            throw new ArgumentException(nameof(chapter));
                         }
                         chapters.Add(chapter);
                     }
@@ -348,7 +347,7 @@ namespace MangaHomeService.Services
                         var comment = await dbContext.Comments.FirstOrDefaultAsync(c => c.Id == commentId);
                         if (comment == null)
                         {
-                            throw new NullReferenceException(nameof(comment));
+                            throw new ArgumentException(nameof(comment));
                         }
                         comments.Add(comment);
                     }
@@ -362,7 +361,7 @@ namespace MangaHomeService.Services
                         var demographic = await dbContext.Demographics.FirstOrDefaultAsync(c => c.Id == demographicId);
                         if (demographic == null)
                         {
-                            throw new NullReferenceException(nameof(demographic));
+                            throw new ArgumentException(nameof(demographic));
                         }
                         demographics.Add(demographic);
                     }
@@ -411,7 +410,7 @@ namespace MangaHomeService.Services
                 var title = await dbContext.Titles.Where(t => t.Id == titleId && t.IsAprroved == false).FirstOrDefaultAsync();
                 if (title == null)
                 {
-                    throw new NullReferenceException(nameof(titleId));
+                    throw new ArgumentException(nameof(titleId));
                 }
 
                 var request = new TitleRequest();
@@ -429,13 +428,15 @@ namespace MangaHomeService.Services
             using (var dbContext = await _contextFactory.CreateDbContextAsync())
             {
                 var request = await dbContext.TitleRequests.Where(r => r.Id == requestId).Include(r => r.Title).FirstOrDefaultAsync();
-                if (request.IsApproved != null || request.Title.IsAprroved != null)
+                if (request == null || request.IsReviewed)
                 {
                     throw new ArgumentException();
                 }
 
                 request.IsApproved = isApproved;
                 request.Title.IsAprroved = isApproved;
+                request.IsReviewed = true;
+
                 await dbContext.SaveChangesAsync();
                 return request;
             }

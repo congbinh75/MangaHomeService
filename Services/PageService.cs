@@ -21,13 +21,13 @@ namespace MangaHomeService.Services
             {
                 if (file == null)
                 {
-                    throw new NullReferenceException(nameof(file));
+                    throw new ArgumentException(nameof(file));
                 }
 
                 var chapter = await dbContext.Chapters.FirstOrDefaultAsync(c => c.Id == chapterId);
                 if (chapter == null)
                 {
-                    throw new NullReferenceException(nameof(chapter));
+                    throw new ArgumentException(nameof(chapter));
                 }
 
                 var existingNumberPage = await dbContext.Pages.FirstOrDefaultAsync(p => p.Chapter.Id == chapterId && p.Number == number);
@@ -55,7 +55,7 @@ namespace MangaHomeService.Services
                 var page = await dbContext.Pages.FirstOrDefaultAsync(c => c.Id == id);
                 if (page == null)
                 {
-                    throw new NullReferenceException(nameof(page));
+                    throw new ArgumentException(nameof(page));
                 }
                 dbContext.Pages.Remove(page);
                 dbContext.SaveChanges();
@@ -70,7 +70,7 @@ namespace MangaHomeService.Services
                 var page = await dbContext.Pages.FirstOrDefaultAsync(c => c.Id == id);
                 if (page == null)
                 {
-                    throw new NullReferenceException(nameof(page));
+                    throw new ArgumentException(nameof(page));
                 }
                 return page;
             }
@@ -92,7 +92,7 @@ namespace MangaHomeService.Services
                 var page = await dbContext.Pages.FirstOrDefaultAsync(p => p.Id == id);
                 if (page == null) 
                 {
-                    throw new NullReferenceException(nameof(page));
+                    throw new ArgumentException(nameof(page));
                 }
 
                 if (chapterId != "")
@@ -100,7 +100,7 @@ namespace MangaHomeService.Services
                     var chapter = await dbContext.Chapters.FirstOrDefaultAsync(c => c.Id == chapterId);
                     if (chapter == null)
                     {
-                        throw new NullReferenceException(nameof(Chapter));
+                        throw new ArgumentException(nameof(Chapter));
                     }
                     else
                     {
