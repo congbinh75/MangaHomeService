@@ -6,21 +6,25 @@ namespace MangaHomeService.Services.Interfaces
 {
     public interface ITitleService
     {
-        Task<Title> Get(string id);
-        Task<List<Title>> Search(string keyword, int pageNumber = 1, int pageSize = Constants.TitlesPerPage);
-        Task<List<Title>> AdvancedSearch(string name = "", string author = "", string artist = "", List<string>? genreIds = null,
+        public Task<Title> Get(string id);
+        public Task<List<Title>> Search(string keyword, int pageNumber = 1, int pageSize = Constants.TitlesPerPage);
+        public Task<List<Title>> AdvancedSearch(string name = "", string author = "", string artist = "", List<string>? genreIds = null,
             List<string>? themeIds = null, List<string>? demographicsIds = null, string originalLanguageId = "", List<string>? languageIds = null, 
             List<int>? statuses = null, bool sortByLastest = false, bool sortByHottest = false, int pageNumber = 1, int pageSize = Constants.TitlesPerPage);
-        Task<Title> Add(string name, string description = "", string artwork = "", string authorId = "", string artistId = "",
+        public Task<Title> Add(string name, string description = "", string artwork = "", string authorId = "", string artistId = "",
             TitleStatus status = TitleStatus.NotYetReleased, double rating = 0, int ratingVotes = 0, int views = 0, int bookmarks = 0,
             List<string>? otherNamesIds = null, string? originalLanguageId = null, List<string>? genresIds = null, List<string>? themesIds = null,
             List<string>? demographicsIds = null, List<string>? chaptersIds = null, List<string>? commentsIds = null, bool isApproved = false);
-        Task<Title> Update(string id, string name = "", string description = "", string artwork = "", string authorId = "", string artistId = "", 
+        public Task<Title> Update(string id, string name = "", string description = "", string artwork = "", string authorId = "", string artistId = "", 
             TitleStatus? status = null, double rating = -1, int ratingVotes = -1, int views = -1, int bookmarks = -1, 
             List<string>? otherNamesIds = null, string originalLanguageId = "", List<string>? genresIds = null, List<string>? themesIds = null,
             List<string>? demographicsIds = null, List<string>? chaptersIds = null, List<string>? commentsIds = null, bool? isApproved = null);
-        Task<bool> Delete(string id);
-        Task<TitleRequest> SubmitRequest(string titleId);
-        Task<TitleRequest> ReviewRequest(string requestId, bool isApproved);
+        public Task<bool> Delete(string id);
+        public Task<TitleRequest> SubmitRequest(string titleId);
+        public Task<TitleRequest> ReviewRequest(string requestId, bool isApproved);
+        public Task<List<Comment>> GetComments(string id, int pageNumber = 1, int pageSize = Constants.CommentsPerPage);
+        public Task<Comment> AddComment(string titleId);
+        public Task<Comment> UpdateComment(string commentId);
+        public Task<Comment> DeleteComment(string commentId);
     }
 }

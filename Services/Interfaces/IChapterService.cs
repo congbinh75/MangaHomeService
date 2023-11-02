@@ -1,4 +1,5 @@
 ﻿using MangaHomeService.Models;
+using MangaHomeService.Utils;
 
 namespace MangaHomeService.Services.Interfaces
 {
@@ -14,5 +15,9 @@ namespace MangaHomeService.Services.Interfaces
         public Task<ChapterRequest> SubmitRequest(string titleId, string groupId);
         public Task<ChapterRequest> GetRequest(string id);
         public Task<ChapterRequest> ReviewRequest(string requestId, bool isApproved);
+        public Task<List<Comment>> GetComments(string id, int pageNumber = 1, int pageSize = Constants.CommentsPerPage);
+        public Task<Comment> AddComment(string chapterId);
+        public Task<Comment> UpdateComment(string commentId);
+        public Task<Comment> DeleteComment(string commentId);
     }
 }
