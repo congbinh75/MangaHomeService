@@ -25,7 +25,7 @@ namespace MangaHomeService.Services
                     throw new ArgumentException(nameof(title));
                 }
                 var group = await dbContext.Groups.FirstOrDefaultAsync(g => g.Id == groupId);
-                if (group == null) 
+                if (group == null)
                 {
                     throw new ArgumentException(nameof(group));
                 }
@@ -59,12 +59,12 @@ namespace MangaHomeService.Services
         }
 
         public async Task<bool> Delete(string id)
-        {   
-            using (var dbContext = await _contextFactory.CreateDbContextAsync()) 
+        {
+            using (var dbContext = await _contextFactory.CreateDbContextAsync())
             {
                 var chapter = await dbContext.Chapters.Where(c => c.Id == id).Include(c => c.Pages).Include(c => c.Comments).
                     FirstOrDefaultAsync();
-                if (chapter == null) 
+                if (chapter == null)
                 {
                     throw new ArgumentException(nameof(chapter));
                 }
@@ -100,7 +100,7 @@ namespace MangaHomeService.Services
             }
         }
 
-        public async Task<Chapter> Update(string id, double number = 0, string? titleId = null, string? groupId = null, string? volumeId = null, 
+        public async Task<Chapter> Update(string id, double number = 0, string? titleId = null, string? groupId = null, string? volumeId = null,
             string? languageId = null, List<string>? pagesIds = null, List<string>? commentsIds = null, bool? isApproved = null)
         {
             using (var dbContext = await _contextFactory.CreateDbContextAsync())
@@ -152,7 +152,7 @@ namespace MangaHomeService.Services
 
                 var request = new ChapterRequest();
                 request.Chapter = chapter;
-                request.User = submitUser;
+                request.SubmitUser = submitUser;
                 request.Group = group;
                 request.IsApproved = false;
                 request.IsReviewed = false;
@@ -184,6 +184,7 @@ namespace MangaHomeService.Services
         {
             using (var dbContext = await _contextFactory.CreateDbContextAsync())
             {
+                var reviewUser = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == Functions.GetCurrentUserId());
                 var request = await dbContext.ChapterRequests.FirstOrDefaultAsync(r => r.Id == requestId);
                 if (request == null)
                 {
@@ -193,14 +194,35 @@ namespace MangaHomeService.Services
                 {
                     throw new ArgumentException();
                 }
-                
+
                 request.IsApproved = isApproved;
                 request.Chapter.IsApproved = isApproved;
                 request.IsReviewed = true;
+                request.ReviewUser = reviewUser;
 
                 await dbContext.SaveChangesAsync();
                 return request;
             }
+        }
+
+        public Task<List<Comment>> GetComments(string id, int pageNumber, int pageSize)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<Comment> AddComment(string chapterId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<Comment> UpdateComment(string commentId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<Comment> DeleteComment(string commentId)
+        {
+            throw new NotImplementedException();
         }
     }
 }

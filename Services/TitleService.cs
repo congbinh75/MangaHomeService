@@ -415,7 +415,7 @@ namespace MangaHomeService.Services
 
                 var request = new TitleRequest();
                 request.Title = title;
-                request.User = submitUser;
+                request.SubmitUser = submitUser;
 
                 await dbContext.TitleRequests.AddAsync(request);
                 await dbContext.SaveChangesAsync();
@@ -427,6 +427,7 @@ namespace MangaHomeService.Services
         {
             using (var dbContext = await _contextFactory.CreateDbContextAsync())
             {
+                var reviewUser = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == Functions.GetCurrentUserId());
                 var request = await dbContext.TitleRequests.Where(r => r.Id == requestId).Include(r => r.Title).FirstOrDefaultAsync();
                 if (request == null || request.IsReviewed)
                 {
@@ -436,10 +437,31 @@ namespace MangaHomeService.Services
                 request.IsApproved = isApproved;
                 request.Title.IsAprroved = isApproved;
                 request.IsReviewed = true;
+                request.ReviewUser = reviewUser;
 
                 await dbContext.SaveChangesAsync();
                 return request;
             }
+        }
+
+        public Task<List<Comment>> GetComments(string id, int pageNumber, int pageSize)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<Comment> AddComment(string titleId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<Comment> UpdateComment(string commentId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<Comment> DeleteComment(string commentId)
+        {
+            throw new NotImplementedException();
         }
     }
 }
