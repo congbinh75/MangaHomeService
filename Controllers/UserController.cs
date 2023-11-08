@@ -18,21 +18,15 @@ namespace MangaHomeService.Controllers
         private IConfiguration _configuration;
         private IStringLocalizer<UserController> _stringLocalizer;
         private IUserService _userService;
-        private IRoleService _roleService;
-        private IPermissionService _permissionService;
 
         public UserController(
             IConfiguration configuration, 
             IStringLocalizer<UserController> stringLocalizer, 
-            IUserService userService,
-            IRoleService roleService,
-            IPermissionService permissionService) 
+            IUserService userService) 
         {
             _configuration = configuration;
             _stringLocalizer = stringLocalizer;
             _userService = userService;
-            _roleService = roleService;
-            _permissionService = permissionService;
         }
 
         [HttpPost]
@@ -43,7 +37,7 @@ namespace MangaHomeService.Controllers
                 if (!string.IsNullOrEmpty(inputUser.Email) && !string.IsNullOrEmpty(inputUser.Password) 
                     && !string.IsNullOrEmpty(inputUser.Name))
                 {
-                    await _userService.Add(inputUser.Name, inputUser.Email, inputUser.Password, "");
+                    await _userService.Add(inputUser.Name, inputUser.Email, inputUser.Password, 2);
                     return Ok();
                 }
                 else
@@ -69,8 +63,6 @@ namespace MangaHomeService.Controllers
 
                     if (user != null)
                     {
-                        var permissions = await _userService.GetPermissionsOfUser(user.Id);
-
                         var claims = new[]
                         {
                             new Claim(JwtRegisteredClaimNames.Sub, _configuration["Jwt:Subject"]),
@@ -79,7 +71,7 @@ namespace MangaHomeService.Controllers
                             new Claim("UserId", user.Id),
                             new Claim("DisplayName", user.Name),
                             new Claim("Email", user.Email),
-                            new Claim(ClaimTypes.Role, permissions.Select(x => x.Name).ToArray().ToString())
+                            new Claim(ClaimTypes.Role, user.Role.ToString())
                         };
 
                         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
@@ -283,71 +275,6 @@ namespace MangaHomeService.Controllers
         public async Task<IActionResult> SendConfirmationEmail(string id)
         {
             throw new NotImplementedException();
-        }
-
-        [AllowAnonymous]
-        [HttpPost]
-        public async Task<IActionResult> AddRole(AddRoleData data)
-        {
-            try
-            {
-                if (data != null)
-                {
-                    await _roleService.Add(data.Name, data.Description);
-                    return Ok();
-                }
-                else
-                {
-                    return BadRequest(_stringLocalizer["ERR_INVALID_INPUT_DATA"]);
-                }
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
-
-        [AllowAnonymous]
-        [HttpPost]
-        public async Task<IActionResult> UpdateRole(UpdateRoleData data)
-        {
-            try
-            {
-                if (data != null)
-                {
-                    await _roleService.Update(data.Id, data.Name, data.Description);
-                    return Ok();
-                }
-                else
-                {
-                    return BadRequest(_stringLocalizer["ERR_INVALID_INPUT_DATA"]);
-                }
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> UpdatePermissionsOfRole(UpdateUserRoleData data)
-        {
-            try
-            {
-                if (data != null)
-                {
-                    await _roleService.Update(data.UserId, permissionIds: data.RoleIds);
-                    return Ok();
-                }
-                else
-                {
-                    return BadRequest(_stringLocalizer["ERR_INVALID_INPUT_DATA"]);
-                }
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
         }
     }
 }

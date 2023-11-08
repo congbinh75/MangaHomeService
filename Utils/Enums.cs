@@ -2,6 +2,20 @@
 {
     public static class Enums
     {
+        public enum Role
+        {
+            Admin = 0,
+            Moderator = 1,
+            User = 2
+        }
+
+        public enum GroupRole
+        {
+            Leader = 0,
+            Moderator = 1,
+            Member = 2
+        }
+
         public enum TitleStatus
         {
             NotYetReleased = 0,

@@ -16,7 +16,7 @@ namespace MangaHomeService.Services
             _contextFactory = contextFactory;
         }
 
-        public async Task<User> Add(string name, string email, string password, string roleId)
+        public async Task<User> Add(string name, string email, string password, int role)
         {
             using (var dbContext = await _contextFactory.CreateDbContextAsync())
             {
@@ -24,12 +24,6 @@ namespace MangaHomeService.Services
                 if (existingUser != null)
                 {
                     throw new ArgumentException();
-                }
-
-                var role = await dbContext.Roles.Where(r => r.Id == roleId).FirstOrDefaultAsync();
-                if (role == null)
-                {
-                    throw new ArgumentException(nameof(role));
                 }
 
                 (string hashed, byte[] salt) passAndSalt = HashPassword(password);
@@ -73,8 +67,8 @@ namespace MangaHomeService.Services
             }
         }
 
-        public async Task<User> Update(string userId, string? name = null, string? email = null, string? password = null,
-            bool? emailConfirmed = null, string? profilePicture = null, string? roleId = null)
+        public async Task<User> Update(string userId, string? name = null, string? email = null, string? password = null, int? role = null,
+            bool? emailConfirmed = null, string? profilePicture = null)
         {
             using (var dbContext = await _contextFactory.CreateDbContextAsync())
             {
@@ -84,13 +78,7 @@ namespace MangaHomeService.Services
                     throw new ArgumentException(nameof(user));
                 }
 
-                var role = roleId != null ? await dbContext.Roles.Where(r => r.Id == roleId).FirstOrDefaultAsync() : user.Role;
-                if (user == null)
-                {
-                    throw new ArgumentException(nameof(role));
-                }
-
-                var newRole = role;
+                var newRole = role == null ? user.Role : role;
                 var newName = name == null ? user.Name : name;
                 var newEmail = email == null ? user.Email : email;
                 var newEmailConfirmed = emailConfirmed == null ? user.EmailConfirmed : emailConfirmed;
@@ -107,7 +95,7 @@ namespace MangaHomeService.Services
 
                 user.Name = newName;
                 user.Email = email;
-                user.Role = newRole;
+                user.Role = (int)newRole;
                 user.EmailConfirmed = (bool)newEmailConfirmed;
                 user.ProfilePicture = newProfilePicture;
                 user.Password = newPassword;
@@ -146,23 +134,6 @@ namespace MangaHomeService.Services
                     iterationCount: 100000,
                     numBytesRequested: 256 / 8));
             return (hassed, salt);
-        }
-
-        public async Task<List<Permission>> GetPermissionsOfUser(string userId)
-        {
-            using (var dbContext = await _contextFactory.CreateDbContextAsync())
-            {
-                if (string.IsNullOrEmpty(userId))
-                {
-                    throw new Exception();
-                }
-                else
-                {
-                    var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == userId);
-                    var role = await dbContext.Roles.Where(r => r.Id == user.Role.Id).Include(r => r.Permissions).FirstOrDefaultAsync();
-                    return role.Permissions;
-                }
-            }
         }
     }
 }

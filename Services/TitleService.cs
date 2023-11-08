@@ -444,9 +444,13 @@ namespace MangaHomeService.Services
             }
         }
 
-        public Task<List<Comment>> GetComments(string id, int pageNumber, int pageSize)
+        public async Task<List<Comment>> GetComments(string id, int pageNumber = 1, int pageSize = Constants.CommentsPerPage)
         {
-            throw new NotImplementedException();
+            using (var dbContext = await _contextFactory.CreateDbContextAsync())
+            {
+                var comments = await dbContext.Comments.Where(c => c.Title.Id == id).Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync();
+                return comments;
+            }
         }
 
         public Task<Comment> AddComment(string titleId)

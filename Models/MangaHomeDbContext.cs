@@ -8,8 +8,6 @@ namespace MangaHomeService.Models
         public MangaHomeDbContext(DbContextOptions<MangaHomeDbContext> options) : base(options) { }
 
         public DbSet<User> Users { get; set; }
-        public DbSet<Role> Roles { get; set; }
-        public DbSet<Permission> Permissions { get; set; }
         public DbSet<Group> Groups { get; set; }
         public DbSet<Title> Titles { get; set; }
         public DbSet<Volume> Volumes { get; set; }
@@ -26,8 +24,6 @@ namespace MangaHomeService.Models
         public DbSet<TitleRequest> TitleRequests { get; set; }
         public DbSet<ChapterRequest> ChapterRequests { get; set; }
         public DbSet<Language> Languages { get; set; }
-        public DbSet<GroupRole> GroupRoles { get; set; }
-        public DbSet<GroupPermission> GroupPermissions { get; set; }
         public DbSet<Page> Pages { get; set; }
         public DbSet<TitleOtherName> TitleOtherNames { get; set; }
 

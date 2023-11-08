@@ -4,6 +4,6 @@
     {
         public User User { get; set; }
         public Group Group { get; set; }
-        public GroupRole Role { get; set; }
+        public int Role { get; set; }
     }
 }
