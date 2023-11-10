@@ -3,7 +3,6 @@
     public class GroupRequest : BaseModel
     {
         public Group Group { get; set; }
-        public User User { get; set; }
         public string Note { get; set; }
         public bool IsApproved { get; set; }
         public bool IsReviewed { get; set; }

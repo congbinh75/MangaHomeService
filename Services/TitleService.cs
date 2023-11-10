@@ -119,21 +119,21 @@ namespace MangaHomeService.Services
         {
             using (var dbContext = await _contextFactory.CreateDbContextAsync())
             {
-                var author = !string.IsNullOrEmpty(authorId) ? await dbContext.Authors.FirstOrDefaultAsync(a => a.Id == authorId) : null;
-                if (!string.IsNullOrEmpty(authorId) && author == null)
+                var author = !string.IsNullOrEmpty(authorId) ? await dbContext.People.FirstOrDefaultAsync(a => a.Id == authorId) : null;
+                if (author == null)
                 {
                     throw new ArgumentException(nameof(author));
                 }
 
-                var artist = !string.IsNullOrEmpty(artistId) ? await dbContext.Artists.FirstOrDefaultAsync(a => a.Id == artistId) : null;
-                if (!string.IsNullOrEmpty(authorId) && artist == null)
+                var artist = !string.IsNullOrEmpty(artistId) ? await dbContext.People.FirstOrDefaultAsync(a => a.Id == artistId) : null;
+                if (artist == null)
                 {
                     throw new ArgumentException(nameof(artist));
                 }
 
                 var originalLanguage = !string.IsNullOrEmpty(artistId) ? 
                     await dbContext.Languages.FirstOrDefaultAsync(a => a.Id == originalLanguageId) : null;
-                if (!string.IsNullOrEmpty(originalLanguageId) && originalLanguage == null)
+                if (originalLanguage == null)
                 {
                     throw new ArgumentException(nameof(originalLanguage));
                 }
@@ -263,21 +263,21 @@ namespace MangaHomeService.Services
                     throw new ArgumentException(nameof(title));
                 }
 
-                var author = !string.IsNullOrEmpty(authorId) ? await dbContext.Authors.FirstOrDefaultAsync(a => a.Id == authorId) : null;
-                if (!string.IsNullOrEmpty(authorId) && author == null)
+                var author = !string.IsNullOrEmpty(authorId) ? await dbContext.People.FirstOrDefaultAsync(a => a.Id == authorId) : null;
+                if (author == null)
                 {
                     throw new ArgumentException(nameof(author));
                 }
 
-                var artist = !string.IsNullOrEmpty(artistId) ? await dbContext.Artists.FirstOrDefaultAsync(a => a.Id == artistId) : null;
-                if (!string.IsNullOrEmpty(authorId) && artist == null)
+                var artist = !string.IsNullOrEmpty(artistId) ? await dbContext.People.FirstOrDefaultAsync(a => a.Id == artistId) : null;
+                if (artist == null)
                 {
                     throw new ArgumentException(nameof(artist));
                 }
 
                 var originalLanguage = !string.IsNullOrEmpty(artistId) ?
                     await dbContext.Languages.FirstOrDefaultAsync(a => a.Id == originalLanguageId) : null;
-                if (!string.IsNullOrEmpty(originalLanguageId) && originalLanguage == null)
+                if (originalLanguage == null)
                 {
                     throw new ArgumentException(nameof(originalLanguage));
                 }
@@ -415,7 +415,6 @@ namespace MangaHomeService.Services
 
                 var request = new TitleRequest();
                 request.Title = title;
-                request.SubmitUser = submitUser;
 
                 await dbContext.TitleRequests.AddAsync(request);
                 await dbContext.SaveChangesAsync();
@@ -437,7 +436,6 @@ namespace MangaHomeService.Services
                 request.IsApproved = isApproved;
                 request.Title.IsAprroved = isApproved;
                 request.IsReviewed = true;
-                request.ReviewUser = reviewUser;
 
                 await dbContext.SaveChangesAsync();
                 return request;
@@ -453,19 +451,69 @@ namespace MangaHomeService.Services
             }
         }
 
-        public Task<Comment> AddComment(string titleId)
+        public async Task<Comment> AddComment(string titleId, string content)
         {
-            throw new NotImplementedException();
+            using (var dbContext = await _contextFactory.CreateDbContextAsync())
+            {
+                var commnentUser = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == Functions.GetCurrentUserId());
+                if (!commnentUser.EmailConfirmed)
+                {
+                    throw new EmailNotConfirmedException();
+                }
+
+                var title = await dbContext.Titles.FirstOrDefaultAsync(t => t.Id == titleId);
+                if (title == null) 
+                {
+                    throw new ArgumentException(nameof(titleId));
+                }
+
+                if (string.IsNullOrEmpty(content)) 
+                {
+                    throw new ArgumentException(nameof(content));
+                }
+
+                var comment = new Comment();
+                comment.Title = title;
+                comment.Content = content;
+                await dbContext.Comments.AddAsync(comment);
+                return comment;
+            }
         }
 
-        public Task<Comment> UpdateComment(string commentId)
+        public async Task<Comment> UpdateComment(string commentId, string? content = null)
         {
-            throw new NotImplementedException();
+            using (var dbContext = await _contextFactory.CreateDbContextAsync())
+            {
+                if (content == "")
+                {
+                    throw new ArgumentException(nameof(content));
+                }
+
+                var comment = await dbContext.Comments.FirstOrDefaultAsync(c => c.Id == commentId);
+                if (comment == null) 
+                {
+                    throw new ArgumentException(nameof(commentId));
+                }
+
+                comment.Content = content != null ? content : comment.Content;
+                await dbContext.Comments.AddAsync(comment);
+                return comment;
+            }
         }
 
-        public Task<Comment> DeleteComment(string commentId)
+        public async Task<bool> DeleteComment(string commentId)
         {
-            throw new NotImplementedException();
+            using (var dbContext = await _contextFactory.CreateDbContextAsync())
+            {
+                var comment = await dbContext.Comments.FirstOrDefaultAsync(c => c.Id == commentId);
+                if (comment == null)
+                {
+                    throw new ArgumentException(nameof(commentId));
+                }
+
+                dbContext.Comments.Remove(comment);
+                return true;
+            }
         }
     }
 }
