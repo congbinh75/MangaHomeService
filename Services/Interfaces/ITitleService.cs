@@ -20,8 +20,8 @@ namespace MangaHomeService.Services.Interfaces
             List<string>? otherNamesIds = null, string originalLanguageId = "", List<string>? genresIds = null, List<string>? themesIds = null,
             List<string>? demographicsIds = null, List<string>? chaptersIds = null, List<string>? commentsIds = null, bool? isApproved = null);
         public Task<bool> Delete(string id);
-        public Task<TitleRequest> SubmitRequest(string titleId);
-        public Task<TitleRequest> ReviewRequest(string requestId, bool isApproved);
+        public Task<TitleRequest> SubmitRequest(string titleId, string note);
+        public Task<TitleRequest> ReviewRequest(string requestId, string note, bool isApproved);
         public Task<List<Comment>> GetComments(string id, int pageNumber = 1, int pageSize = Constants.CommentsPerPage);
         public Task<Comment> AddComment(string titleId, string content);
         public Task<Comment> UpdateComment(string commentId, string? content = null);

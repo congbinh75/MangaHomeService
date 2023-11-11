@@ -22,25 +22,34 @@ namespace MangaHomeService.Services
                 var title = await dbContext.Titles.FirstOrDefaultAsync(t => t.Id == titleId);
                 if (title == null)
                 {
-                    throw new ArgumentException(nameof(title));
+                    throw new NotFoundException(typeof(Title).ToString());
                 }
+
+                if (!title.IsAprroved)
+                {
+                    throw new NotApprovedException(title.Name);
+                }
+
                 var group = await dbContext.Groups.FirstOrDefaultAsync(g => g.Id == groupId);
                 if (group == null)
                 {
-                    throw new ArgumentException(nameof(group));
+                    throw new NotFoundException(typeof(Group).ToString());
                 }
+
                 var volume = volumeId == null ? null : await dbContext.Volumes.FirstOrDefaultAsync(v => v.Id == volumeId);
                 if (volume == null)
                 {
-                    throw new ArgumentException(nameof(volume));
+                    throw new NotFoundException(typeof(Volume).ToString());
                 }
+
                 var language = languageId == null ? null : await dbContext.Languages.FirstOrDefaultAsync(l => l.Id == languageId);
                 if (language == null)
                 {
-                    throw new ArgumentException(nameof(language));
+                    throw new NotFoundException(typeof(Language).ToString());
                 }
-                var pages = pagesIds == null ? null : await dbContext.Pages.Where(p => pagesIds.Contains(p.Id)).ToListAsync();
-                var comments = commentsIds == null ? null : await dbContext.Comments.Where(c => commentsIds.Contains(c.Id)).ToListAsync();
+
+                var pages = pagesIds == null ? new List<Page>() : await dbContext.Pages.Where(p => pagesIds.Contains(p.Id)).ToListAsync();
+                var comments = commentsIds == null ? new List<Comment>() : await dbContext.Comments.Where(c => commentsIds.Contains(c.Id)).ToListAsync();
 
                 Chapter chapter = new Chapter();
                 chapter.Number = number;
@@ -66,7 +75,7 @@ namespace MangaHomeService.Services
                     FirstOrDefaultAsync();
                 if (chapter == null)
                 {
-                    throw new ArgumentException(nameof(chapter));
+                    throw new NotFoundException(typeof(Chapter).ToString());
                 }
                 dbContext.Chapters.Remove(chapter);
                 await dbContext.SaveChangesAsync();
@@ -81,7 +90,7 @@ namespace MangaHomeService.Services
                 var chapter = await dbContext.Chapters.Where(c => c.Id == id).Include(c => c.Pages).FirstOrDefaultAsync();
                 if (chapter == null)
                 {
-                    throw new ArgumentException(nameof(chapter));
+                    throw new NotFoundException(typeof(Chapter).ToString());
                 }
                 return chapter;
             }
@@ -94,7 +103,7 @@ namespace MangaHomeService.Services
                 var title = await dbContext.Titles.FirstOrDefaultAsync(t => t.Id == titleId);
                 if (title == null)
                 {
-                    throw new ArgumentException(nameof(title));
+                    throw new NotFoundException(typeof(Title).ToString());
                 }
                 return await dbContext.Chapters.Where(c => c.Title.Id == titleId).OrderByDescending(c => c.Number).ToListAsync();
             }
@@ -108,7 +117,7 @@ namespace MangaHomeService.Services
                 var chapter = await dbContext.Chapters.FirstOrDefaultAsync(c => c.Id == id);
                 if (chapter == null)
                 {
-                    throw new ArgumentException(nameof(chapter));
+                    throw new NotFoundException(typeof(Chapter).ToString());
                 }
 
                 var newNumber = number > 0 ? number : chapter.Number;
@@ -141,13 +150,13 @@ namespace MangaHomeService.Services
                 var chapter = await dbContext.Chapters.FirstOrDefaultAsync(t => t.Id == titleId);
                 if (chapter == null)
                 {
-                    throw new ArgumentException(nameof(chapter));
+                    throw new NotFoundException(typeof(Chapter).ToString());
                 }
 
                 var group = await dbContext.Groups.FirstOrDefaultAsync(g => g.Id == groupId);
                 if (group == null)
                 {
-                    throw new ArgumentException(nameof(group));
+                    throw new NotFoundException(typeof(Group).ToString());
                 }
 
                 var request = new ChapterRequest();
@@ -169,11 +178,11 @@ namespace MangaHomeService.Services
                 var request = await dbContext.ChapterRequests.Where(r => r.Id == id).Include(r => r.Chapter).FirstOrDefaultAsync();
                 if (request == null)
                 {
-                    throw new ArgumentException(nameof(request));
+                    throw new NotFoundException(typeof(ChapterRequest).ToString());
                 }
                 if (request.Chapter == null)
                 {
-                    throw new ArgumentException(nameof(request.Chapter));
+                    throw new NotFoundException(typeof(Chapter).ToString());
                 }
                 return request;
             }
@@ -183,15 +192,14 @@ namespace MangaHomeService.Services
         {
             using (var dbContext = await _contextFactory.CreateDbContextAsync())
             {
-                var reviewUser = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == Functions.GetCurrentUserId());
                 var request = await dbContext.ChapterRequests.FirstOrDefaultAsync(r => r.Id == requestId);
                 if (request == null)
                 {
-                    throw new ArgumentException(nameof(request));
+                    throw new NotFoundException(typeof(ChapterRequest).ToString());
                 }
                 if (request.IsReviewed)
                 {
-                    throw new ArgumentException();
+                    throw new AlreadyReviewedException();
                 }
 
                 request.IsApproved = isApproved;
@@ -225,7 +233,7 @@ namespace MangaHomeService.Services
                 var chapter = await dbContext.Chapters.FirstOrDefaultAsync(c => c.Id == chapterId);
                 if (chapter == null)
                 {
-                    throw new ArgumentException(nameof(chapterId));
+                    throw new NotFoundException(typeof(Chapter).ToString());
                 }
 
                 if (string.IsNullOrEmpty(content))
@@ -253,7 +261,7 @@ namespace MangaHomeService.Services
                 var comment = await dbContext.Comments.FirstOrDefaultAsync(c => c.Id == commentId);
                 if (comment == null)
                 {
-                    throw new ArgumentException(nameof(commentId));
+                    throw new NotFoundException(typeof(Comment).ToString());
                 }
 
                 comment.Content = content != null ? content : comment.Content;
@@ -269,7 +277,7 @@ namespace MangaHomeService.Services
                 var comment = await dbContext.Comments.FirstOrDefaultAsync(c => c.Id == commentId);
                 if (comment == null)
                 {
-                    throw new ArgumentException(nameof(commentId));
+                    throw new NotFoundException(typeof(Comment).ToString());
                 }
 
                 dbContext.Comments.Remove(comment);

@@ -1,6 +1,8 @@
 ﻿using MangaHomeService.Models;
 using MangaHomeService.Models.FormData;
 using MangaHomeService.Services.Interfaces;
+using MangaHomeService.Utils;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 
@@ -30,6 +32,8 @@ namespace MangaHomeService.Controllers
             _pageService = pageService;
         }
 
+        [HttpGet]
+        [AllowAnonymous]
         public async Task<IActionResult> Get(string id)
         {
             try
@@ -50,6 +54,8 @@ namespace MangaHomeService.Controllers
             }
         }
 
+        [HttpPost]
+        [Authorize(Roles = "Admin, Moderator, User")]
         public async Task<IActionResult> Add(AddChapterFormData formData)
         {
             try
@@ -67,9 +73,18 @@ namespace MangaHomeService.Controllers
                     return BadRequest(_stringLocalizer["ERR_INVALID_INPUT_DATA"]);
                 }
             }
-            catch (ArgumentException)
+            catch (NotFoundException ex)
             {
-                return BadRequest(_stringLocalizer["ERR_INVALID_INPUT_DATA"]);
+                if (ex.Message == typeof(Title).ToString())
+                    return BadRequest(_stringLocalizer["ERR_TITLE_NOT_FOUND"]);
+                else if (ex.Message == typeof(Group).ToString())
+                    return BadRequest(_stringLocalizer["ERR_GROUP_NOT_FOUND"]);
+                else if (ex.Message == typeof(Volume).ToString())
+                    return BadRequest(_stringLocalizer["ERR_VOLUME_NOT_FOUND"]);
+                else if (ex.Message == typeof(Language).ToString())
+                    return BadRequest(_stringLocalizer["ERR_LANGUAGE_NOT_FOUND"]);
+                else
+                    return BadRequest();
             }
             catch (Exception ex)
             {

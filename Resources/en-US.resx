@@ -117,13 +117,31 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="ERR_CHAPTER_NOT_FOUND" xml:space="preserve">
+    <value>Chapter not found</value>
+  </data>
+  <data name="ERR_EMAIL_ALREADY_REGISTERED" xml:space="preserve">
+    <value>Email already registered</value>
+  </data>
+  <data name="ERR_GROUP_NOT_FOUND" xml:space="preserve">
+    <value>Group not found</value>
+  </data>
   <data name="ERR_INVALID_INPUT_DATA" xml:space="preserve">
     <value>Invalid or missing input data</value>
+  </data>
+  <data name="ERR_LANGUAGE_NOT_FOUND" xml:space="preserve">
+    <value>Language not found</value>
   </data>
   <data name="ERR_PASSWORD_CONFIRMATION_NOT_MATCH" xml:space="preserve">
     <value>Password and confirmation not match</value>
   </data>
-  <data name="ERR_USER_EXISTED" xml:space="preserve">
-    <value>Email already registered</value>
+  <data name="ERR_TITLE_NOT_APPROVED" xml:space="preserve">
+    <value>Title not approved</value>
+  </data>
+  <data name="ERR_TITLE_NOT_FOUND" xml:space="preserve">
+    <value>Title not found</value>
+  </data>
+  <data name="ERR_VOLUME_NOT_FOUND" xml:space="preserve">
+    <value>Volume not found</value>
   </data>
 </root>

@@ -22,7 +22,7 @@ namespace MangaHomeService.Services
                 var title = await dbContext.Titles.Where(x => x.Id == id).Include(x => x.Chapters).FirstOrDefaultAsync();
                 if (title == null) 
                 {
-                    throw new Exception();
+                    throw new NotFoundException(typeof(Title).ToString());
                 }
                 return title;
             }
@@ -122,20 +122,20 @@ namespace MangaHomeService.Services
                 var author = !string.IsNullOrEmpty(authorId) ? await dbContext.People.FirstOrDefaultAsync(a => a.Id == authorId) : null;
                 if (author == null)
                 {
-                    throw new ArgumentException(nameof(author));
+                    throw new NotFoundException(typeof(Person).ToString());
                 }
 
                 var artist = !string.IsNullOrEmpty(artistId) ? await dbContext.People.FirstOrDefaultAsync(a => a.Id == artistId) : null;
                 if (artist == null)
                 {
-                    throw new ArgumentException(nameof(artist));
+                    throw new NotFoundException(typeof(Person).ToString());
                 }
 
                 var originalLanguage = !string.IsNullOrEmpty(artistId) ? 
                     await dbContext.Languages.FirstOrDefaultAsync(a => a.Id == originalLanguageId) : null;
                 if (originalLanguage == null)
                 {
-                    throw new ArgumentException(nameof(originalLanguage));
+                    throw new NotFoundException(typeof(Language).ToString());
                 }
 
                 var otherNames = new List<TitleOtherName>();
@@ -146,7 +146,7 @@ namespace MangaHomeService.Services
                         var otherName = await dbContext.TitleOtherNames.FirstOrDefaultAsync(t => t.Id == otherNameId);
                         if (otherName == null) 
                         {
-                            throw new ArgumentException(nameof(otherName));
+                            throw new NotFoundException(typeof(TitleOtherName).ToString());
                         }
                         otherNames.Add(otherName);
                     }
@@ -160,7 +160,7 @@ namespace MangaHomeService.Services
                         var genre = await dbContext.Genres.FirstOrDefaultAsync(g => g.Id == genreId);
                         if (genre == null)
                         {
-                            throw new ArgumentException(nameof(genre));
+                            throw new NotFoundException(typeof(Genre).ToString());
                         }
                         genres.Add(genre);
                     }
@@ -174,7 +174,7 @@ namespace MangaHomeService.Services
                         var theme = await dbContext.Themes.FirstOrDefaultAsync(g => g.Id == themeId);
                         if (theme == null)
                         {
-                            throw new ArgumentException(nameof(theme));
+                            throw new NotFoundException(typeof(Theme).ToString());
                         }
                         themes.Add(theme);
                     }
@@ -188,7 +188,7 @@ namespace MangaHomeService.Services
                         var chapter = await dbContext.Chapters.FirstOrDefaultAsync(c => c.Id == chapterId);
                         if (chapter == null)
                         {
-                            throw new ArgumentException(nameof(chapter));
+                            throw new NotFoundException(typeof(Chapter).ToString());
                         }
                         chapters.Add(chapter);
                     }
@@ -203,7 +203,7 @@ namespace MangaHomeService.Services
                         var comment = await dbContext.Comments.FirstOrDefaultAsync(c => c.Id == commentId);
                         if (comment == null)
                         {
-                            throw new ArgumentException(nameof(comment));
+                            throw new NotFoundException(typeof(Comment).ToString());
                         }
                         comments.Add(comment);
                     }
@@ -217,7 +217,7 @@ namespace MangaHomeService.Services
                         var demographic = await dbContext.Demographics.FirstOrDefaultAsync(c => c.Id == demographicId);
                         if (demographic == null)
                         {
-                            throw new ArgumentException(nameof(demographic));
+                            throw new NotFoundException(typeof(Demographic).ToString());
                         }
                         demographics.Add(demographic);
                     }
@@ -260,26 +260,26 @@ namespace MangaHomeService.Services
                 var title = await dbContext.Titles.FirstOrDefaultAsync(t => t.Id == id);
                 if (title == null) 
                 {
-                    throw new ArgumentException(nameof(title));
+                    throw new NotFoundException(typeof(Title).ToString());
                 }
 
                 var author = !string.IsNullOrEmpty(authorId) ? await dbContext.People.FirstOrDefaultAsync(a => a.Id == authorId) : null;
                 if (author == null)
                 {
-                    throw new ArgumentException(nameof(author));
+                    throw new NotFoundException(typeof(Person).ToString());
                 }
 
                 var artist = !string.IsNullOrEmpty(artistId) ? await dbContext.People.FirstOrDefaultAsync(a => a.Id == artistId) : null;
                 if (artist == null)
                 {
-                    throw new ArgumentException(nameof(artist));
+                    throw new NotFoundException(typeof(Person).ToString());
                 }
 
                 var originalLanguage = !string.IsNullOrEmpty(artistId) ?
                     await dbContext.Languages.FirstOrDefaultAsync(a => a.Id == originalLanguageId) : null;
                 if (originalLanguage == null)
                 {
-                    throw new ArgumentException(nameof(originalLanguage));
+                    throw new NotFoundException(typeof(Language).ToString());
                 }
 
                 var otherNames = new List<TitleOtherName>();
@@ -290,7 +290,7 @@ namespace MangaHomeService.Services
                         var otherName = await dbContext.TitleOtherNames.FirstOrDefaultAsync(t => t.Id == otherNameId);
                         if (otherName == null)
                         {
-                            throw new ArgumentException(nameof(otherName));
+                            throw new NotFoundException(typeof(TitleOtherName).ToString());
                         }
                         otherNames.Add(otherName);
                     }
@@ -304,7 +304,7 @@ namespace MangaHomeService.Services
                         var genre = await dbContext.Genres.FirstOrDefaultAsync(g => g.Id == genreId);
                         if (genre == null)
                         {
-                            throw new ArgumentException(nameof(genre));
+                            throw new NotFoundException(typeof(Genre).ToString());
                         }
                         genres.Add(genre);
                     }
@@ -318,7 +318,7 @@ namespace MangaHomeService.Services
                         var theme = await dbContext.Themes.FirstOrDefaultAsync(g => g.Id == themeId);
                         if (theme == null)
                         {
-                            throw new ArgumentException(nameof(theme));
+                            throw new NotFoundException(typeof(Theme).ToString());
                         }
                         themes.Add(theme);
                     }
@@ -332,7 +332,7 @@ namespace MangaHomeService.Services
                         var chapter = await dbContext.Chapters.FirstOrDefaultAsync(c => c.Id == chapterId);
                         if (chapter == null)
                         {
-                            throw new ArgumentException(nameof(chapter));
+                            throw new NotFoundException(typeof(Chapter).ToString());
                         }
                         chapters.Add(chapter);
                     }
@@ -347,7 +347,7 @@ namespace MangaHomeService.Services
                         var comment = await dbContext.Comments.FirstOrDefaultAsync(c => c.Id == commentId);
                         if (comment == null)
                         {
-                            throw new ArgumentException(nameof(comment));
+                            throw new NotFoundException(typeof(Comment).ToString());
                         }
                         comments.Add(comment);
                     }
@@ -361,7 +361,7 @@ namespace MangaHomeService.Services
                         var demographic = await dbContext.Demographics.FirstOrDefaultAsync(c => c.Id == demographicId);
                         if (demographic == null)
                         {
-                            throw new ArgumentException(nameof(demographic));
+                            throw new NotFoundException(typeof(Demographic).ToString());
                         }
                         demographics.Add(demographic);
                     }
@@ -394,7 +394,7 @@ namespace MangaHomeService.Services
                 var title = await dbContext.Titles.Where(t => t.Id == id).FirstOrDefaultAsync();
                 if (title == null) 
                 {
-                    throw new ArgumentException(nameof(id));
+                    throw new NotFoundException(typeof(Title).ToString());
                 }
                 dbContext.Titles.Remove(title);
                 await dbContext.SaveChangesAsync();
@@ -406,11 +406,10 @@ namespace MangaHomeService.Services
         {
             using (var dbContext = await _contextFactory.CreateDbContextAsync())
             {
-                var submitUser = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == Functions.GetCurrentUserId());
                 var title = await dbContext.Titles.Where(t => t.Id == titleId && t.IsAprroved == false).FirstOrDefaultAsync();
                 if (title == null)
                 {
-                    throw new ArgumentException(nameof(titleId));
+                    throw new NotFoundException(typeof(Title).ToString());
                 }
 
                 var request = new TitleRequest();
@@ -426,11 +425,14 @@ namespace MangaHomeService.Services
         {
             using (var dbContext = await _contextFactory.CreateDbContextAsync())
             {
-                var reviewUser = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == Functions.GetCurrentUserId());
                 var request = await dbContext.TitleRequests.Where(r => r.Id == requestId).Include(r => r.Title).FirstOrDefaultAsync();
-                if (request == null || request.IsReviewed)
+                if (request == null)
                 {
-                    throw new ArgumentException();
+                    throw new NotFoundException(typeof(TitleRequest).ToString());
+                }
+                if (request.IsReviewed)
+                {
+                    throw new AlreadyReviewedException();
                 }
 
                 request.IsApproved = isApproved;
@@ -464,12 +466,12 @@ namespace MangaHomeService.Services
                 var title = await dbContext.Titles.FirstOrDefaultAsync(t => t.Id == titleId);
                 if (title == null) 
                 {
-                    throw new ArgumentException(nameof(titleId));
+                    throw new NotFoundException(typeof(Title).ToString());
                 }
 
                 if (string.IsNullOrEmpty(content)) 
                 {
-                    throw new ArgumentException(nameof(content));
+                    throw new NotFoundException(typeof(Title).ToString());
                 }
 
                 var comment = new Comment();
@@ -492,7 +494,7 @@ namespace MangaHomeService.Services
                 var comment = await dbContext.Comments.FirstOrDefaultAsync(c => c.Id == commentId);
                 if (comment == null) 
                 {
-                    throw new ArgumentException(nameof(commentId));
+                    throw new NotFoundException(typeof(Comment).ToString());
                 }
 
                 comment.Content = content != null ? content : comment.Content;
@@ -508,7 +510,7 @@ namespace MangaHomeService.Services
                 var comment = await dbContext.Comments.FirstOrDefaultAsync(c => c.Id == commentId);
                 if (comment == null)
                 {
-                    throw new ArgumentException(nameof(commentId));
+                    throw new NotFoundException(typeof(Comment).ToString());
                 }
 
                 dbContext.Comments.Remove(comment);

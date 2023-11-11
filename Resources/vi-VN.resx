@@ -117,13 +117,31 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="ERR_CHAPTER_NOT_FOUND" xml:space="preserve">
+    <value>Không tìm thấy chương truyện</value>
+  </data>
+  <data name="ERR_EMAIL_ALREADY_REGISTERED" xml:space="preserve">
+    <value>Email đã được đăng ký</value>
+  </data>
+  <data name="ERR_GROUP_NOT_FOUND" xml:space="preserve">
+    <value>Không tìm thấy nhóm</value>
+  </data>
   <data name="ERR_INVALID_INPUT_DATA" xml:space="preserve">
     <value>Dữ liệu đầu vào không hợp lệ hoặc rỗng</value>
+  </data>
+  <data name="ERR_LANGUAGE_NOT_FOUND" xml:space="preserve">
+    <value>Không tìm thấy ngôn ngữ</value>
   </data>
   <data name="ERR_PASSWORD_CONFIRMATION_NOT_MATCH" xml:space="preserve">
     <value>Mật khẩu và xác nhận mật khẩu không trùng khớp</value>
   </data>
-  <data name="ERR_USER_EXISTED" xml:space="preserve">
-    <value>Email đã được đăng ký.</value>
+  <data name="ERR_TITLE_NOT_APPROVED" xml:space="preserve">
+    <value>Tựa truyện chưa được phê duyệt</value>
+  </data>
+  <data name="ERR_TITLE_NOT_FOUND" xml:space="preserve">
+    <value>Không tìm thấy tựa truyện</value>
+  </data>
+  <data name="ERR_VOLUME_NOT_FOUND" xml:space="preserve">
+    <value>Không tìm thấy tập truyện</value>
   </data>
 </root>

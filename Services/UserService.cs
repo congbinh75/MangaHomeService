@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 using System.Security.Cryptography;
 using Microsoft.EntityFrameworkCore;
 using System.Data;
+using MangaHomeService.Utils;
 
 namespace MangaHomeService.Services
 {
@@ -23,7 +24,7 @@ namespace MangaHomeService.Services
                 var existingUser = await dbContext.Users.FirstOrDefaultAsync(u => u.Email == email);
                 if (existingUser != null)
                 {
-                    throw new ArgumentException();
+                    throw new EmailAlreadyRegisteredException();
                 }
 
                 (string hashed, byte[] salt) passAndSalt = HashPassword(password);
@@ -63,7 +64,10 @@ namespace MangaHomeService.Services
                 {
                     return user;
                 }
-                return null;
+                else
+                {
+                    throw new InvalidCredentialsException();
+                }
             }
         }
 
@@ -75,7 +79,7 @@ namespace MangaHomeService.Services
                 var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == userId);
                 if (user == null)
                 {
-                    throw new ArgumentException(nameof(user));
+                    throw new NotFoundException(typeof(User).ToString());
                 }
 
                 var newRole = role == null ? user.Role : role;
@@ -113,7 +117,7 @@ namespace MangaHomeService.Services
                 var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == id);
                 if (user == null)
                 {
-                    throw new ArgumentException(nameof(user));
+                    throw new NotFoundException(typeof(User).ToString());
                 }
                 dbContext.Users.Remove(user);
                 await dbContext.SaveChangesAsync();

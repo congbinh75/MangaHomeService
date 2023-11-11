@@ -1,5 +1,6 @@
 ﻿using MangaHomeService.Models;
 using MangaHomeService.Services.Interfaces;
+using MangaHomeService.Utils;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 
@@ -27,7 +28,7 @@ namespace MangaHomeService.Services
                 var chapter = await dbContext.Chapters.FirstOrDefaultAsync(c => c.Id == chapterId);
                 if (chapter == null)
                 {
-                    throw new ArgumentException(nameof(chapter));
+                    throw new NotFoundException(typeof(Chapter).ToString());
                 }
 
                 var existingNumberPage = await dbContext.Pages.FirstOrDefaultAsync(p => p.Chapter.Id == chapterId && p.Number == number);
@@ -55,7 +56,7 @@ namespace MangaHomeService.Services
                 var page = await dbContext.Pages.FirstOrDefaultAsync(c => c.Id == id);
                 if (page == null)
                 {
-                    throw new ArgumentException(nameof(page));
+                    throw new NotFoundException(typeof(Page).ToString());
                 }
                 dbContext.Pages.Remove(page);
                 dbContext.SaveChanges();
@@ -70,7 +71,7 @@ namespace MangaHomeService.Services
                 var page = await dbContext.Pages.FirstOrDefaultAsync(c => c.Id == id);
                 if (page == null)
                 {
-                    throw new ArgumentException(nameof(page));
+                    throw new NotFoundException(typeof(Page).ToString());
                 }
                 return page;
             }
@@ -92,7 +93,7 @@ namespace MangaHomeService.Services
                 var page = await dbContext.Pages.FirstOrDefaultAsync(p => p.Id == id);
                 if (page == null) 
                 {
-                    throw new ArgumentException(nameof(page));
+                    throw new NotFoundException(typeof(Page).ToString());
                 }
 
                 if (chapterId != "")
@@ -100,7 +101,7 @@ namespace MangaHomeService.Services
                     var chapter = await dbContext.Chapters.FirstOrDefaultAsync(c => c.Id == chapterId);
                     if (chapter == null)
                     {
-                        throw new ArgumentException(nameof(Chapter));
+                        throw new NotFoundException(typeof(Chapter).ToString());
                     }
                     else
                     {

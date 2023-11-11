@@ -2,7 +2,7 @@
 using MangaHomeService.Services.Interfaces;
 using MangaHomeService.Utils;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Internal;
+using Group = MangaHomeService.Models.Group;
 
 namespace MangaHomeService.Services
 {
@@ -14,36 +14,138 @@ namespace MangaHomeService.Services
         {
             _contextFactory = contextFactory;
         }
-        public Task<Group> Add(string name, string description, string profilePicture, List<string> membersIds)
+        public async Task<Group> Add(string name, string description, string profilePicture, List<string> membersIds)
         {
-            throw new NotImplementedException();
+            using (var dbContext = await _contextFactory.CreateDbContextAsync()) 
+            {
+                var members = new List<Member>();
+                foreach (string memberId in membersIds)
+                {
+                    var member = await dbContext.Members.FirstOrDefaultAsync(m => m.Id == memberId);
+                    if (member == null)
+                    {
+                        throw new NotFoundException(typeof(Member).ToString());
+                    }
+                    members.Add(member);
+                }
+
+                var group = new Group();
+                group.Name = name;
+                group.Description = description;
+                group.ProfilePicture = profilePicture;
+                group.Members = members;
+                await dbContext.Groups.AddAsync(group);
+                await dbContext.SaveChangesAsync();
+                return group;
+            }
         }
 
-        public Task<bool> Delete(string id)
+        public async Task<bool> Delete(string id)
         {
-            throw new NotImplementedException();
+            using (var dbContext = await _contextFactory.CreateDbContextAsync())
+            {
+                var group = await dbContext.Groups.FirstOrDefaultAsync(g => g.Id == id);
+                if (group == null)
+                {
+                    throw new NotFoundException(typeof(Group).ToString());
+                }
+                dbContext.Groups.Remove(group);
+                await dbContext.SaveChangesAsync();
+                return true;
+            }
         }
 
-        public Task<Group> Get(string id)
+        public async Task<Group> Get(string id)
         {
-            throw new NotImplementedException();
+            using (var dbContext = await _contextFactory.CreateDbContextAsync())
+            {
+                var group = await dbContext.Groups.FirstOrDefaultAsync(g => g.Id == id);
+                if (group == null)
+                {
+                    throw new NotFoundException(typeof(Group).ToString());
+                }
+                return group;
+            }
         }
 
-        public Task<TitleRequest> ReviewRequest(string requestId, bool isApproved)
+        public async Task<GroupRequest> ReviewRequest(string requestId, string note, bool isApproved)
         {
-            throw new NotImplementedException();
+            using (var dbContext = await _contextFactory.CreateDbContextAsync())
+            {
+                var request = await dbContext.GroupRequests.FirstOrDefaultAsync(g => g.Id == requestId);
+                if (request == null)
+                {
+                    throw new NotFoundException(typeof(GroupRequest).ToString());
+                }
+                request.ReviewNote = note;
+                request.IsReviewed = true;
+                request.IsApproved = isApproved;
+                await dbContext.SaveChangesAsync();
+                return request;
+            }
         }
 
-        public Task<TitleRequest> SubmitRequest(string groupId)
+        public async Task<GroupRequest> SubmitRequest(string groupId, string note)
         {
-            throw new NotImplementedException();
+            using (var dbContext = await _contextFactory.CreateDbContextAsync())
+            {
+                var group = await dbContext.Groups.FirstOrDefaultAsync(g => g.Id == groupId);
+                if (group == null)
+                {
+                    throw new NotFoundException(typeof(Group).ToString());
+                }
+
+                var request = new GroupRequest();
+                request.Group = group;
+                request.SubmitNote = note;
+                request.IsApproved = false;
+                request.IsReviewed = false;
+                await dbContext.GroupRequests.AddAsync(request);
+                return request;
+            }
         }
 
-        public Task<Group> Update(string id, string? name = null, string? description = null, string? profilePicture = null, 
+        public async Task<Group> Update(string id, string? name = null, string? description = null, string? profilePicture = null, 
             List<string>? membersIds = null)
         {
-            throw new NotImplementedException();
+            using (var dbContext = await _contextFactory.CreateDbContextAsync())
+            {
+                var group = await dbContext.Groups.FirstOrDefaultAsync(g => g.Id == id);
+                if (group == null)
+                {
+                    throw new NotFoundException(typeof(Group).ToString());
+                }
+
+                var newName = name == null ? group.Name : name;
+                var newDescription = description == null ? group.Description : description;
+                var newProfilePicture = profilePicture == null ? group.ProfilePicture : profilePicture;
+                var newMembers = new List<Member>();
+                if (membersIds != null)
+                {
+                    foreach (var memberId in membersIds)
+                    {
+                        var member = await dbContext.Members.FirstOrDefaultAsync(m => m.Id == memberId);
+                        if (member == null)
+                        {
+                            throw new NotFoundException(typeof(Member).ToString());
+                        }
+                        newMembers.Add(member);
+                    }
+                }
+                else
+                {
+                    newMembers = group.Members;
+                }
+
+                group.Name = newName;
+                group.Description = newDescription;
+                group.ProfilePicture = newProfilePicture;
+                group.Members = newMembers;
+                await dbContext.SaveChangesAsync();
+                return group;
+            }
         }
+
         public async Task<List<Comment>> GetComments(string id, int pageNumber = 1, int pageSize = Constants.CommentsPerPage)
         {
             using (var dbContext = await _contextFactory.CreateDbContextAsync())
@@ -66,7 +168,7 @@ namespace MangaHomeService.Services
                 var group = await dbContext.Groups.FirstOrDefaultAsync(g => g.Id == groupId);
                 if (group == null)
                 {
-                    throw new ArgumentException(nameof(groupId));
+                    throw new NotFoundException(typeof(Group).ToString());
                 }
 
                 if (string.IsNullOrEmpty(content))
@@ -94,7 +196,7 @@ namespace MangaHomeService.Services
                 var comment = await dbContext.Comments.FirstOrDefaultAsync(c => c.Id == commentId);
                 if (comment == null)
                 {
-                    throw new ArgumentException(nameof(commentId));
+                    throw new NotFoundException(typeof(Comment).ToString());
                 }
 
                 comment.Content = content != null ? content : comment.Content;
@@ -110,7 +212,7 @@ namespace MangaHomeService.Services
                 var comment = await dbContext.Comments.FirstOrDefaultAsync(c => c.Id == commentId);
                 if (comment == null)
                 {
-                    throw new ArgumentException(nameof(commentId));
+                    throw new NotFoundException(typeof(Comment).ToString());
                 }
 
                 dbContext.Comments.Remove(comment);
