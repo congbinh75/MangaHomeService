@@ -2,7 +2,6 @@
 using MangaHomeService.Services.Interfaces;
 using MangaHomeService.Utils;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 
 namespace MangaHomeService.Services
 {
@@ -18,7 +17,7 @@ namespace MangaHomeService.Services
 
         public async Task<Page> Add(string chapterId, int number, IFormFile file)
         {
-            using (var dbContext = _contextFactory.CreateDbContext()) 
+            using (var dbContext = await _contextFactory.CreateDbContextAsync())
             {
                 if (file == null)
                 {
@@ -88,7 +87,7 @@ namespace MangaHomeService.Services
 
         public async Task<Page> Update(string id, string chapterId = "", int number = 0, IFormFile? file = null)
         {
-            using (var dbContext = _contextFactory.CreateDbContext()) 
+            using (var dbContext = await _contextFactory.CreateDbContextAsync()) 
             {
                 var page = await dbContext.Pages.FirstOrDefaultAsync(p => p.Id == id);
                 if (page == null) 

@@ -1,6 +1,6 @@
 ﻿namespace MangaHomeService.Models.FormData
 {
-    public class AddTitleLanguageFormData
+    public class AddTitleLanguageSupportFormData
     {
         public string Name { get; set; }
         public string Logo { get; set; }

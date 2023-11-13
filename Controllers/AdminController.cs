@@ -45,5 +45,12 @@ namespace MangaHomeService.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
+        [HttpPost]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> AddTitleLanguageSupport(AddTitleLanguageSupportFormData formData)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

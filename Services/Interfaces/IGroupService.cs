@@ -12,9 +12,5 @@ namespace MangaHomeService.Services.Interfaces
         public Task<bool> Delete(string id);
         public Task<GroupRequest> SubmitRequest(string groupId, string note);
         public Task<GroupRequest> ReviewRequest(string requestId, string note, bool isApproved);
-        public Task<List<Comment>> GetComments(string id, int pageNumber = 1, int pageSize = Constants.CommentsPerPage);
-        public Task<Comment> AddComment(string groupId, string content);
-        public Task<Comment> UpdateComment(string commentId, string? content = null);
-        public Task<bool> DeleteComment(string commentId);
     }
 }

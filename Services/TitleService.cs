@@ -402,7 +402,7 @@ namespace MangaHomeService.Services
             }
         }
 
-        public async Task<TitleRequest> SubmitRequest(string titleId)
+        public async Task<TitleRequest> SubmitRequest(string titleId, string groupId, string note)
         {
             using (var dbContext = await _contextFactory.CreateDbContextAsync())
             {
@@ -412,8 +412,16 @@ namespace MangaHomeService.Services
                     throw new NotFoundException(typeof(Title).ToString());
                 }
 
+                var group = await dbContext.Groups.FirstOrDefaultAsync(g => g.Id == groupId);
+                if (group == null)
+                {
+                    throw new NotFoundException(typeof(Group).ToString());
+                }
+
                 var request = new TitleRequest();
                 request.Title = title;
+                request.Group = group;
+                request.SubmitNote = note;
 
                 await dbContext.TitleRequests.AddAsync(request);
                 await dbContext.SaveChangesAsync();
@@ -421,7 +429,7 @@ namespace MangaHomeService.Services
             }
         }
 
-        public async Task<TitleRequest> ReviewRequest(string requestId, bool isApproved)
+        public async Task<TitleRequest> ReviewRequest(string requestId, bool isApproved, string note)
         {
             using (var dbContext = await _contextFactory.CreateDbContextAsync())
             {
@@ -435,86 +443,13 @@ namespace MangaHomeService.Services
                     throw new AlreadyReviewedException();
                 }
 
+                request.ReviewNote = note;
                 request.IsApproved = isApproved;
                 request.Title.IsAprroved = isApproved;
                 request.IsReviewed = true;
 
                 await dbContext.SaveChangesAsync();
                 return request;
-            }
-        }
-
-        public async Task<List<Comment>> GetComments(string id, int pageNumber = 1, int pageSize = Constants.CommentsPerPage)
-        {
-            using (var dbContext = await _contextFactory.CreateDbContextAsync())
-            {
-                var comments = await dbContext.Comments.Where(c => c.Title.Id == id).Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync();
-                return comments;
-            }
-        }
-
-        public async Task<Comment> AddComment(string titleId, string content)
-        {
-            using (var dbContext = await _contextFactory.CreateDbContextAsync())
-            {
-                var commnentUser = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == Functions.GetCurrentUserId());
-                if (!commnentUser.EmailConfirmed)
-                {
-                    throw new EmailNotConfirmedException();
-                }
-
-                var title = await dbContext.Titles.FirstOrDefaultAsync(t => t.Id == titleId);
-                if (title == null) 
-                {
-                    throw new NotFoundException(typeof(Title).ToString());
-                }
-
-                if (string.IsNullOrEmpty(content)) 
-                {
-                    throw new NotFoundException(typeof(Title).ToString());
-                }
-
-                var comment = new Comment();
-                comment.Title = title;
-                comment.Content = content;
-                await dbContext.Comments.AddAsync(comment);
-                return comment;
-            }
-        }
-
-        public async Task<Comment> UpdateComment(string commentId, string? content = null)
-        {
-            using (var dbContext = await _contextFactory.CreateDbContextAsync())
-            {
-                if (content == "")
-                {
-                    throw new ArgumentException(nameof(content));
-                }
-
-                var comment = await dbContext.Comments.FirstOrDefaultAsync(c => c.Id == commentId);
-                if (comment == null) 
-                {
-                    throw new NotFoundException(typeof(Comment).ToString());
-                }
-
-                comment.Content = content != null ? content : comment.Content;
-                await dbContext.Comments.AddAsync(comment);
-                return comment;
-            }
-        }
-
-        public async Task<bool> DeleteComment(string commentId)
-        {
-            using (var dbContext = await _contextFactory.CreateDbContextAsync())
-            {
-                var comment = await dbContext.Comments.FirstOrDefaultAsync(c => c.Id == commentId);
-                if (comment == null)
-                {
-                    throw new NotFoundException(typeof(Comment).ToString());
-                }
-
-                dbContext.Comments.Remove(comment);
-                return true;
             }
         }
     }
