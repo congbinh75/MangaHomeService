@@ -11,5 +11,7 @@ namespace MangaHomeService.Services.Interfaces
         public Task<ReadingList> Update(string id, string? userId = null, string? name = null, string? description = null, 
             bool? isPublic = null, List<string>? titlesIds = null);
         public Task<bool> Delete(string id);
+        public Task<ReadingList> AddTitle(string id, string titleId);
+        public Task<ReadingList> RemoveTitle(string id, string titleId);
     }
 }

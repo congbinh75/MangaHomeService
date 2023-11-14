@@ -452,5 +452,82 @@ namespace MangaHomeService.Services
                 return request;
             }
         }
+
+        public async Task<Title> AddRating(string id, int ratingValue, string? userId = null)
+        {
+            using (var dbContext = await _contextFactory.CreateDbContextAsync())
+            {
+                if (ratingValue < 1 && ratingValue > 5)
+                {
+                    throw new Exception();
+                }
+
+                var ratingUserId = userId == null ? Functions.GetCurrentUserId() : userId;
+                var existingRating = await dbContext.TitleRatings.Where(t => t.Title.Id == id && t.User.Id == ratingUserId).FirstOrDefaultAsync();
+                if (existingRating != null)
+                {
+                    throw new Exception();
+                }
+
+                var title = await dbContext.Titles.FirstOrDefaultAsync(t => t.Id == id);
+                if (title == null)
+                {
+                    throw new NotFoundException(typeof(Title).ToString());
+                }
+
+                var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == ratingUserId);
+                if (user == null)
+                {
+                    throw new NotFoundException(typeof(User).ToString());
+                }
+
+                var rating = new TitleRating();
+                rating.Title = title;
+                rating.User = user;
+                rating.Rating = ratingValue;
+                await dbContext.TitleRatings.AddAsync(rating);
+
+                var currentTitlesRatings = await dbContext.TitleRatings.Where(t => t.Title.Id == id).ToListAsync();
+                int sumrating = 0;
+                foreach (var currentTitle in currentTitlesRatings) 
+                {
+                    sumrating += currentTitle.Rating;
+                }
+                title.Rating = sumrating / currentTitlesRatings.Count;
+                await dbContext.SaveChangesAsync();
+                return title;
+            }
+        }
+
+        public async Task<Title> RemoveRating(string id, string? userId = null)
+        {
+            using (var dbContext = await _contextFactory.CreateDbContextAsync())
+            {
+                var ratingUserId = userId == null ? Functions.GetCurrentUserId() : userId;
+                var rating = await dbContext.TitleRatings.Where(t => t.Title.Id == id && t.User.Id == ratingUserId).FirstOrDefaultAsync();
+                if (rating == null)
+                {
+                    throw new NotFoundException(typeof(Title).ToString());
+                }
+
+                var title = await dbContext.Titles.FirstOrDefaultAsync(t => t.Id == id);
+                if (title == null)
+                {
+                    throw new NotFoundException(typeof(Title).ToString());
+                }
+
+                dbContext.TitleRatings.Remove(rating);
+
+                var currentTitlesRatings = await dbContext.TitleRatings.Where(t => t.Title.Id == id).ToListAsync();
+                int sumrating = 0;
+                foreach (var currentTitle in currentTitlesRatings)
+                {
+                    sumrating += currentTitle.Rating;
+                }
+                title.Rating = sumrating / currentTitlesRatings.Count;
+                await dbContext.SaveChangesAsync();
+                return title;
+            }
+        }
     }
 }

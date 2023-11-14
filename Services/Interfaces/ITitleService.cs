@@ -22,5 +22,7 @@ namespace MangaHomeService.Services.Interfaces
         public Task<bool> Delete(string id);
         public Task<TitleRequest> SubmitRequest(string titleId, string groupId, string note);
         public Task<TitleRequest> ReviewRequest(string requestId, bool isApproved, string note);
+        public Task<Title> AddRating(string id, int rating, string? userId = null);
+        public Task<Title> RemoveRating(string id, string? userId = null);
     }
 }

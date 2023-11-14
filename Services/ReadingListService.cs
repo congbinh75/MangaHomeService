@@ -160,5 +160,54 @@ namespace MangaHomeService.Services
                 return true;
             }
         }
+
+        public async Task<ReadingList> AddTitle(string id, string titleId)
+        {
+            using (var dbContext = await _contextFactory.CreateDbContextAsync())
+            {
+                var list = await dbContext.ReadingLists.Where(r => r.Id == id).Include(r => r.Titles).FirstOrDefaultAsync();
+                if (list == null)
+                {
+                    throw new NotFoundException(typeof(ReadingList).Name);
+                }
+
+                if (list.Titles.FirstOrDefault(t => t.Id == titleId) != null)
+                {
+                    throw new Exception();
+                }
+
+                var title = await dbContext.Titles.FirstOrDefaultAsync(t => t.Id == titleId);
+                if (title == null)
+                {
+                    throw new NotFoundException(typeof(Title).Name);
+                }
+
+                list.Titles.Add(title);
+                await dbContext.SaveChangesAsync();
+                return list;
+            }
+        }
+
+        public async Task<ReadingList> RemoveTitle(string id, string titleId)
+        {
+            using (var dbContext = await _contextFactory.CreateDbContextAsync())
+            {
+                var list = await dbContext.ReadingLists.Where(r => r.Id == id).Include(r => r.Titles).FirstOrDefaultAsync();
+                if (list == null)
+                {
+                    throw new NotFoundException(typeof(ReadingList).Name);
+                }
+
+                var titleInList = list.Titles.FirstOrDefault(t => t.Id == titleId);
+                if (titleInList == null)
+                {
+                    throw new Exception();
+                }
+
+                list.Titles.Add(titleInList);
+                await dbContext.SaveChangesAsync();
+                return list;
+            }
+        }
     }
 }
