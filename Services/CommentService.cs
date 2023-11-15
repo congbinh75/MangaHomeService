@@ -64,7 +64,7 @@ namespace MangaHomeService.Services
                         throw new NotFoundException(typeof(Title).Name);
                     }
 
-                    var comment = new Comment();
+                    var comment = new TitleComment();
                     comment.Title = title;
                     comment.Content = content;
                     comment.Vote = 0;
@@ -80,7 +80,7 @@ namespace MangaHomeService.Services
                         throw new NotFoundException(typeof(Chapter).Name);
                     }
 
-                    var comment = new Comment();
+                    var comment = new ChapterComment();
                     comment.Chapter = chapter;
                     comment.Content = content;
                     comment.Vote = 0;
@@ -96,7 +96,7 @@ namespace MangaHomeService.Services
                         throw new NotFoundException(typeof(Group).Name);
                     }
 
-                    var comment = new Comment();
+                    var comment = new GroupComment();
                     comment.Group = group;
                     comment.Content = content;
                     comment.Vote = 0;

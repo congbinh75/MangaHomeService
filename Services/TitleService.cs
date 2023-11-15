@@ -33,7 +33,7 @@ namespace MangaHomeService.Services
             using (var dbContext = await _contextFactory.CreateDbContextAsync())
             {
                 var titles = await dbContext.Titles.Where(x => x.Name.Contains(keyword.Trim()) 
-                || x.OtherNames.Any(y => y.OtherName.Contains(keyword.Trim())) 
+                || x.OtherNames.Any(y => y.Name.Contains(keyword.Trim())) 
                 || x.Author.Name.Contains(keyword.Trim())
                 || x.Artist.Name.Contains(keyword.Trim())).Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync();
 
@@ -56,7 +56,7 @@ namespace MangaHomeService.Services
                 if (!string.IsNullOrEmpty(name))
                 {
                     titles = titles.Where(x => x.Name.Contains(name) || 
-                                                x.OtherNames.Any(y => y.OtherName.Contains(name))).ToList();
+                                                x.OtherNames.Any(y => y.Name.Contains(name))).ToList();
                 }
 
                 if (!string.IsNullOrEmpty(author))
@@ -138,15 +138,15 @@ namespace MangaHomeService.Services
                     throw new NotFoundException(typeof(Language).ToString());
                 }
 
-                var otherNames = new List<TitleOtherName>();
+                var otherNames = new List<OtherName>();
                 if (otherNamesIds != null)
                 {
                     foreach (var otherNameId in otherNamesIds)
                     {
-                        var otherName = await dbContext.TitleOtherNames.FirstOrDefaultAsync(t => t.Id == otherNameId);
+                        var otherName = await dbContext.OtherNames.FirstOrDefaultAsync(t => t.Id == otherNameId);
                         if (otherName == null) 
                         {
-                            throw new NotFoundException(typeof(TitleOtherName).ToString());
+                            throw new NotFoundException(typeof(OtherName).ToString());
                         }
                         otherNames.Add(otherName);
                     }
@@ -282,15 +282,15 @@ namespace MangaHomeService.Services
                     throw new NotFoundException(typeof(Language).ToString());
                 }
 
-                var otherNames = new List<TitleOtherName>();
+                var otherNames = new List<OtherName>();
                 if (otherNamesIds != null)
                 {
                     foreach (var otherNameId in otherNamesIds)
                     {
-                        var otherName = await dbContext.TitleOtherNames.FirstOrDefaultAsync(t => t.Id == otherNameId);
+                        var otherName = await dbContext.OtherNames.FirstOrDefaultAsync(t => t.Id == otherNameId);
                         if (otherName == null)
                         {
-                            throw new NotFoundException(typeof(TitleOtherName).ToString());
+                            throw new NotFoundException(typeof(OtherName).ToString());
                         }
                         otherNames.Add(otherName);
                     }

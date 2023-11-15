@@ -25,7 +25,7 @@ namespace MangaHomeService.Models
         public DbSet<GroupRequest> GroupRequests { get; set; }
         public DbSet<Language> Languages { get; set; }
         public DbSet<Page> Pages { get; set; }
-        public DbSet<TitleOtherName> TitleOtherNames { get; set; }
+        public DbSet<OtherName> OtherNames { get; set; }
         public DbSet<ReadingList> ReadingLists { get; set; }
         public DbSet<CommentVote> CommentVotes { get; set; }
 
