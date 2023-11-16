@@ -188,7 +188,7 @@ namespace MangaHomeService.Services
             }
         }
 
-        public async Task<ChapterRequest> ReviewRequest(string requestId, bool isApproved)
+        public async Task<ChapterRequest> ReviewRequest(string requestId, string note, bool isApproved)
         {
             using (var dbContext = await _contextFactory.CreateDbContextAsync())
             {
@@ -202,6 +202,7 @@ namespace MangaHomeService.Services
                     throw new AlreadyReviewedException();
                 }
 
+                request.ReviewNote = note;
                 request.IsApproved = isApproved;
                 request.Chapter.IsApproved = isApproved;
                 request.IsReviewed = true;

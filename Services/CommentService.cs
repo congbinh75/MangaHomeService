@@ -155,7 +155,7 @@ namespace MangaHomeService.Services
                 }
 
                 var votingUser = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == Functions.GetCurrentUserId());
-                if (!votingUser.EmailConfirmed)
+                if (!votingUser.IsEmailConfirmed)
                 {
                     throw new EmailNotConfirmedException();
                 }
@@ -180,7 +180,7 @@ namespace MangaHomeService.Services
                 }
 
                 var votingUser = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == Functions.GetCurrentUserId());
-                if (!votingUser.EmailConfirmed)
+                if (!votingUser.IsEmailConfirmed)
                 {
                     throw new EmailNotConfirmedException();
                 }

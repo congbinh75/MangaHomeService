@@ -214,7 +214,7 @@ namespace MangaHomeService.Controllers
                     var user = _userService.Get(currentUserId);
                     if (user != null)
                     {
-                        await _userService.Update(id: currentUserId, email: email, emailConfirmed: false);
+                        await _userService.Update(id: currentUserId, email: email, isEmailConfirmed: false);
                     }
                     else
                     {
@@ -246,7 +246,7 @@ namespace MangaHomeService.Controllers
                         var user = _userService.Get(id);
                         if (user != null)
                         {
-                            await _userService.Update(id: id, emailConfirmed: true);
+                            await _userService.Update(id: id, isEmailConfirmed: true);
                         }
                         else
                         {

@@ -45,7 +45,7 @@ namespace MangaHomeService.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest();
+                return BadRequest(ex.Message);
             }
         }
 
@@ -55,14 +55,14 @@ namespace MangaHomeService.Controllers
         {
             try
             {
-                var hottestTitles = _titleService.AdvancedSearch(sortByHottest: true);
-                var lastestTitles = _titleService.AdvancedSearch(sortByLastest: true);
+                var hottestTitles = await _titleService.AdvancedSearch(sortByHottest: true);
+                var lastestTitles = await _titleService.AdvancedSearch(sortByLastest: true);
 
                 return Ok(new { hottestTitles, lastestTitles });
             }
             catch (Exception ex)
             {
-                return BadRequest();
+                return BadRequest(ex.Message);
             }
         }
 
@@ -86,7 +86,7 @@ namespace MangaHomeService.Controllers
 
                 if (!string.IsNullOrEmpty(getTitlesByGenreFormData.GenreId.Trim()))
                 {
-                    var titles = _titleService.AdvancedSearch(genreIds: new List<string>() { getTitlesByGenreFormData.GenreId.Trim() }, 
+                    var titles = await _titleService.AdvancedSearch(genreIds: new List<string>() { getTitlesByGenreFormData.GenreId.Trim() }, 
                         pageNumber: pageNumber, pageSize: pageSize);
                     return Ok(titles);
                 }
@@ -97,7 +97,7 @@ namespace MangaHomeService.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest();
+                return BadRequest(ex.Message);
             }
         }
 
@@ -121,7 +121,7 @@ namespace MangaHomeService.Controllers
 
                 if (!string.IsNullOrEmpty(getTitlesByThemeFormData.ThemeId.Trim()))
                 {
-                    var titles = _titleService.AdvancedSearch(themeIds: new List<string>() { getTitlesByThemeFormData.ThemeId.Trim() }, 
+                    var titles = await _titleService.AdvancedSearch(themeIds: new List<string>() { getTitlesByThemeFormData.ThemeId.Trim() }, 
                         pageNumber: pageNumber, pageSize: pageSize);
                     return Ok(titles);
                 }
@@ -132,7 +132,7 @@ namespace MangaHomeService.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest();
+                return BadRequest(ex.Message);
             }
         }
 
@@ -159,7 +159,7 @@ namespace MangaHomeService.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest();
+                return BadRequest(ex.Message);
             }
         }
 
@@ -171,13 +171,16 @@ namespace MangaHomeService.Controllers
             {
                 int status = 0;
                 List<int> statuses = new List<int>();
-                foreach (string num in advancedSearchFormData.Statuses)
+                if (advancedSearchFormData.Statuses != null)
                 {
-                    if (!int.TryParse((string)num, out status))
+                    foreach (string num in advancedSearchFormData.Statuses)
                     {
-                        return BadRequest();
+                        if (!int.TryParse((string)num, out status))
+                        {
+                            return BadRequest();
+                        }
+                        statuses.Add(status);
                     }
-                    statuses.Add(status);
                 }
 
                 var titles = await _titleService.AdvancedSearch(name: advancedSearchFormData.Name.Trim(), 
@@ -195,7 +198,7 @@ namespace MangaHomeService.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest();
+                return BadRequest(ex.Message);
             }
         }
     }

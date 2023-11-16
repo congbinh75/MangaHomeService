@@ -8,11 +8,22 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
 using System.Globalization;
+using Microsoft.AspNetCore.Authorization;
+using MangaHomeService.Policies;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Services.AddScoped<ICommentService, CommentService>();
+builder.Services.AddScoped<IChapterService, ChapterService>();
+builder.Services.AddScoped<IGroupService, GroupService>();
+builder.Services.AddScoped<IPageService, PageService>();
+builder.Services.AddScoped<IReadingListService, ReadingListService>();
+builder.Services.AddScoped<ITitleService, TitleService>();
 builder.Services.AddScoped<IUserService, UserService>();
+
+builder.Services.AddSingleton<IAuthorizationRequirement, EmailConfirmedRequirement>();
+builder.Services.AddSingleton<IAuthorizationRequirement, NotBannedRequirement>();
 
 builder.Services.AddControllers();
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
@@ -27,6 +38,18 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
         ValidIssuer = builder.Configuration["Jwt:Issuer"],
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
     };
+});
+builder.Services.AddAuthorization(options =>
+{
+    options.DefaultPolicy = new AuthorizationPolicyBuilder()
+        .RequireAuthenticatedUser()
+        .AddRequirements(new EmailConfirmedRequirement())
+        .Build();
+    options.AddPolicy("EmailConfirmedRequirement", policyBuilder =>
+    {
+        policyBuilder.RequireAuthenticatedUser();
+        policyBuilder.AddRequirements(new EmailConfirmedRequirement());
+    });
 });
 builder.Services.AddDbContextFactory<MangaHomeDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("MangaHome")));

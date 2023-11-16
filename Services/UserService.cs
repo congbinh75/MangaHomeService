@@ -32,10 +32,11 @@ namespace MangaHomeService.Services
                 newUser.Name = name;
                 newUser.Email = email;
                 newUser.Password = passAndSalt.hashed;
-                newUser.EmailConfirmed = false;
+                newUser.IsEmailConfirmed = false;
                 newUser.ProfilePicture = "";
                 newUser.Salt = passAndSalt.salt;
                 newUser.Role = role;
+                newUser.IsBanned = false;
                 await dbContext.Users.AddAsync(newUser);
                 await dbContext.SaveChangesAsync();
                 return newUser;
@@ -72,7 +73,7 @@ namespace MangaHomeService.Services
         }
 
         public async Task<User> Update(string userId, string? name = null, string? email = null, string? password = null, int? role = null,
-            bool? emailConfirmed = null, string? profilePicture = null)
+            bool? isEmailConfirmed = null, string? profilePicture = null, bool? isBanned = null)
         {
             using (var dbContext = await _contextFactory.CreateDbContextAsync())
             {
@@ -81,12 +82,6 @@ namespace MangaHomeService.Services
                 {
                     throw new NotFoundException(typeof(User).ToString());
                 }
-
-                var newRole = role == null ? user.Role : role;
-                var newName = name == null ? user.Name : name;
-                var newEmail = email == null ? user.Email : email;
-                var newEmailConfirmed = emailConfirmed == null ? user.EmailConfirmed : emailConfirmed;
-                var newProfilePicture = profilePicture == null ? user.ProfilePicture : profilePicture;
 
                 var newPassword = user.Password;
                 var newSalt = user.Salt;
@@ -97,13 +92,14 @@ namespace MangaHomeService.Services
                     newSalt = passAndSalt.salt;
                 }
 
-                user.Name = newName;
-                user.Email = email;
-                user.Role = (int)newRole;
-                user.EmailConfirmed = (bool)newEmailConfirmed;
-                user.ProfilePicture = newProfilePicture;
+                user.Name = name == null ? user.Name : name;
+                user.Email = email == null ? user.Email : email;
+                user.Role = role == null ? user.Role : (int)role;
+                user.IsEmailConfirmed = isEmailConfirmed == null ? user.IsEmailConfirmed : (bool)isEmailConfirmed;
+                user.ProfilePicture = profilePicture == null ? user.ProfilePicture : profilePicture;
                 user.Password = newPassword;
                 user.Salt = newSalt;
+                user.IsBanned = isBanned == null ? user.IsBanned : (bool)isBanned;
 
                 await dbContext.SaveChangesAsync();
                 return user;
