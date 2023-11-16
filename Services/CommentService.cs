@@ -154,12 +154,6 @@ namespace MangaHomeService.Services
                     throw new NotFoundException(typeof(Comment).Name);
                 }
 
-                var votingUser = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == Functions.GetCurrentUserId());
-                if (!votingUser.IsEmailConfirmed)
-                {
-                    throw new EmailNotConfirmedException();
-                }
-
                 var vote = new CommentVote();
                 vote.Comment = comment;
                 vote.IsUpvote = isUpvote;
@@ -179,13 +173,7 @@ namespace MangaHomeService.Services
                     throw new NotFoundException(typeof(Comment).Name);
                 }
 
-                var votingUser = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == Functions.GetCurrentUserId());
-                if (!votingUser.IsEmailConfirmed)
-                {
-                    throw new EmailNotConfirmedException();
-                }
-
-                var vote = await dbContext.CommentVotes.Where(v => v.Comment.Id == id && v.User.Id == votingUser.Id).FirstOrDefaultAsync();
+                var vote = await dbContext.CommentVotes.Where(v => v.Comment.Id == id && v.User.Id == v.User.Id).FirstOrDefaultAsync();
                 if (vote == null) 
                 {
                     throw new NotFoundException(typeof(CommentVote).Name);

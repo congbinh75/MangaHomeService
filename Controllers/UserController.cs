@@ -18,15 +18,18 @@ namespace MangaHomeService.Controllers
         private IConfiguration _configuration;
         private IStringLocalizer<UserController> _stringLocalizer;
         private IUserService _userService;
+        private ITokenInfoProvider _tokenInfoProvider;
 
         public UserController(
             IConfiguration configuration, 
             IStringLocalizer<UserController> stringLocalizer, 
-            IUserService userService) 
+            IUserService userService,
+            ITokenInfoProvider tokenInfoProvider) 
         {
             _configuration = configuration;
             _stringLocalizer = stringLocalizer;
             _userService = userService;
+            _tokenInfoProvider = tokenInfoProvider;
         }
 
         [HttpPost]
@@ -68,10 +71,9 @@ namespace MangaHomeService.Controllers
                             new Claim(JwtRegisteredClaimNames.Sub, _configuration["Jwt:Subject"]),
                             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                             new Claim(JwtRegisteredClaimNames.Iat, DateTime.UtcNow.ToString()),
-                            new Claim("UserId", user.Id),
-                            new Claim("DisplayName", user.Name),
-                            new Claim("Email", user.Email),
-                            new Claim(ClaimTypes.Role, user.Role.ToString())
+                            new Claim(ClaimTypes.NameIdentifier, user.Id),
+                            new Claim(ClaimTypes.Name, user.Name),
+                            new Claim(ClaimTypes.Role, ((Enums.Role)user.Role).ToString())
                         };
 
                         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
@@ -80,14 +82,14 @@ namespace MangaHomeService.Controllers
                             _configuration["Jwt:Issuer"],
                             _configuration["Jwt:Audience"],
                             claims,
-                            expires: DateTime.UtcNow.AddSeconds(10),
+                            expires: DateTime.UtcNow.AddDays(7),
                             signingCredentials: signIn);
 
                         return Ok(new JwtSecurityTokenHandler().WriteToken(token));
                     }
                     else
                     {
-                        return BadRequest("Invalid credentials");
+                        return BadRequest(_stringLocalizer["ERR_INVALID_CREDENTIALS"]);
                     }
                 }
                 else
@@ -112,15 +114,15 @@ namespace MangaHomeService.Controllers
                     if (string.IsNullOrEmpty(inputData.oldPassword) || string.IsNullOrEmpty(inputData.newPassword)
                         || string.IsNullOrEmpty(inputData.repeatNewPassword))
                     {
-                        return BadRequest("Missing required fields");
+                        return BadRequest(_stringLocalizer["ERR_INVALID_INPUT_DATA"]);
                     }
 
                     if (inputData.newPassword != inputData.repeatNewPassword)
                     {
-                        return BadRequest("Password and confirmation are not matched");
+                        return BadRequest(_stringLocalizer["ERR_INVALID_INPUT_DATA"]);
                     }
 
-                    string currentUserId = Functions.GetCurrentUserId();
+                    string currentUserId = _tokenInfoProvider.Id;
                     var user = _userService.Get(currentUserId);
                     if (user != null)
                     {
@@ -156,8 +158,8 @@ namespace MangaHomeService.Controllers
                     {
                         return BadRequest("File size exceeded 2MB limit");
                     }
-                    string currentUser = Functions.GetCurrentUserId();
-                    await _userService.Update(id: currentUser, profilePicture: profilePicture);
+                    string currentUserId = _tokenInfoProvider.Id;
+                    await _userService.Update(id: currentUserId, profilePicture: profilePicture);
                     return Ok();
                 }
                 else
@@ -179,7 +181,7 @@ namespace MangaHomeService.Controllers
             {
                 if (!string.IsNullOrEmpty(name))
                 {
-                    string currentUserId = Functions.GetCurrentUserId();
+                    string currentUserId = _tokenInfoProvider.Id;
                     var user = _userService.Get(currentUserId);
                     if (user != null)
                     {
@@ -193,7 +195,7 @@ namespace MangaHomeService.Controllers
                 }
                 else
                 {
-                    return BadRequest(_stringLocalizer[ "ERR_INVALID_INPUT_DATA"]);
+                    return BadRequest(_stringLocalizer["ERR_INVALID_INPUT_DATA"]);
                 }
             }
             catch (Exception ex)
@@ -210,7 +212,7 @@ namespace MangaHomeService.Controllers
             {
                 if (!string.IsNullOrEmpty(email))
                 {
-                    string currentUserId = Functions.GetCurrentUserId();
+                    string currentUserId = _tokenInfoProvider.Id;
                     var user = _userService.Get(currentUserId);
                     if (user != null)
                     {

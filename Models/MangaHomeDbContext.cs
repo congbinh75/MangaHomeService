@@ -1,11 +1,16 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using MangaHomeService.Utils;
+using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 
 namespace MangaHomeService.Models
 {
     public class MangaHomeDbContext : DbContext
     {
-        public MangaHomeDbContext(DbContextOptions<MangaHomeDbContext> options) : base(options) { }
+        private readonly ITokenInfoProvider _tokenInfoProvider;
+        public MangaHomeDbContext(DbContextOptions<MangaHomeDbContext> options, ITokenInfoProvider tokenInfoProvider) : base(options) 
+        {
+            _tokenInfoProvider = tokenInfoProvider;
+        }
 
         public DbSet<User> Users { get; set; }
         public DbSet<Group> Groups { get; set; }
@@ -38,13 +43,7 @@ namespace MangaHomeService.Models
         public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
             var now = DateTime.UtcNow;
-            string currentUser = "";
-            var identity = User.Identity as ClaimsIdentity;
-            if (identity != null)
-            {
-                IEnumerable<Claim> claims = identity.Claims;
-                currentUser = claims.FirstOrDefault(c => c.Type == "UserId")?.Value ?? "";
-            }
+            var currentUser = await Users.FirstOrDefaultAsync(u => u.Id == _tokenInfoProvider.Id);
 
             var changedEntities = ChangeTracker.Entries();
             foreach (var changedEntity in changedEntities)

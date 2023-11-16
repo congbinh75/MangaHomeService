@@ -126,11 +126,17 @@
   <data name="ERR_GROUP_NOT_FOUND" xml:space="preserve">
     <value>Group not found</value>
   </data>
+  <data name="ERR_INVALID_CREDENTIALS" xml:space="preserve">
+    <value>Invalid credentials</value>
+  </data>
   <data name="ERR_INVALID_INPUT_DATA" xml:space="preserve">
     <value>Invalid or missing input data</value>
   </data>
   <data name="ERR_LANGUAGE_NOT_FOUND" xml:space="preserve">
     <value>Language not found</value>
+  </data>
+  <data name="ERR_PASSWORDS_NOT_MATCH" xml:space="preserve">
+    <value>Password and confirm password does not match</value>
   </data>
   <data name="ERR_PASSWORD_CONFIRMATION_NOT_MATCH" xml:space="preserve">
     <value>Password and confirmation not match</value>

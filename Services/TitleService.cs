@@ -9,10 +9,12 @@ namespace MangaHomeService.Services
     public class TitleService : ITitleService
     {
         private readonly IDbContextFactory<MangaHomeDbContext> _contextFactory;
+        private readonly ITokenInfoProvider _tokenInfoProvider;
 
-        public TitleService(IDbContextFactory<MangaHomeDbContext> contextFactory)
+        public TitleService(IDbContextFactory<MangaHomeDbContext> contextFactory, ITokenInfoProvider tokenInfoProvider)
         {
             _contextFactory = contextFactory;
+            _tokenInfoProvider = tokenInfoProvider;
         }
 
         public async Task<Title> Get(string id)
@@ -462,7 +464,7 @@ namespace MangaHomeService.Services
                     throw new Exception();
                 }
 
-                var ratingUserId = userId == null ? Functions.GetCurrentUserId() : userId;
+                var ratingUserId = userId == null ? _tokenInfoProvider.Id : userId;
                 var existingRating = await dbContext.TitleRatings.Where(t => t.Title.Id == id && t.User.Id == ratingUserId).FirstOrDefaultAsync();
                 if (existingRating != null)
                 {
@@ -483,7 +485,6 @@ namespace MangaHomeService.Services
 
                 var rating = new TitleRating();
                 rating.Title = title;
-                rating.User = user;
                 rating.Rating = ratingValue;
                 await dbContext.TitleRatings.AddAsync(rating);
 
@@ -503,7 +504,7 @@ namespace MangaHomeService.Services
         {
             using (var dbContext = await _contextFactory.CreateDbContextAsync())
             {
-                var ratingUserId = userId == null ? Functions.GetCurrentUserId() : userId;
+                var ratingUserId = userId == null ? _tokenInfoProvider.Id : userId;
                 var rating = await dbContext.TitleRatings.Where(t => t.Title.Id == id && t.User.Id == ratingUserId).FirstOrDefaultAsync();
                 if (rating == null)
                 {

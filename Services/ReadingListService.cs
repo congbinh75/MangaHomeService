@@ -8,10 +8,12 @@ namespace MangaHomeService.Services
     public class ReadingListService : IReadingListService
     {
         private readonly IDbContextFactory<MangaHomeDbContext> _contextFactory;
+        private readonly ITokenInfoProvider _tokenInfoProvider;
 
-        public ReadingListService(IDbContextFactory<MangaHomeDbContext> contextFactory)
+        public ReadingListService(IDbContextFactory<MangaHomeDbContext> contextFactory, ITokenInfoProvider tokenInfoProvider)
         {
             _contextFactory = contextFactory;
+            _tokenInfoProvider = tokenInfoProvider; 
         }
 
         public async Task<ReadingList> Get(string id)
@@ -25,7 +27,7 @@ namespace MangaHomeService.Services
                 }
                 if (!list.IsPublic) 
                 {
-                    var currentUser = Functions.GetCurrentUserId();
+                    var currentUser = _tokenInfoProvider.Id;
                     if (list.User.Id != currentUser)
                     {
                         throw new Exception();
@@ -38,7 +40,7 @@ namespace MangaHomeService.Services
         {
             using (var dbContext = await _contextFactory.CreateDbContextAsync())
             {
-                var currentUser = Functions.GetCurrentUserId();
+                var currentUser = _tokenInfoProvider.Id;
                 if (userId == null)
                 {
                     return await dbContext.ReadingLists.Where(r => r.User.Id == currentUser).ToListAsync();
@@ -67,7 +69,7 @@ namespace MangaHomeService.Services
         {
             using (var dbContext = await _contextFactory.CreateDbContextAsync())
             {
-                string ownerId = userId == null ? Functions.GetCurrentUserId() : userId;
+                string ownerId = userId == null ? _tokenInfoProvider.Id : userId;
                 var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == ownerId);
                 if (user == null)
                 {
