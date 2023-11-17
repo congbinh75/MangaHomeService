@@ -1,5 +1,4 @@
 ﻿using MangaHomeService.Models;
-using MangaHomeService.Services.Interfaces;
 using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 using System.Security.Cryptography;
 using Microsoft.EntityFrameworkCore;
@@ -8,6 +7,16 @@ using MangaHomeService.Utils;
 
 namespace MangaHomeService.Services
 {
+    public interface IUserService
+    {
+        public Task<User> Add(string name, string email, string password, int role);
+        public Task<User> Get(string id);
+        public Task<User?> Get(string email, string password);
+        public Task<User> Update(string id, string? name = null, string? email = null, string? password = null, int? role = null,
+            bool? isEmailConfirmed = null, string? profilePicture = null, bool? isBanned = null);
+        public Task<bool> Delete(string id);
+    }
+
     public class UserService : IUserService
     {
         private readonly IDbContextFactory<MangaHomeDbContext> _contextFactory;

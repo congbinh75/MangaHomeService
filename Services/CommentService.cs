@@ -1,10 +1,19 @@
 ﻿using MangaHomeService.Models;
-using MangaHomeService.Services.Interfaces;
 using MangaHomeService.Utils;
 using Microsoft.EntityFrameworkCore;
 
 namespace MangaHomeService.Services
 {
+    public interface ICommentService
+    {
+        public Task<List<Comment>> Get(string id, string type, int pageNumber = 1, int pageSize = Constants.CommentsPerPage);
+        public Task<Comment> Add(string id, string type, string content);
+        public Task<Comment> Update(string id, string content, int? vote = null);
+        public Task<bool> Delete(string id);
+        public Task<Comment> AddVote(string id, bool isUpvote);
+        public Task<Comment> RemoveVote(string id);
+    }
+
     public class CommentService : ICommentService
     {
         private readonly IDbContextFactory<MangaHomeDbContext> _contextFactory;
@@ -144,7 +153,7 @@ namespace MangaHomeService.Services
             }
         }
 
-        public async Task<Comment> Vote(string id, bool isUpvote)
+        public async Task<Comment> AddVote(string id, bool isUpvote)
         {
             using (var dbContext = await _contextFactory.CreateDbContextAsync())
             {

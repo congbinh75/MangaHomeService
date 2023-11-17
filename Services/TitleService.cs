@@ -1,11 +1,32 @@
 ﻿using MangaHomeService.Models;
-using MangaHomeService.Services.Interfaces;
 using MangaHomeService.Utils;
 using Microsoft.EntityFrameworkCore;
 using static MangaHomeService.Utils.Enums;
 
 namespace MangaHomeService.Services
 {
+    public interface ITitleService
+    {
+        public Task<Title> Get(string id);
+        public Task<List<Title>> Search(string keyword, int pageNumber = 1, int pageSize = Constants.TitlesPerPage);
+        public Task<List<Title>> AdvancedSearch(string name = "", string author = "", string artist = "", List<string>? genreIds = null,
+            List<string>? themeIds = null, List<string>? demographicsIds = null, string originalLanguageId = "", List<string>? languageIds = null,
+            List<int>? statuses = null, bool sortByLastest = false, bool sortByHottest = false, int pageNumber = 1, int pageSize = Constants.TitlesPerPage);
+        public Task<Title> Add(string name, string description = "", string artwork = "", string authorId = "", string artistId = "",
+            TitleStatus status = TitleStatus.NotYetReleased, double rating = 0, int ratingVotes = 0, int views = 0, int bookmarks = 0,
+            List<string>? otherNamesIds = null, string? originalLanguageId = null, List<string>? genresIds = null, List<string>? themesIds = null,
+            List<string>? demographicsIds = null, List<string>? chaptersIds = null, List<string>? commentsIds = null, bool isApproved = false);
+        public Task<Title> Update(string id, string name = "", string description = "", string artwork = "", string authorId = "", string artistId = "",
+            TitleStatus? status = null, double rating = -1, int ratingVotes = -1, int views = -1, int bookmarks = -1,
+            List<string>? otherNamesIds = null, string originalLanguageId = "", List<string>? genresIds = null, List<string>? themesIds = null,
+            List<string>? demographicsIds = null, List<string>? chaptersIds = null, List<string>? commentsIds = null, bool? isApproved = null);
+        public Task<bool> Delete(string id);
+        public Task<TitleRequest> SubmitRequest(string titleId, string groupId, string note);
+        public Task<TitleRequest> ReviewRequest(string requestId, bool isApproved, string note);
+        public Task<Title> AddRating(string id, int rating, string? userId = null);
+        public Task<Title> RemoveRating(string id, string? userId = null);
+    }
+
     public class TitleService : ITitleService
     {
         private readonly IDbContextFactory<MangaHomeDbContext> _contextFactory;
@@ -73,19 +94,19 @@ namespace MangaHomeService.Services
 
                 if(genreIds != null && genreIds.Count > 0)
                 {
-                    var gernes = await dbContext.Genres.Where(x => genreIds.Contains(x.Id)).ToListAsync();
+                    var gernes = await dbContext.Tags.Where(x => genreIds.Contains(x.Id) && x.Type == (int)TagType.Gerne).ToListAsync();
                     titles = titles.Where(x => gernes.All(y => x.Gernes.Contains(y))).ToList();
                 }
 
                 if (themeIds != null && themeIds.Count > 0)
                 {
-                    var themes = await dbContext.Themes.Where(x => themeIds.Contains(x.Id)).ToListAsync();
+                    var themes = await dbContext.Tags.Where(x => themeIds.Contains(x.Id) && x.Type == (int)TagType.Theme).ToListAsync();
                     titles = titles.Where(x => themes.All(y => x.Themes.Contains(y))).ToList();
                 }
 
                 if (demographicsIds != null && demographicsIds.Count > 0)
                 {
-                    var demographics = await dbContext.Demographics.Where(x => demographicsIds.Contains(x.Id)).ToListAsync();
+                    var demographics = await dbContext.Tags.Where(x => demographicsIds.Contains(x.Id) && x.Type == (int)TagType.Demographic).ToListAsync();
                     titles = titles.Where(x => demographics.All(y => x.Demographics.Contains(y))).ToList();
                 }
 
@@ -154,29 +175,29 @@ namespace MangaHomeService.Services
                     }
                 }
 
-                var genres = new List<Genre>();
+                var genres = new List<Tag>();
                 if (genresIds != null)
                 {
                     foreach (var genreId in genresIds)
                     {
-                        var genre = await dbContext.Genres.FirstOrDefaultAsync(g => g.Id == genreId);
+                        var genre = await dbContext.Tags.FirstOrDefaultAsync(g => g.Id == genreId);
                         if (genre == null)
                         {
-                            throw new NotFoundException(typeof(Genre).ToString());
+                            throw new NotFoundException(typeof(Tag).ToString() + TagType.Gerne);
                         }
                         genres.Add(genre);
                     }
                 }
 
-                var themes = new List<Theme>();
+                var themes = new List<Tag>();
                 if (themesIds != null)
                 {
                     foreach (var themeId in themesIds)
                     {
-                        var theme = await dbContext.Themes.FirstOrDefaultAsync(g => g.Id == themeId);
+                        var theme = await dbContext.Tags.FirstOrDefaultAsync(g => g.Id == themeId);
                         if (theme == null)
                         {
-                            throw new NotFoundException(typeof(Theme).ToString());
+                            throw new NotFoundException(typeof(Tag).ToString() + TagType.Theme);
                         }
                         themes.Add(theme);
                     }
@@ -211,15 +232,15 @@ namespace MangaHomeService.Services
                     }
                 }
 
-                var demographics = new List<Demographic>();
+                var demographics = new List<Tag>();
                 if (demographicsIds != null)
                 {
                     foreach (var demographicId in demographicsIds)
                     {
-                        var demographic = await dbContext.Demographics.FirstOrDefaultAsync(c => c.Id == demographicId);
+                        var demographic = await dbContext.Tags.FirstOrDefaultAsync(c => c.Id == demographicId);
                         if (demographic == null)
                         {
-                            throw new NotFoundException(typeof(Demographic).ToString());
+                            throw new NotFoundException(typeof(Tag).ToString() + TagType.Demographic);
                         }
                         demographics.Add(demographic);
                     }
@@ -298,29 +319,29 @@ namespace MangaHomeService.Services
                     }
                 }
 
-                var genres = new List<Genre>();
+                var genres = new List<Tag>();
                 if (genresIds != null)
                 {
                     foreach (var genreId in genresIds)
                     {
-                        var genre = await dbContext.Genres.FirstOrDefaultAsync(g => g.Id == genreId);
+                        var genre = await dbContext.Tags.FirstOrDefaultAsync(g => g.Id == genreId);
                         if (genre == null)
                         {
-                            throw new NotFoundException(typeof(Genre).ToString());
+                            throw new NotFoundException(typeof(Tag).ToString() + TagType.Gerne);
                         }
                         genres.Add(genre);
                     }
                 }
 
-                var themes = new List<Theme>();
+                var themes = new List<Tag>();
                 if (themesIds != null)
                 {
                     foreach (var themeId in themesIds)
                     {
-                        var theme = await dbContext.Themes.FirstOrDefaultAsync(g => g.Id == themeId);
+                        var theme = await dbContext.Tags.FirstOrDefaultAsync(g => g.Id == themeId);
                         if (theme == null)
                         {
-                            throw new NotFoundException(typeof(Theme).ToString());
+                            throw new NotFoundException(typeof(Tag).ToString() + TagType.Theme);
                         }
                         themes.Add(theme);
                     }
@@ -355,15 +376,15 @@ namespace MangaHomeService.Services
                     }
                 }
 
-                var demographics = new List<Demographic>();
+                var demographics = new List<Tag>();
                 if (demographicsIds != null)
                 {
                     foreach (var demographicId in demographicsIds)
                     {
-                        var demographic = await dbContext.Demographics.FirstOrDefaultAsync(c => c.Id == demographicId);
+                        var demographic = await dbContext.Tags.FirstOrDefaultAsync(c => c.Id == demographicId);
                         if (demographic == null)
                         {
-                            throw new NotFoundException(typeof(Demographic).ToString());
+                            throw new NotFoundException(typeof(Tag).ToString() + TagType.Demographic);
                         }
                         demographics.Add(demographic);
                     }

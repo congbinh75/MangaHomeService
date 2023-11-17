@@ -1,6 +1,5 @@
 ﻿using MangaHomeService.Utils;
 using Microsoft.EntityFrameworkCore;
-using System.Security.Claims;
 
 namespace MangaHomeService.Models
 {
@@ -18,10 +17,8 @@ namespace MangaHomeService.Models
         public DbSet<Volume> Volumes { get; set; }
         public DbSet<Chapter> Chapters { get; set; }
         public DbSet<Comment> Comments { get; set; }
-        public DbSet<Genre> Genres { get; set; }
-        public DbSet<Theme> Themes { get; set; }
+        public DbSet<Tag> Tags { get; set; }
         public DbSet<Person> People { get; set; }
-        public DbSet<Demographic> Demographics { get; set; }
         public DbSet<ChapterTracking> ChapterTrackings { get; set; }
         public DbSet<TitleRating> TitleRatings { get; set; }
         public DbSet<Member> Members { get; set; }
@@ -38,6 +35,16 @@ namespace MangaHomeService.Models
         {
             modelBuilder.HasDefaultSchema("MangaHome");
             base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<Title>()
+                .HasOne(t => t.Author)
+                .WithMany(p => p.AuthoredTitles)
+                .HasForeignKey(t => t.Author);
+
+            modelBuilder.Entity<Title>()
+                .HasOne(t => t.Artist)
+                .WithMany(p => p.IllustratedTitles)
+                .HasForeignKey(t => t.Artist);
         }
 
         public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)

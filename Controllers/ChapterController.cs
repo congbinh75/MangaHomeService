@@ -1,6 +1,6 @@
 ﻿using MangaHomeService.Models;
 using MangaHomeService.Models.FormData;
-using MangaHomeService.Services.Interfaces;
+using MangaHomeService.Services;
 using MangaHomeService.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

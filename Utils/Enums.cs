@@ -23,5 +23,12 @@
             Completed = 2,
             Abandoned = 3
         }
+
+        public enum TagType
+        {
+            Gerne = 0,
+            Theme = 1,
+            Demographic = 2
+        }
     }
 }

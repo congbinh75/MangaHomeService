@@ -1,11 +1,9 @@
 using MangaHomeService.Models;
 using MangaHomeService.Services;
-using MangaHomeService.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
 using System.Globalization;
 using Microsoft.AspNetCore.Authorization;
@@ -19,6 +17,7 @@ builder.Services.AddScoped<IChapterService, ChapterService>();
 builder.Services.AddScoped<IGroupService, GroupService>();
 builder.Services.AddScoped<IPageService, PageService>();
 builder.Services.AddScoped<IReadingListService, ReadingListService>();
+builder.Services.AddScoped<ITagService, TagService>();
 builder.Services.AddScoped<ITitleService, TitleService>();
 builder.Services.AddScoped<IUserService, UserService>();
 

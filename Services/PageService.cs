@@ -1,10 +1,18 @@
 ﻿using MangaHomeService.Models;
-using MangaHomeService.Services.Interfaces;
 using MangaHomeService.Utils;
 using Microsoft.EntityFrameworkCore;
 
 namespace MangaHomeService.Services
 {
+    public interface IPageService
+    {
+        public Task<Page> Get(string id);
+        public Task<List<Page>> GetByChapter(string chapterId);
+        public Task<Page> Add(string chapterId, int number, IFormFile file);
+        public Task<Page> Update(string id, string chapterId = "", int number = 0, IFormFile? file = null);
+        public Task<bool> Delete(string id);
+    }
+
     public class PageService : IPageService
     {
         private readonly IDbContextFactory<MangaHomeDbContext> _contextFactory;
@@ -36,7 +44,7 @@ namespace MangaHomeService.Services
                     throw new ArgumentException();
                 }
 
-                string filePath = await UploadPageAsync(file);
+                string filePath = await Functions.UploadFileAsync(file, _configuration["FilesStoragePath.PagesPath"]);
 
                 var page = new Page();
                 page.Chapter = chapter;
@@ -124,22 +132,12 @@ namespace MangaHomeService.Services
                 string filePath = "";
                 if (file != null) 
                 {
-                    filePath = await UploadPageAsync(file);
+                    filePath = await Functions.UploadFileAsync(file, _configuration["FilesStoragePath.PagesPath"]);
                     page.File = filePath;
                 }
 
                 await dbContext.SaveChangesAsync();
                 return page;
-            }
-        }
-
-        private async Task<string> UploadPageAsync(IFormFile file)
-        {
-            var filePath = Path.Combine(_configuration["PagesStoragePath"], Path.GetRandomFileName());
-            using (var stream = File.OpenRead(filePath))
-            {
-                await file.CopyToAsync(stream);
-                return filePath;
             }
         }
     }
