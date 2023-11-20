@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
-using MangaHomeService.Models.FormDatas;
+using MangaHomeService.Models.FormDatas.Title;
 
 namespace MangaHomeService.Controllers
 {
@@ -65,93 +65,23 @@ namespace MangaHomeService.Controllers
 
         [AllowAnonymous]
         [HttpGet]
-        public async Task<IActionResult> GetTitlesByGenre(GetTitlesByGenreFormData getTitlesByGenreFormData)
+        public async Task<IActionResult> Search(Search input)
         {
             try
             {
                 int pageNumber = 0;
-                if (!int.TryParse(getTitlesByGenreFormData.PageNumber, out pageNumber))
-                {
-                    return BadRequest();
-                }
-
-                int pageSize = 0;
-                if (!int.TryParse(getTitlesByGenreFormData.PageSize, out pageSize))
-                {
-                    return BadRequest();
-                }
-
-                if (!string.IsNullOrEmpty(getTitlesByGenreFormData.GenreId.Trim()))
-                {
-                    var titles = await _titleService.AdvancedSearch(genreIds: new List<string>() { getTitlesByGenreFormData.GenreId.Trim() }, 
-                        pageNumber: pageNumber, pageSize: pageSize);
-                    return Ok(titles);
-                }
-                else
-                {
-                    return BadRequest(_stringLocalizer["ERR_INVALID_INPUT_DATA"]);
-                }
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
-
-        [AllowAnonymous]
-        [HttpGet]
-        public async Task<IActionResult> GetTitlesByTheme(GetTitlesByThemeFormData getTitlesByThemeFormData)
-        {
-            try
-            {
-                int pageNumber = 0;
-                if (!int.TryParse(getTitlesByThemeFormData.PageNumber, out pageNumber))
-                {
-                    return BadRequest();
-                }
-
-                int pageSize = 0;
-                if (!int.TryParse(getTitlesByThemeFormData.PageSize, out pageSize))
-                {
-                    return BadRequest();
-                }
-
-                if (!string.IsNullOrEmpty(getTitlesByThemeFormData.ThemeId.Trim()))
-                {
-                    var titles = await _titleService.AdvancedSearch(themeIds: new List<string>() { getTitlesByThemeFormData.ThemeId.Trim() }, 
-                        pageNumber: pageNumber, pageSize: pageSize);
-                    return Ok(titles);
-                }
-                else
-                {
-                    return BadRequest(_stringLocalizer["ERR_INVALID_INPUT_DATA"]);
-                }
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
-
-        [AllowAnonymous]
-        [HttpGet]
-        public async Task<IActionResult> Search(TitleSearchFormData searchFormData)
-        {
-            try
-            {
-                int pageNumber = 0;
-                if (!int.TryParse(searchFormData.PageNumber, out pageNumber)) 
+                if (!int.TryParse(input.PageNumber, out pageNumber)) 
                 {
                     return BadRequest(); 
                 }
 
                 int pageSize = 0;
-                if (!int.TryParse (searchFormData.PageSize, out pageSize)) 
+                if (!int.TryParse (input.PageSize, out pageSize)) 
                 {
                     return BadRequest();
                 }
 
-                var titles = await _titleService.Search(keyword: searchFormData.Keyword.Trim(), pageNumber: pageNumber, pageSize: pageSize);
+                var titles = await _titleService.Search(keyword: input.Keyword.Trim(), pageNumber: pageNumber, pageSize: pageSize);
                 return Ok(titles);
             }
             catch (Exception ex)
@@ -162,15 +92,15 @@ namespace MangaHomeService.Controllers
 
         [AllowAnonymous]
         [HttpGet]
-        public async Task<IActionResult> AdvancedSearch(AdvancedTitleSearchFormData advancedSearchFormData)
+        public async Task<IActionResult> AdvancedSearch(AdvancedSearch input)
         {
             try
             {
                 int status = 0;
                 List<int> statuses = new List<int>();
-                if (advancedSearchFormData.Statuses != null)
+                if (input.Statuses != null)
                 {
-                    foreach (string num in advancedSearchFormData.Statuses)
+                    foreach (string num in input.Statuses)
                     {
                         if (!int.TryParse((string)num, out status))
                         {
@@ -180,17 +110,17 @@ namespace MangaHomeService.Controllers
                     }
                 }
 
-                var titles = await _titleService.AdvancedSearch(name: advancedSearchFormData.Name.Trim(), 
-                    author: advancedSearchFormData.Author.Trim(), 
-                    artist: advancedSearchFormData.Artist.Trim(), 
-                    genreIds: advancedSearchFormData.GenreIds?.Select(x => x.Trim()).ToList(), 
-                    themeIds: advancedSearchFormData.ThemeIds?.Select(x => x.Trim()).ToList(), 
-                    languageIds: advancedSearchFormData.LanguageIds?.Select(x => x.Trim()).ToList(), 
+                var titles = await _titleService.AdvancedSearch(name: input.Name.Trim(), 
+                    author: input.Author.Trim(), 
+                    artist: input.Artist.Trim(), 
+                    genreIds: input.GenreIds?.Select(x => x.Trim()).ToList(), 
+                    themeIds: input.ThemeIds?.Select(x => x.Trim()).ToList(), 
+                    languageIds: input.LanguageIds?.Select(x => x.Trim()).ToList(), 
                     statuses: statuses, 
-                    sortByLastest: advancedSearchFormData.SortByLastest, 
-                    sortByHottest: advancedSearchFormData.SortByHottest, 
-                    pageNumber: advancedSearchFormData.PageNumber, 
-                    pageSize: advancedSearchFormData.PageSize);
+                    sortByLastest: input.SortByLastest, 
+                    sortByHottest: input.SortByHottest, 
+                    pageNumber: input.PageNumber, 
+                    pageSize: input.PageSize);
                 return Ok(titles);
             }
             catch (Exception ex)

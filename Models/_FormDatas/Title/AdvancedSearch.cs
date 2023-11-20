@@ -1,6 +1,6 @@
-﻿namespace MangaHomeService.Models.FormDatas
+﻿namespace MangaHomeService.Models.FormDatas.Title
 {
-    public class AdvancedTitleSearchFormData
+    public class AdvancedSearch
     {
         public string Name { get; set; }
         public string Author { get; set; }

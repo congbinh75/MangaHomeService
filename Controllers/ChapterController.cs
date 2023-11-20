@@ -1,5 +1,5 @@
 ﻿using MangaHomeService.Models;
-using MangaHomeService.Models.FormDatas;
+using MangaHomeService.Models.FormDatas.Chapter;
 using MangaHomeService.Services;
 using MangaHomeService.Utils;
 using Microsoft.AspNetCore.Authorization;
@@ -56,16 +56,16 @@ namespace MangaHomeService.Controllers
 
         [HttpPost]
         [Authorize(Roles = "Admin, Moderator, User")]
-        public async Task<IActionResult> Add(AddChapterFormData formData)
+        public async Task<IActionResult> Add(Add input)
         {
             try
             {
                 int number = 0;
-                if (!int.TryParse(formData.Number.Trim(), out number)
-                    || !string.IsNullOrEmpty(formData.TitleId.Trim()) 
-                    || !string.IsNullOrEmpty(formData.GroupId.Trim()))
+                if (!int.TryParse(input.Number.Trim(), out number)
+                    || !string.IsNullOrEmpty(input.TitleId.Trim()) 
+                    || !string.IsNullOrEmpty(input.GroupId.Trim()))
                 {
-                    var chapter = await _chapterService.Add(number, formData.TitleId, formData.GroupId, formData.VolumeId, formData.LanguageId);
+                    var chapter = await _chapterService.Add(number, input.TitleId, input.GroupId, input.VolumeId, input.LanguageId);
                     return Ok(chapter);
                 }
                 else

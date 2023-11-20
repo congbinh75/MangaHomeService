@@ -1,6 +1,6 @@
-﻿namespace MangaHomeService.Models.FormDatas
+﻿namespace MangaHomeService.Models.FormDatas.Chapter
 {
-    public class AddChapterFormData
+    public class Add
     {
         public string Number { get; set; }
         public string TitleId { get; set; }

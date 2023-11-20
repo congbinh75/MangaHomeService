@@ -1,4 +1,4 @@
-﻿using MangaHomeService.Models.FormDatas;
+﻿using MangaHomeService.Models.FormDatas.Admin;
 using MangaHomeService.Services;
 using MangaHomeService.Utils;
 using Microsoft.AspNetCore.Authorization;
@@ -27,7 +27,7 @@ namespace MangaHomeService.Controllers
 
         [HttpPost]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> UpdateRoleOfUser(UpdateRoleOfUserFormData formData)
+        public async Task<IActionResult> UpdateRoleOfUser(UpdateRoleOfUser formData)
         {
             try
             {
@@ -48,7 +48,7 @@ namespace MangaHomeService.Controllers
 
         [HttpPost]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> AddTitleLanguageSupport(AddTitleLanguageSupportFormData formData)
+        public async Task<IActionResult> AddTitleLanguage(AddTitleLanguage formData)
         {
             throw new NotImplementedException();
         }
