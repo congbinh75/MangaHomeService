@@ -1,4 +1,4 @@
-﻿namespace MangaHomeService.Models.FormData
+﻿namespace MangaHomeService.Models.FormDatas
 {
     public class GetTitlesByThemeFormData
     {

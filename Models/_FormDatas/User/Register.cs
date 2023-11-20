@@ -1,6 +1,6 @@
-﻿namespace MangaHomeService.Models.FormData
+﻿namespace MangaHomeService.Models.FormDatas.User
 {
-    public class UserRegisterData
+    public class Register
     {
         public string? Name { get; set; }
         public string? Email { get; set; }

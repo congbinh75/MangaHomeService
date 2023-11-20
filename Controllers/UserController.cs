@@ -1,4 +1,4 @@
-﻿using MangaHomeService.Models.FormData;
+﻿using MangaHomeService.Models.FormDatas.User;
 using MangaHomeService.Services;
 using MangaHomeService.Utils;
 using Microsoft.AspNetCore.Authorization;
@@ -33,14 +33,14 @@ namespace MangaHomeService.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Register(UserRegisterData inputUser)
+        public async Task<IActionResult> Register(Register input)
         {
             try
             {
-                if (!string.IsNullOrEmpty(inputUser.Email) && !string.IsNullOrEmpty(inputUser.Password) 
-                    && !string.IsNullOrEmpty(inputUser.Name))
+                if (!string.IsNullOrEmpty(input.Email) && !string.IsNullOrEmpty(input.Password) 
+                    && !string.IsNullOrEmpty(input.Name))
                 {
-                    await _userService.Add(inputUser.Name, inputUser.Email, inputUser.Password, 2);
+                    await _userService.Add(input.Name, input.Email, input.Password, 2);
                     return Ok();
                 }
                 else
@@ -56,13 +56,13 @@ namespace MangaHomeService.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Login(UserLoginData inputUser)
+        public async Task<IActionResult> Login(Login input)
         {
             try
             {
-                if (!string.IsNullOrEmpty(inputUser.Email) && !string.IsNullOrEmpty(inputUser.Password))
+                if (!string.IsNullOrEmpty(input.Email) && !string.IsNullOrEmpty(input.Password))
                 {
-                    var user = await _userService.Get(inputUser.Email, inputUser.Password);
+                    var user = await _userService.Get(input.Email, input.Password);
 
                     if (user != null)
                     {
@@ -105,19 +105,19 @@ namespace MangaHomeService.Controllers
 
         [Authorize]
         [HttpPost]
-        public async Task<IActionResult> ChangePassword(UserChangePasswordData inputData)
+        public async Task<IActionResult> ChangePassword(ChangePassword input)
         {
             try
             {
-                if (inputData != null)
+                if (input != null)
                 {
-                    if (string.IsNullOrEmpty(inputData.oldPassword) || string.IsNullOrEmpty(inputData.newPassword)
-                        || string.IsNullOrEmpty(inputData.repeatNewPassword))
+                    if (string.IsNullOrEmpty(input.OldPassword) || string.IsNullOrEmpty(input.NewPassword)
+                        || string.IsNullOrEmpty(input.RepeatNewPassword))
                     {
                         return BadRequest(_stringLocalizer["ERR_INVALID_INPUT_DATA"]);
                     }
 
-                    if (inputData.newPassword != inputData.repeatNewPassword)
+                    if (input.NewPassword != input.RepeatNewPassword)
                     {
                         return BadRequest(_stringLocalizer["ERR_INVALID_INPUT_DATA"]);
                     }
@@ -126,7 +126,7 @@ namespace MangaHomeService.Controllers
                     var user = _userService.Get(currentUserId);
                     if (user != null)
                     {
-                        await _userService.Update(id: currentUserId, password: inputData.newPassword);
+                        await _userService.Update(id: currentUserId, password: input.NewPassword);
                     }
                     else
                     {
@@ -148,11 +148,11 @@ namespace MangaHomeService.Controllers
 
         [Authorize]
         [HttpPost]
-        public async Task<IActionResult> UpdateProfilePicture(string profilePicture)
+        public async Task<IActionResult> UpdateProfilePicture(IFormFile profilePicture)
         {
             try
             {
-                if (!string.IsNullOrEmpty(profilePicture))
+                if (profilePicture != null)
                 {
                     if (4 * (profilePicture.Length / 3) > Constants.ProfilePictureBytesLimit)
                     {
@@ -175,38 +175,7 @@ namespace MangaHomeService.Controllers
 
         [Authorize]
         [HttpPost]
-        public async Task<IActionResult> UpdateName(string name)
-        {
-            try
-            {
-                if (!string.IsNullOrEmpty(name))
-                {
-                    string currentUserId = _tokenInfoProvider.Id;
-                    var user = _userService.Get(currentUserId);
-                    if (user != null)
-                    {
-                        await _userService.Update(id: currentUserId, name: name);
-                    }
-                    else
-                    {
-                        return BadRequest();
-                    }
-                    return Ok();
-                }
-                else
-                {
-                    return BadRequest(_stringLocalizer["ERR_INVALID_INPUT_DATA"]);
-                }
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
-
-        [Authorize]
-        [HttpPost]
-        public async Task<IActionResult> UpdateEmail(string email)
+        public async Task<IActionResult> UpdateInfo(string email)
         {
             try
             {
@@ -216,7 +185,7 @@ namespace MangaHomeService.Controllers
                     var user = _userService.Get(currentUserId);
                     if (user != null)
                     {
-                        await _userService.Update(id: currentUserId, email: email, isEmailConfirmed: false);
+                        await _userService.Update(id: currentUserId, email: email);
                     }
                     else
                     {

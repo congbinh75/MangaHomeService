@@ -1,5 +1,5 @@
 ﻿using MangaHomeService.Models;
-using MangaHomeService.Models.FormData;
+using MangaHomeService.Models.FormDatas;
 using MangaHomeService.Services;
 using MangaHomeService.Utils;
 using Microsoft.AspNetCore.Authorization;
@@ -75,13 +75,13 @@ namespace MangaHomeService.Controllers
             }
             catch (NotFoundException ex)
             {
-                if (ex.Message == typeof(Title).ToString())
+                if (ex.Message == typeof(Title).Name)
                     return BadRequest(_stringLocalizer["ERR_TITLE_NOT_FOUND"]);
-                else if (ex.Message == typeof(Group).ToString())
+                else if (ex.Message == typeof(Group).Name)
                     return BadRequest(_stringLocalizer["ERR_GROUP_NOT_FOUND"]);
-                else if (ex.Message == typeof(Volume).ToString())
+                else if (ex.Message == typeof(Volume).Name)
                     return BadRequest(_stringLocalizer["ERR_VOLUME_NOT_FOUND"]);
-                else if (ex.Message == typeof(Language).ToString())
+                else if (ex.Message == typeof(Language).Name)
                     return BadRequest(_stringLocalizer["ERR_LANGUAGE_NOT_FOUND"]);
                 else
                     return BadRequest();

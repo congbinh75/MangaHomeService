@@ -1,11 +1,8 @@
-﻿using MangaHomeService.Models;
-using MangaHomeService.Services; 
+﻿using MangaHomeService.Services; 
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
-using MangaHomeService.Utils;
-using MangaHomeService.Models.FormData;
+using MangaHomeService.Models.FormDatas;
 
 namespace MangaHomeService.Controllers
 {
@@ -13,9 +10,9 @@ namespace MangaHomeService.Controllers
     [ApiController]
     public class TitleController : ControllerBase
     {
-        private IConfiguration _configuration;
-        private IStringLocalizer<UserController> _stringLocalizer;
-        private ITitleService _titleService;
+        private readonly IConfiguration _configuration;
+        private readonly IStringLocalizer<UserController> _stringLocalizer;
+        private readonly ITitleService _titleService;
 
         public TitleController(
             IConfiguration configuration,

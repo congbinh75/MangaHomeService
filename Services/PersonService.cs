@@ -1,95 +1,122 @@
 ﻿using MangaHomeService.Models;
 using MangaHomeService.Utils;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Internal;
 
 namespace MangaHomeService.Services
 {
     public interface IPersonService
     {
         public Task<Person> Get(string id);
-        public Task<Person> Add(string name, IFormFile? image = null, string? description = null, List<string>? authoredTitlesIds = null,
-            List<string>? illustratedTitlesIds = null);
+        public Task<Person> Add(string name, IFormFile? image = null, string? description = null, 
+            ICollection<string>? authoredTitlesIds = null, ICollection<string>? illustratedTitlesIds = null);
         public Task<Person> Update(string id, string? name = null, IFormFile? image = null, string? description = null, 
-            List<string>? authoredTitlesIds = null, List<string>? illustratedTitlesIds = null);
+            ICollection<string>? authoredTitlesIds = null, ICollection<string>? illustratedTitlesIds = null);
         public Task<bool> Delete(string id);
     }
 
     public class PersonService : IPersonService
     {
         private readonly IDbContextFactory<MangaHomeDbContext> _contextFactory;
+        private readonly IConfiguration _configuration;
 
-        public PersonService(IDbContextFactory<MangaHomeDbContext> contextFactory)
+        public PersonService(IDbContextFactory<MangaHomeDbContext> contextFactory, IConfiguration configuration)
         {
             _contextFactory = contextFactory;
+            _configuration = configuration;
         }
 
         public async Task<Person> Get(string id)
         {
-            using (var dbContext = await _contextFactory.CreateDbContextAsync())
+            using var dbContext = await _contextFactory.CreateDbContextAsync();
+            var person = await dbContext.People.FirstOrDefaultAsync(x => x.Id == id) ?? throw new NotFoundException(typeof(Person).Name);
+            return person;
+        }
+
+        public async Task<Person> Add(string name, IFormFile? image = null, string? description = null, 
+            ICollection<string>? authoredTitlesIds = null, ICollection<string>? illustratedTitlesIds = null)
+        {
+            using var dbContext = await _contextFactory.CreateDbContextAsync();
+            var authoredTitles = new List<Title>();
+            if (authoredTitlesIds != null)
             {
-                var person = await dbContext.People.FirstOrDefaultAsync(x => x.Id == id);
-                if (person == null)
+                foreach (string authoredTitleId in authoredTitlesIds)
                 {
-                    throw new NotFoundException(typeof(Person).Name);
+                    var title = await dbContext.Titles.FirstOrDefaultAsync(t => t.Id == authoredTitleId) ?? 
+                        throw new NotFoundException(typeof(Title).Name);
+                    authoredTitles.Add(title);
                 }
-                return person;
             }
-        }
 
-        public async Task<Person> Add(string name, IFormFile? image = null, string? description = null, List<string>? authoredTitlesIds = null,
-            List<string>? illustratedTitlesIds = null)
-        {
-            using (var dbContext = await _contextFactory.CreateDbContextAsync())
+            var illustratedTitles = new List<Title>();
+            if (illustratedTitlesIds != null)
             {
-                var authoredTitles = new List<Title>();
-                if (authoredTitlesIds != null)
+                foreach (string illustratedTitleId in illustratedTitlesIds)
                 {
-                    foreach (string authoredTitleId in authoredTitlesIds)
-                    {
-                        var title = await dbContext.Titles.FirstOrDefaultAsync(t => t.Id == authoredTitleId);
-                        if (title == null)
-                        {
-                            throw new NotFoundException(typeof(Title).Name);
-                        }
-                        authoredTitles.Add(title);
-                    }
+                    var title = await dbContext.Titles.FirstOrDefaultAsync(t => t.Id == illustratedTitleId) ?? 
+                        throw new NotFoundException(typeof(Title).Name);
+                    illustratedTitles.Add(title);
                 }
-
-                var illustratedTitles = new List<Title>();
-                if (illustratedTitlesIds != null)
-                {
-                    foreach (string illustratedTitleId in illustratedTitlesIds)
-                    {
-                        var title = await dbContext.Titles.FirstOrDefaultAsync(t => t.Id == illustratedTitleId);
-                        if (title == null)
-                        {
-                            throw new NotFoundException(typeof(Title).Name);
-                        }
-                        illustratedTitles.Add(title);
-                    }
-                }
-
-                var person = new Person();
-                person.Name = name;
-                person.Description = description == null ? "" : description;
-                person.AuthoredTitles = authoredTitles;
-                person.IllustratedTitles = illustratedTitles;
-                await dbContext.People.AddAsync(person);
-                await dbContext.SaveChangesAsync();
-                return person;
             }
+
+            var person = new Person
+            {
+                Name = name,
+                Image = image == null ? "" : await Functions.UploadFileAsync(image, _configuration["FilesStoragePath.PeopleImagesPath"]),
+                Description = description ?? "",
+                AuthoredTitles = authoredTitles,
+                IllustratedTitles = illustratedTitles
+            };
+            await dbContext.People.AddAsync(person);
+            await dbContext.SaveChangesAsync();
+            return person;
         }
 
-        public Task<Person> Update(string id, string? name = null, IFormFile? image = null, string? description = null,
-            List<string>? authoredTitlesIds = null, List<string>? illustratedTitlesIds = null)
+        public async Task<Person> Update(string id, string? name = null, IFormFile? image = null, string? description = null,
+            ICollection<string>? authoredTitlesIds = null, ICollection<string>? illustratedTitlesIds = null)
         {
-            throw new NotImplementedException();
+            using var dbContext = await _contextFactory.CreateDbContextAsync();
+            var person = await dbContext.People.FirstOrDefaultAsync(p => p.Id == id) ?? throw new NotFoundException(typeof(Person).Name);
+
+            var authoredTitles = new List<Title>();
+            if (authoredTitlesIds != null)
+            {
+                foreach (string authoredTitleId in authoredTitlesIds)
+                {
+                    var title = await dbContext.Titles.FirstOrDefaultAsync(t => t.Id == authoredTitleId) ?? 
+                        throw new NotFoundException(typeof(Title).Name);
+                    authoredTitles.Add(title);
+                }
+            }
+
+            var illustratedTitles = new List<Title>();
+            if (illustratedTitlesIds != null)
+            {
+                foreach (string illustratedTitleId in illustratedTitlesIds)
+                {
+                    var title = await dbContext.Titles.FirstOrDefaultAsync(t => t.Id == illustratedTitleId) ?? 
+                        throw new NotFoundException(typeof(Title).Name);
+                    illustratedTitles.Add(title);
+                }
+            }
+
+            person.Name = name ?? person.Name;
+            person.Image = image == null ? person.Image :
+                await Functions.UploadFileAsync(image, _configuration["FilesStoragePath.PeopleImagesPath"]);
+            person.Description = description ?? person.Description;
+            person.AuthoredTitles = authoredTitles;
+            person.IllustratedTitles = illustratedTitles;
+            await dbContext.SaveChangesAsync();
+            return person;
         }
 
-        public Task<bool> Delete(string id)
+        public async Task<bool> Delete(string id)
         {
-            throw new NotImplementedException();
+            using var dbContext = await _contextFactory.CreateDbContextAsync();
+            var person = await dbContext.People.FirstOrDefaultAsync(p => p.Id == id) ?? 
+                throw new NotFoundException(typeof(Person).Name);
+            dbContext.Remove(person);
+            await dbContext.SaveChangesAsync();
+            return true;
         }
     }
 }
