@@ -150,4 +150,67 @@
   <data name="ERR_VOLUME_NOT_FOUND" xml:space="preserve">
     <value>Không tìm thấy tập truyện</value>
   </data>
+  <data name="RRS_CHAPTER_DUPLICATE_SAME_GROUP" xml:space="preserve">
+    <value>Chương truyện đã được đăng tải trước đó bởi cùng nhóm</value>
+  </data>
+  <data name="RRS_CHAPTER_INCORRECT_GROUP" xml:space="preserve">
+    <value>Nhóm đăng tải không đúng</value>
+  </data>
+  <data name="RRS_CHAPTER_INCORRECT_NUMBER" xml:space="preserve">
+    <value>Số chương không đúng</value>
+  </data>
+  <data name="RRS_CHAPTER_INCORRECT_ORDER_PAGES" xml:space="preserve">
+    <value>Thứ tự trang không đúng</value>
+  </data>
+  <data name="RRS_CHAPTER_INCORRECT_PAGES" xml:space="preserve">
+    <value>Trang bị thiếu, lặp hoặc không đúng</value>
+  </data>
+  <data name="RRS_CHAPTER_INCORRECT_TITLE" xml:space="preserve">
+    <value>Tựa truyện không đúng</value>
+  </data>
+  <data name="RRS_CHAPTER_LOADING_ERROR" xml:space="preserve">
+    <value>Trang truyện không tải được</value>
+  </data>
+  <data name="RRS_CHAPTER_OFFENSIVE_CONTENT" xml:space="preserve">
+    <value>Nội dung chính trị, phân biệt chủng tộc, vùng miền không liên quan</value>
+  </data>
+  <data name="RRS_CHAPTER_OTHER" xml:space="preserve">
+    <value>Khác</value>
+  </data>
+  <data name="RRS_GROUP_IMPERSONATING_OTHER" xml:space="preserve">
+    <value>Giả dạng nhóm khác</value>
+  </data>
+  <data name="RRS_GROUP_INACTIVITY" xml:space="preserve">
+    <value>Không hoạt động</value>
+  </data>
+  <data name="RRS_GROUP_INCORRECT_INFO" xml:space="preserve">
+    <value>Thông tin không đúng</value>
+  </data>
+  <data name="RRS_GROUP_OTHER" xml:space="preserve">
+    <value>Khác</value>
+  </data>
+  <data name="RRS_GROUP_TROLL_ENTRY" xml:space="preserve">
+    <value>Đăng tải tựa truyện giả</value>
+  </data>
+  <data name="RRS_TITLE_DUPLICATE_ENTRY" xml:space="preserve">
+    <value>Trùng tựa truyện</value>
+  </data>
+  <data name="RRS_TITLE_INCORRECT_INFO" xml:space="preserve">
+    <value>Thông tin không đúng</value>
+  </data>
+  <data name="RRS_TITLE_OTHER" xml:space="preserve">
+    <value>Khác</value>
+  </data>
+  <data name="RRS_TITLE_TROLL_ENTRY" xml:space="preserve">
+    <value>Tựa truyện giả</value>
+  </data>
+  <data name="RRS_USER_OFFENSIVE_PROFILE" xml:space="preserve">
+    <value>Tên người dùng/ảnh đại diện không phù hợp</value>
+  </data>
+  <data name="RRS_USER_OTHER" xml:space="preserve">
+    <value>Khác</value>
+  </data>
+  <data name="RRS_USER_SPAM_BOT" xml:space="preserve">
+    <value>Spam/Bot</value>
+  </data>
 </root>

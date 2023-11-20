@@ -30,6 +30,7 @@ namespace MangaHomeService.Models
         public DbSet<OtherName> OtherNames { get; set; }
         public DbSet<ReadingList> ReadingLists { get; set; }
         public DbSet<CommentVote> CommentVotes { get; set; }
+        public DbSet<Report> Reports { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

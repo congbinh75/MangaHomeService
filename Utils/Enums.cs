@@ -30,5 +30,13 @@
             Theme = 1,
             Demographic = 2
         }
+
+        public enum ReportType
+        {
+            User = 0,
+            Group = 1,
+            Title = 2,
+            Chapter = 3
+        }
     }
 }
