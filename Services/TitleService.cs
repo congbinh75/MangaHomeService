@@ -1,7 +1,9 @@
 ﻿using MangaHomeService.Models;
 using MangaHomeService.Utils;
 using Microsoft.EntityFrameworkCore;
+using System.Text.RegularExpressions;
 using static MangaHomeService.Utils.Enums;
+using Group = MangaHomeService.Models.Group;
 
 namespace MangaHomeService.Services
 {
@@ -24,6 +26,7 @@ namespace MangaHomeService.Services
             ICollection<string>? themesIds = null, ICollection<string>? demographicsIds = null, ICollection<string>? chaptersIds = null, 
             ICollection<string>? commentsIds = null, bool? isApproved = null);
         public Task<bool> Delete(string id);
+        public Task<TitleRequest> GetRequest(string id);
         public Task<TitleRequest> SubmitRequest(string titleId, string groupId, string note);
         public Task<TitleRequest> ReviewRequest(string requestId, bool isApproved, string note);
         public Task<Title> AddRating(string id, int rating, string? userId = null);
@@ -358,6 +361,15 @@ namespace MangaHomeService.Services
             return true;
         }
 
+        public async Task<TitleRequest> GetRequest(string requestId)
+        {
+            using var dbContext = await _contextFactory.CreateDbContextAsync();
+            var request = await dbContext.Requests.OfType<TitleRequest>().Where(r => r.Id == requestId).
+                Include(r => r.Title).FirstOrDefaultAsync() ??
+                throw new NotFoundException(typeof(TitleRequest).Name);
+            return request;
+        }
+
         public async Task<TitleRequest> SubmitRequest(string titleId, string groupId, string note)
         {
             using var dbContext = await _contextFactory.CreateDbContextAsync();
@@ -372,7 +384,7 @@ namespace MangaHomeService.Services
                 SubmitNote = note
             };
 
-            await dbContext.TitleRequests.AddAsync(request);
+            await dbContext.Requests.AddAsync(request);
             await dbContext.SaveChangesAsync();
             return request;
         }
@@ -380,7 +392,8 @@ namespace MangaHomeService.Services
         public async Task<TitleRequest> ReviewRequest(string requestId, bool isApproved, string note)
         {
             using var dbContext = await _contextFactory.CreateDbContextAsync();
-            var request = await dbContext.TitleRequests.Where(r => r.Id == requestId).Include(r => r.Title).FirstOrDefaultAsync() ?? 
+            var request = await dbContext.Requests.OfType<TitleRequest>().Where(r => r.Id == requestId).
+                Include(r => r.Title).FirstOrDefaultAsync() ?? 
                 throw new NotFoundException(typeof(TitleRequest).Name);
             if (request.IsReviewed)
             {

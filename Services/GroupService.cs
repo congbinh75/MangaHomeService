@@ -100,11 +100,12 @@ namespace MangaHomeService.Services
             return true;
         }
 
-        public async Task<GroupRequest> GetRequest(string groupId)
+        public async Task<GroupRequest> GetRequest(string requestId)
         {
             using var dbContext = await _contextFactory.CreateDbContextAsync();
-            var request = await dbContext.GroupRequests.Where(r => r.Id == groupId).Include(r => r.Group).FirstOrDefaultAsync() ??
-                throw new NotFoundException(typeof(ChapterRequest).Name);
+            var request = await dbContext.Requests.OfType<GroupRequest>().Where(r => r.Id == requestId).
+                Include(r => r.Group).FirstOrDefaultAsync() ??
+                throw new NotFoundException(typeof(GroupRequest).Name);
             return request;
         }
 
@@ -113,6 +114,10 @@ namespace MangaHomeService.Services
             using var dbContext = await _contextFactory.CreateDbContextAsync();
             var group = await dbContext.Groups.FirstOrDefaultAsync(g => g.Id == groupId) ?? 
                 throw new NotFoundException(typeof(Group).Name);
+            if (group.IsApproved)
+            {
+                throw new AlreadyApprovedException(nameof(Group));
+            }
             var request = new GroupRequest
             {
                 Group = group,
@@ -120,7 +125,7 @@ namespace MangaHomeService.Services
                 IsApproved = false,
                 IsReviewed = false
             };
-            await dbContext.GroupRequests.AddAsync(request);
+            await dbContext.Requests.AddAsync(request);
             await dbContext.SaveChangesAsync();
             return request;
         }
@@ -128,8 +133,12 @@ namespace MangaHomeService.Services
         public async Task<GroupRequest> ReviewRequest(string requestId, string note, bool isApproved)
         {
             using var dbContext = await _contextFactory.CreateDbContextAsync();
-            var request = await dbContext.GroupRequests.FirstOrDefaultAsync(g => g.Id == requestId) ?? 
+            var request = await dbContext.Requests.OfType<GroupRequest>().FirstOrDefaultAsync(g => g.Id == requestId) ?? 
                 throw new NotFoundException(typeof(GroupRequest).Name);
+            if (request.IsReviewed)
+            {
+                throw new AlreadyReviewedException(nameof(GroupRequest));
+            }
             request.ReviewNote = note;
             request.IsReviewed = true;
             request.IsApproved = isApproved;

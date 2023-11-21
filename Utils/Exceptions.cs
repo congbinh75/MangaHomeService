@@ -20,6 +20,11 @@
         public AlreadyReviewedException() { }
         public AlreadyReviewedException(string message) : base(message) { }
     }
+    public class AlreadyApprovedException : Exception
+    {
+        public AlreadyApprovedException() { }
+        public AlreadyApprovedException(string message) : base(message) { }
+    }
     public class NotFoundException : Exception 
     {
         public NotFoundException() { }
@@ -29,5 +34,11 @@
     {
         public NotApprovedException() { }
         public NotApprovedException(string message) : base(message) { }
+    }
+
+    public class GroupNotActiveException : Exception
+    {
+        public GroupNotActiveException() { }
+        public GroupNotActiveException(string message) : base(message) { }
     }
 }

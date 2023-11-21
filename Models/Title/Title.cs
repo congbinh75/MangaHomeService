@@ -1,4 +1,5 @@
 ﻿using MangaHomeService.Models;
+using MangaHomeService.Utils;
 using static MangaHomeService.Utils.Enums;
 
 namespace MangaHomeService.Models
@@ -23,5 +24,13 @@ namespace MangaHomeService.Models
         public ICollection<Chapter> Chapters { get; set; }
         public ICollection<Comment> Comments { get; set; }
         public bool IsAprroved { get; set; }
+
+        public void CheckUploadConditions()
+        {
+            if (!IsAprroved)
+            {
+                throw new NotApprovedException(Name);
+            }
+        }
     }
 }

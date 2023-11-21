@@ -10,8 +10,9 @@ namespace MangaHomeService.Services
         public Task<ICollection<Chapter>> GetByTitle(string titleId, int pageNumber = 1, int pageSize = Constants.ChaptersPerPage);
         public Task<Chapter> Add(double number, string titleId, string groupId, string? volumeId = null, string? languageId = null,
             ICollection<string>? pagesIds = null, ICollection<string>? commentsIds = null, bool isApproved = false);
-        public Task<Chapter> Update(string id, double? number = null, string? volumeId = null, string? languageId = null,
-            ICollection<string>? pagesIds = null, ICollection<string>? commentsIds = null, bool? isApproved = null);
+        public Task<Chapter> Update(string id, double? number = null, string? titleId = null, string? groupId = null, 
+            string? volumeId = null, string? languageId = null, ICollection<string>? pagesIds = null, ICollection<string>? commentsIds = null, 
+            bool? isApproved = null);
         public Task<bool> Delete(string id);
         public Task<ChapterRequest> GetRequest(string requestId);
         public Task<ChapterRequest> SubmitRequest(string chapterId, string note, string groupId);
@@ -41,7 +42,7 @@ namespace MangaHomeService.Services
             var title = await dbContext.Titles.FirstOrDefaultAsync(t => t.Id == titleId) ?? 
                 throw new NotFoundException(typeof(Title).Name);
             //TO BE FIXED
-            return await dbContext.Chapters.Where(c => c.Title.Id == titleId).OrderByDescending(c => c.Number).
+            return await dbContext.Chapters.Where(c => c.Title.Id == titleId && c.IsApproved).OrderByDescending(c => c.Number).
                 GroupBy(c => c.Number).Select(c => c.First()).Distinct().Skip(pageSize * (pageNumber - 1)).Take(pageSize).ToListAsync();
         }
 
@@ -49,14 +50,13 @@ namespace MangaHomeService.Services
             ICollection<string>? pagesIds = null, ICollection<string>? commentsIds = null, bool isApproved = false)
         {
             using var dbContext = await _contextFactory.CreateDbContextAsync();
-            var title = await dbContext.Titles.FirstOrDefaultAsync(t => t.Id == titleId) ?? throw new NotFoundException(typeof(Title).Name);
-            if (!title.IsAprroved)
-            {
-                throw new NotApprovedException(title.Name);
-            }
 
-            var group = await dbContext.Groups.FirstOrDefaultAsync(g => g.Id == groupId) ??
-                throw new NotFoundException(typeof(Group).Name);
+            var title = await dbContext.Titles.FirstOrDefaultAsync(t => t.Id == titleId) ?? throw new NotFoundException(typeof(Title).Name);
+            title.CheckUploadConditions();
+
+            var group = await dbContext.Groups.FirstOrDefaultAsync(g => g.Id == groupId) ?? throw new NotFoundException(typeof(Group).Name);
+            group.CheckUploadContions();
+
             var volume = (volumeId == null ? null : await dbContext.Volumes.FirstOrDefaultAsync(v => v.Id == volumeId)) ??
                 throw new NotFoundException(typeof(Volume).Name);
             var language = (languageId == null ? null : await dbContext.Languages.FirstOrDefaultAsync(l => l.Id == languageId)) ??
@@ -100,8 +100,10 @@ namespace MangaHomeService.Services
             await dbContext.SaveChangesAsync();
             return chapter;
         }
-        public async Task<Chapter> Update(string id, double? number = null, string? volumeId = null, string? languageId = null, 
-            ICollection<string>? pagesIds = null, ICollection<string>? commentsIds = null, bool? isApproved = null)
+
+        public async Task<Chapter> Update(string id, double? number = null, string? titleId = null, string? groupId = null, 
+            string? volumeId = null, string? languageId = null, ICollection<string>? pagesIds = null, ICollection<string>? commentsIds = null, 
+            bool? isApproved = null)
         {
             using var dbContext = await _contextFactory.CreateDbContextAsync();
             var chapter = await dbContext.Chapters.FirstOrDefaultAsync(c => c.Id == id) ??
@@ -127,6 +129,22 @@ namespace MangaHomeService.Services
                         throw new NotFoundException(typeof(Comment).Name);
                     comments.Add(comment);
                 }
+            }
+
+            if (titleId != null)
+            {
+                var title = await dbContext.Titles.FirstOrDefaultAsync(t => t.Id == titleId) ?? 
+                    throw new NotFoundException(typeof(Title).Name);
+                title.CheckUploadConditions();
+                chapter.Title = title;
+            }
+
+            if (groupId != null)
+            {
+                var group = await dbContext.Groups.FirstOrDefaultAsync(g => g.Id == groupId) ?? 
+                    throw new NotFoundException(typeof(Group).Name);
+                group.CheckUploadContions();
+                chapter.Group = group;
             }
 
             chapter.Number = number == null ? chapter.Number : (double)number;
@@ -171,6 +189,8 @@ namespace MangaHomeService.Services
                 throw new NotFoundException(typeof(Chapter).Name);
             var group = await dbContext.Groups.FirstOrDefaultAsync(g => g.Id == groupId) ??
                 throw new NotFoundException(typeof(Group).Name);
+            group.CheckUploadContions();
+
             var request = new ChapterRequest
             {
                 Chapter = chapter,
