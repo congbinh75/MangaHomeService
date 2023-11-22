@@ -21,10 +21,10 @@ namespace MangaHomeService.Controllers
         private ITokenInfoProvider _tokenInfoProvider;
 
         public UserController(
-            IConfiguration configuration, 
-            IStringLocalizer<UserController> stringLocalizer, 
+            IConfiguration configuration,
+            IStringLocalizer<UserController> stringLocalizer,
             IUserService userService,
-            ITokenInfoProvider tokenInfoProvider) 
+            ITokenInfoProvider tokenInfoProvider)
         {
             _configuration = configuration;
             _stringLocalizer = stringLocalizer;
@@ -37,7 +37,7 @@ namespace MangaHomeService.Controllers
         {
             try
             {
-                if (!string.IsNullOrEmpty(input.Email) && !string.IsNullOrEmpty(input.Password) 
+                if (!string.IsNullOrEmpty(input.Email) && !string.IsNullOrEmpty(input.Password)
                     && !string.IsNullOrEmpty(input.Name))
                 {
                     await _userService.Add(input.Name, input.Email, input.Password, 2);
@@ -48,7 +48,7 @@ namespace MangaHomeService.Controllers
                     return BadRequest(_stringLocalizer["ERR_INVALID_INPUT_DATA"]);
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return BadRequest(ex.Message);
             }
@@ -68,15 +68,15 @@ namespace MangaHomeService.Controllers
                     {
                         var claims = new[]
                         {
-                            new Claim(JwtRegisteredClaimNames.Sub, _configuration["Jwt:Subject"]),
+                            new Claim(JwtRegisteredClaimNames.Sub, _configuration["Jwt:Subject"] ?? ""),
                             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                             new Claim(JwtRegisteredClaimNames.Iat, DateTime.UtcNow.ToString()),
                             new Claim(ClaimTypes.NameIdentifier, user.Id),
-                            new Claim(ClaimTypes.Name, user.Name),
+                            new Claim(ClaimTypes.Name, user.Name ?? ""),
                             new Claim(ClaimTypes.Role, ((Enums.Role)user.Role).ToString())
                         };
 
-                        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+                        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"] ?? ""));
                         var signIn = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
                         var token = new JwtSecurityToken(
                             _configuration["Jwt:Issuer"],

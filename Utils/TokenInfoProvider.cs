@@ -6,7 +6,7 @@ namespace MangaHomeService.Utils
     {
         string Id { get; }
         string Name { get; }
-        string Role {  get; }
+        string Role { get; }
     }
 
     public class TokenInfoProvider : ITokenInfoProvider

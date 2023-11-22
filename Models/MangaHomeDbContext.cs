@@ -6,7 +6,7 @@ namespace MangaHomeService.Models
     public class MangaHomeDbContext : DbContext
     {
         private readonly ITokenInfoProvider _tokenInfoProvider;
-        public MangaHomeDbContext(DbContextOptions<MangaHomeDbContext> options, ITokenInfoProvider tokenInfoProvider) : base(options) 
+        public MangaHomeDbContext(DbContextOptions<MangaHomeDbContext> options, ITokenInfoProvider tokenInfoProvider) : base(options)
         {
             _tokenInfoProvider = tokenInfoProvider;
         }

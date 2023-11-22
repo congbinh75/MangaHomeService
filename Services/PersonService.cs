@@ -7,9 +7,9 @@ namespace MangaHomeService.Services
     public interface IPersonService
     {
         public Task<Person> Get(string id);
-        public Task<Person> Add(string name, IFormFile? image = null, string? description = null, 
+        public Task<Person> Add(string name, IFormFile? image = null, string? description = null,
             ICollection<string>? authoredTitlesIds = null, ICollection<string>? illustratedTitlesIds = null);
-        public Task<Person> Update(string id, string? name = null, IFormFile? image = null, string? description = null, 
+        public Task<Person> Update(string id, string? name = null, IFormFile? image = null, string? description = null,
             ICollection<string>? authoredTitlesIds = null, ICollection<string>? illustratedTitlesIds = null);
         public Task<bool> Delete(string id);
     }
@@ -32,7 +32,7 @@ namespace MangaHomeService.Services
             return person;
         }
 
-        public async Task<Person> Add(string name, IFormFile? image = null, string? description = null, 
+        public async Task<Person> Add(string name, IFormFile? image = null, string? description = null,
             ICollection<string>? authoredTitlesIds = null, ICollection<string>? illustratedTitlesIds = null)
         {
             using var dbContext = await _contextFactory.CreateDbContextAsync();
@@ -41,7 +41,7 @@ namespace MangaHomeService.Services
             {
                 foreach (string authoredTitleId in authoredTitlesIds)
                 {
-                    var title = await dbContext.Titles.FirstOrDefaultAsync(t => t.Id == authoredTitleId) ?? 
+                    var title = await dbContext.Titles.FirstOrDefaultAsync(t => t.Id == authoredTitleId) ??
                         throw new NotFoundException(typeof(Title).Name);
                     authoredTitles.Add(title);
                 }
@@ -52,7 +52,7 @@ namespace MangaHomeService.Services
             {
                 foreach (string illustratedTitleId in illustratedTitlesIds)
                 {
-                    var title = await dbContext.Titles.FirstOrDefaultAsync(t => t.Id == illustratedTitleId) ?? 
+                    var title = await dbContext.Titles.FirstOrDefaultAsync(t => t.Id == illustratedTitleId) ??
                         throw new NotFoundException(typeof(Title).Name);
                     illustratedTitles.Add(title);
                 }
@@ -82,7 +82,7 @@ namespace MangaHomeService.Services
             {
                 foreach (string authoredTitleId in authoredTitlesIds)
                 {
-                    var title = await dbContext.Titles.FirstOrDefaultAsync(t => t.Id == authoredTitleId) ?? 
+                    var title = await dbContext.Titles.FirstOrDefaultAsync(t => t.Id == authoredTitleId) ??
                         throw new NotFoundException(typeof(Title).Name);
                     authoredTitles.Add(title);
                 }
@@ -93,7 +93,7 @@ namespace MangaHomeService.Services
             {
                 foreach (string illustratedTitleId in illustratedTitlesIds)
                 {
-                    var title = await dbContext.Titles.FirstOrDefaultAsync(t => t.Id == illustratedTitleId) ?? 
+                    var title = await dbContext.Titles.FirstOrDefaultAsync(t => t.Id == illustratedTitleId) ??
                         throw new NotFoundException(typeof(Title).Name);
                     illustratedTitles.Add(title);
                 }
@@ -112,7 +112,7 @@ namespace MangaHomeService.Services
         public async Task<bool> Delete(string id)
         {
             using var dbContext = await _contextFactory.CreateDbContextAsync();
-            var person = await dbContext.People.FirstOrDefaultAsync(p => p.Id == id) ?? 
+            var person = await dbContext.People.FirstOrDefaultAsync(p => p.Id == id) ??
                 throw new NotFoundException(typeof(Person).Name);
             dbContext.Remove(person);
             await dbContext.SaveChangesAsync();

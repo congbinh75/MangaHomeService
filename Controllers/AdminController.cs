@@ -32,15 +32,15 @@ namespace MangaHomeService.Controllers
             try
             {
                 int role = -1;
-                if (string.IsNullOrEmpty(formData.UserId) || string.IsNullOrEmpty(formData.Role) 
-                    || !int.TryParse(formData.Role, out role) || !Enum.IsDefined(typeof(Enums.Role), role)) 
+                if (string.IsNullOrEmpty(formData.UserId) || string.IsNullOrEmpty(formData.Role)
+                    || !int.TryParse(formData.Role, out role) || !Enum.IsDefined(typeof(Enums.Role), role))
                 {
                     return BadRequest(_stringLocalizer["ERR_INVALID_INPUT_DATA"]);
                 }
-                var user = await _userService.Update(formData.UserId, role : role);
+                var user = await _userService.Update(formData.UserId, role: role);
                 return Ok(user);
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
                 return BadRequest(ex.Message);
             }

@@ -11,7 +11,7 @@ namespace MangaHomeService.Policies
         private readonly IDbContextFactory<MangaHomeDbContext> _contextFactory;
         private readonly ITokenInfoProvider _tokenInfoProvider;
 
-        public EmailConfirmedRequirementHandler(IDbContextFactory<MangaHomeDbContext> contextFactory, ITokenInfoProvider tokenInfoProvider) 
+        public EmailConfirmedRequirementHandler(IDbContextFactory<MangaHomeDbContext> contextFactory, ITokenInfoProvider tokenInfoProvider)
         {
             _contextFactory = contextFactory;
             _tokenInfoProvider = tokenInfoProvider;

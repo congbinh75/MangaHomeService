@@ -58,7 +58,7 @@ namespace MangaHomeService.Services
             using var dbContext = await _contextFactory.CreateDbContextAsync();
             if (type == typeof(Title).Name)
             {
-                var title = await dbContext.Titles.Where(t => t.Id == id).FirstOrDefaultAsync() ?? 
+                var title = await dbContext.Titles.Where(t => t.Id == id).FirstOrDefaultAsync() ??
                     throw new NotFoundException(typeof(Title).Name);
                 var comment = new TitleComment
                 {
@@ -72,7 +72,7 @@ namespace MangaHomeService.Services
             }
             else if (type == typeof(Chapter).Name)
             {
-                var chapter = await dbContext.Chapters.Where(c => c.Id == id).FirstOrDefaultAsync() ?? 
+                var chapter = await dbContext.Chapters.Where(c => c.Id == id).FirstOrDefaultAsync() ??
                     throw new NotFoundException(typeof(Chapter).Name);
                 var comment = new ChapterComment
                 {
@@ -86,7 +86,7 @@ namespace MangaHomeService.Services
             }
             else if (type == typeof(Group).Name)
             {
-                var group = await dbContext.Groups.Where(g => g.Id == id).FirstOrDefaultAsync() ?? 
+                var group = await dbContext.Groups.Where(g => g.Id == id).FirstOrDefaultAsync() ??
                     throw new NotFoundException(typeof(Group).Name);
                 var comment = new GroupComment
                 {
@@ -107,7 +107,7 @@ namespace MangaHomeService.Services
         public async Task<Comment> Update(string id, string content, int? vote = null)
         {
             using var dbContext = await _contextFactory.CreateDbContextAsync();
-            var comment = await dbContext.Comments.Where(c => c.Id == id).FirstOrDefaultAsync() ?? 
+            var comment = await dbContext.Comments.Where(c => c.Id == id).FirstOrDefaultAsync() ??
                 throw new NotFoundException(typeof(Comment).Name);
             comment.Content = content;
             comment.Vote = vote == null ? comment.Vote : (int)vote;
@@ -118,7 +118,7 @@ namespace MangaHomeService.Services
         public async Task<bool> Delete(string id)
         {
             using var dbContext = await _contextFactory.CreateDbContextAsync();
-            var comment = await dbContext.Comments.Where(c => c.Id == id).FirstOrDefaultAsync() ?? 
+            var comment = await dbContext.Comments.Where(c => c.Id == id).FirstOrDefaultAsync() ??
                 throw new NotFoundException(typeof(Comment).Name);
             dbContext.Comments.Remove(comment);
             await dbContext.SaveChangesAsync();
@@ -128,7 +128,7 @@ namespace MangaHomeService.Services
         public async Task<Comment> AddVote(string id, bool isUpvote)
         {
             using var dbContext = await _contextFactory.CreateDbContextAsync();
-            var comment = await dbContext.Comments.FirstOrDefaultAsync(c => c.Id == id) ?? 
+            var comment = await dbContext.Comments.FirstOrDefaultAsync(c => c.Id == id) ??
                 throw new NotFoundException(typeof(Comment).Name);
             var vote = new CommentVote
             {
@@ -143,9 +143,9 @@ namespace MangaHomeService.Services
         public async Task<Comment> RemoveVote(string id)
         {
             using var dbContext = await _contextFactory.CreateDbContextAsync();
-            var comment = await dbContext.Comments.FirstOrDefaultAsync(c => c.Id == id) ?? 
+            var comment = await dbContext.Comments.FirstOrDefaultAsync(c => c.Id == id) ??
                 throw new NotFoundException(typeof(Comment).Name);
-            var vote = await dbContext.CommentVotes.Where(v => v.Comment.Id == id && v.User.Id == v.User.Id).FirstOrDefaultAsync() ?? 
+            var vote = await dbContext.CommentVotes.Where(v => v.Comment.Id == id && v.User.Id == v.User.Id).FirstOrDefaultAsync() ??
                 throw new NotFoundException(typeof(CommentVote).Name);
             dbContext.CommentVotes.Remove(vote);
             await dbContext.SaveChangesAsync();

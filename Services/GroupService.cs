@@ -25,7 +25,7 @@ namespace MangaHomeService.Services
         public GroupService(IDbContextFactory<MangaHomeDbContext> contextFactory, IConfiguration configuration)
         {
             _contextFactory = contextFactory;
-            _configuration = configuration; 
+            _configuration = configuration;
         }
 
         public async Task<Group> Get(string id)
@@ -51,7 +51,8 @@ namespace MangaHomeService.Services
             {
                 Name = name,
                 Description = description,
-                ProfilePicture = await Functions.UploadFileAsync(profilePicture, _configuration["FilesStoragePath.GroupsImagesPath"]),
+                ProfilePicture = await Functions.UploadFileAsync(profilePicture, _configuration["FilesStoragePath.GroupsImagesPath"] 
+                ?? throw new ConfigurationNotFoundException("FilesStoragePath.GroupsImagesPath")),
                 Members = members
             };
             await dbContext.Groups.AddAsync(group);
@@ -63,7 +64,7 @@ namespace MangaHomeService.Services
             ICollection<string>? membersIds = null)
         {
             using var dbContext = await _contextFactory.CreateDbContextAsync();
-            var group = await dbContext.Groups.FirstOrDefaultAsync(g => g.Id == id) ?? 
+            var group = await dbContext.Groups.FirstOrDefaultAsync(g => g.Id == id) ??
                 throw new NotFoundException(typeof(Group).Name);
 
             var newMembers = new List<Member>();
@@ -71,7 +72,7 @@ namespace MangaHomeService.Services
             {
                 foreach (var memberId in membersIds)
                 {
-                    var member = await dbContext.Members.FirstOrDefaultAsync(m => m.Id == memberId) ?? 
+                    var member = await dbContext.Members.FirstOrDefaultAsync(m => m.Id == memberId) ??
                         throw new NotFoundException(typeof(Member).Name);
                     newMembers.Add(member);
                 }
@@ -84,7 +85,8 @@ namespace MangaHomeService.Services
             group.Name = name ?? group.Name;
             group.Description = description ?? group.Description;
             group.ProfilePicture = profilePicture == null ? group.ProfilePicture :
-                await Functions.UploadFileAsync(profilePicture, _configuration["FilesStoragePath.GroupsImagesPath"]);
+                await Functions.UploadFileAsync(profilePicture, _configuration["FilesStoragePath.GroupsImagesPath"] 
+                ?? throw new ConfigurationNotFoundException("FilesStoragePath.GroupsImagesPath"));
             group.Members = newMembers;
             await dbContext.SaveChangesAsync();
             return group;
@@ -93,7 +95,7 @@ namespace MangaHomeService.Services
         public async Task<bool> Delete(string id)
         {
             using var dbContext = await _contextFactory.CreateDbContextAsync();
-            var group = await dbContext.Groups.FirstOrDefaultAsync(g => g.Id == id) ?? 
+            var group = await dbContext.Groups.FirstOrDefaultAsync(g => g.Id == id) ??
                 throw new NotFoundException(typeof(Group).Name);
             dbContext.Groups.Remove(group);
             await dbContext.SaveChangesAsync();
@@ -112,7 +114,7 @@ namespace MangaHomeService.Services
         public async Task<GroupRequest> SubmitRequest(string groupId, string note)
         {
             using var dbContext = await _contextFactory.CreateDbContextAsync();
-            var group = await dbContext.Groups.FirstOrDefaultAsync(g => g.Id == groupId) ?? 
+            var group = await dbContext.Groups.FirstOrDefaultAsync(g => g.Id == groupId) ??
                 throw new NotFoundException(typeof(Group).Name);
             if (group.IsApproved)
             {
@@ -133,7 +135,7 @@ namespace MangaHomeService.Services
         public async Task<GroupRequest> ReviewRequest(string requestId, string note, bool isApproved)
         {
             using var dbContext = await _contextFactory.CreateDbContextAsync();
-            var request = await dbContext.Requests.OfType<GroupRequest>().FirstOrDefaultAsync(g => g.Id == requestId) ?? 
+            var request = await dbContext.Requests.OfType<GroupRequest>().FirstOrDefaultAsync(g => g.Id == requestId) ??
                 throw new NotFoundException(typeof(GroupRequest).Name);
             if (request.IsReviewed)
             {

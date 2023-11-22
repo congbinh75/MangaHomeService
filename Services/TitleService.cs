@@ -1,7 +1,6 @@
 ﻿using MangaHomeService.Models;
 using MangaHomeService.Utils;
 using Microsoft.EntityFrameworkCore;
-using System.Text.RegularExpressions;
 using static MangaHomeService.Utils.Enums;
 using Group = MangaHomeService.Models.Group;
 
@@ -20,10 +19,10 @@ namespace MangaHomeService.Services
             int views = 0, int bookmarks = 0, ICollection<string>? otherNamesIds = null, string? originalLanguageId = null,
             ICollection<string>? genresIds = null, ICollection<string>? themesIds = null, ICollection<string>? demographicsIds = null,
             ICollection<string>? chaptersIds = null, ICollection<string>? commentsIds = null, bool isApproved = false);
-        public Task<Title> Update(string id, string name = "", string description = "", IFormFile? artwork = null, string authorId = "", 
+        public Task<Title> Update(string id, string name = "", string description = "", IFormFile? artwork = null, string authorId = "",
             string artistId = "", TitleStatus? status = null, double rating = -1, int ratingVotes = -1, int views = -1, int bookmarks = -1,
-            ICollection<string>? otherNamesIds = null, string originalLanguageId = "", ICollection<string>? genresIds = null, 
-            ICollection<string>? themesIds = null, ICollection<string>? demographicsIds = null, ICollection<string>? chaptersIds = null, 
+            ICollection<string>? otherNamesIds = null, string originalLanguageId = "", ICollection<string>? genresIds = null,
+            ICollection<string>? themesIds = null, ICollection<string>? demographicsIds = null, ICollection<string>? chaptersIds = null,
             ICollection<string>? commentsIds = null, bool? isApproved = null);
         public Task<bool> Delete(string id);
         public Task<TitleRequest> GetRequest(string id);
@@ -39,7 +38,7 @@ namespace MangaHomeService.Services
         private readonly ITokenInfoProvider _tokenInfoProvider;
         private readonly IConfiguration _configuration;
 
-        public TitleService(IDbContextFactory<MangaHomeDbContext> contextFactory, 
+        public TitleService(IDbContextFactory<MangaHomeDbContext> contextFactory,
             ITokenInfoProvider tokenInfoProvider,
             IConfiguration configuration)
         {
@@ -59,17 +58,22 @@ namespace MangaHomeService.Services
         public async Task<ICollection<Title>> Search(string keyword, int pageNumber = 1, int pageSize = Constants.TitlesPerPage)
         {
             using var dbContext = await _contextFactory.CreateDbContextAsync();
-            var titles = await dbContext.Titles.Where(x => x.Name.Contains(keyword.Trim())
-            || x.OtherNames.Any(y => y.Name.Contains(keyword.Trim()))
-            || x.Author.Name.Contains(keyword.Trim())
-            || x.Artist.Name.Contains(keyword.Trim())).Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync();
-
+            var titles = await dbContext.Titles
+                .Where(x =>
+                    (x.Name != null && x.Name.Contains(keyword))
+                    || (x.OtherNames != null && x.OtherNames.Any(y => y.Name != null && y.Name.Contains(keyword)))
+                    || (x.Author != null && x.Author.Name != null && x.Author.Name.Contains(keyword))
+                    || (x.Artist != null && x.Artist.Name != null && x.Artist.Name.Contains(keyword))
+                )
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
             return titles;
         }
 
-        public async Task<ICollection<Title>> AdvancedSearch(string? name = null, string? author = null, string? artist = null, 
-            ICollection<string>? genreIds = null, ICollection<string>? themeIds = null, ICollection<string>? demographicsIds = null, 
-            string? originalLanguageId = null, ICollection<string>? languageIds = null, ICollection<int>? statuses = null, 
+        public async Task<ICollection<Title>> AdvancedSearch(string? name = null, string? author = null, string? artist = null,
+            ICollection<string>? genreIds = null, ICollection<string>? themeIds = null, ICollection<string>? demographicsIds = null,
+            string? originalLanguageId = null, ICollection<string>? languageIds = null, ICollection<int>? statuses = null,
             bool sortByLastest = false, bool sortByHottest = false, int pageNumber = 1, int pageSize = Constants.TitlesPerPage)
         {
             using var dbContext = await _contextFactory.CreateDbContextAsync();
@@ -79,27 +83,31 @@ namespace MangaHomeService.Services
                 .Include(x => x.Themes)
                 .ToListAsync();
 
-            titles = name == null ? titles : titles.Where(x => x.Name.Contains(name) || x.OtherNames.Any(y => y.Name.Contains(name))).ToList();
-            titles = author == null ? titles: titles.Where(x => x.Author.Name.Contains(author)).ToList();
-            titles = artist == null ? titles : titles.Where(x => x.Artist.Name.Contains(artist)).ToList();
-            titles = originalLanguageId == null ? titles : titles.Where(x => x.OriginalLanguage.Id == originalLanguageId).ToList();
+            titles = name == null ? titles : titles.Where(x => (x.Name?.Contains(name) ?? false)
+            || (x.OtherNames?.Any(y => y.Name?.Contains(name) ?? false) ?? false)).ToList();
+            titles = author == null ? titles : titles.Where(x => x.Author?.Name?.Contains(author) ?? false).ToList();
+            titles = artist == null ? titles : titles.Where(x => x.Artist?.Name?.Contains(artist) ?? false).ToList();
+            titles = originalLanguageId == null ? titles : titles.Where(x => x.OriginalLanguage?.Id == originalLanguageId).ToList();
 
             if (genreIds != null && genreIds.Count > 0)
             {
-                var gernes = await dbContext.Tags.Where(x => genreIds.Contains(x.Id) && x.Type == (int)TagType.Gerne).ToListAsync();
-                titles = titles.Where(x => gernes.All(y => x.Gernes.Contains(y))).ToList();
+                var gernes = await dbContext.Tags.Where(x => (x.Id != null && genreIds.Contains(x.Id)) 
+                    && x.Type == (int)TagType.Gerne).ToListAsync();
+                titles = titles.Where(x => gernes.All(y => x.Gernes?.Contains(y) ?? false)).ToList();
             }
 
             if (themeIds != null && themeIds.Count > 0)
             {
-                var themes = await dbContext.Tags.Where(x => themeIds.Contains(x.Id) && x.Type == (int)TagType.Theme).ToListAsync();
-                titles = titles.Where(x => themes.All(y => x.Themes.Contains(y))).ToList();
+                var themes = await dbContext.Tags.Where(x => (x.Id != null && themeIds.Contains(x.Id))
+                    && x.Type == (int)TagType.Theme).ToListAsync();
+                titles = titles.Where(x => themes.All(y => x.Themes?.Contains(y) ?? false)).ToList();
             }
 
             if (demographicsIds != null && demographicsIds.Count > 0)
             {
-                var demographics = await dbContext.Tags.Where(x => demographicsIds.Contains(x.Id) && x.Type == (int)TagType.Demographic).ToListAsync();
-                titles = titles.Where(x => demographics.All(y => x.Demographics.Contains(y))).ToList();
+                var demographics = await dbContext.Tags.Where(x => (x.Id != null && demographicsIds.Contains(x.Id)) 
+                    && x.Type == (int)TagType.Demographic).ToListAsync();
+                titles = titles.Where(x => demographics.All(y => x.Demographics?.Contains(y) ?? false)).ToList();
             }
 
             if (statuses != null && statuses.Count > 0)
@@ -121,11 +129,11 @@ namespace MangaHomeService.Services
             return titles;
         }
 
-        public async Task<Title> Add(string name, string? description = null, IFormFile? artwork = null, string? authorId = null, 
-            string? artistId = null, TitleStatus status = TitleStatus.NotYetReleased, double rating = 0, int ratingVotes = 0, 
-            int views = 0, int bookmarks = 0, ICollection<string>? otherNamesIds = null, string? originalLanguageId = null, 
-            ICollection<string>? genresIds = null, ICollection<string>? themesIds = null, ICollection<string>? demographicsIds = null, 
-            ICollection<string>? chaptersIds = null,  ICollection<string>? commentsIds = null, bool isApproved = false)
+        public async Task<Title> Add(string name, string? description = null, IFormFile? artwork = null, string? authorId = null,
+            string? artistId = null, TitleStatus status = TitleStatus.NotYetReleased, double rating = 0, int ratingVotes = 0,
+            int views = 0, int bookmarks = 0, ICollection<string>? otherNamesIds = null, string? originalLanguageId = null,
+            ICollection<string>? genresIds = null, ICollection<string>? themesIds = null, ICollection<string>? demographicsIds = null,
+            ICollection<string>? chaptersIds = null, ICollection<string>? commentsIds = null, bool isApproved = false)
         {
             using (var dbContext = await _contextFactory.CreateDbContextAsync())
             {
@@ -134,7 +142,7 @@ namespace MangaHomeService.Services
                 {
                     foreach (var otherNameId in otherNamesIds)
                     {
-                        var otherName = await dbContext.OtherNames.FirstOrDefaultAsync(t => t.Id == otherNameId) ?? 
+                        var otherName = await dbContext.OtherNames.FirstOrDefaultAsync(t => t.Id == otherNameId) ??
                             throw new NotFoundException(typeof(OtherName).Name);
                         otherNames.Add(otherName);
                     }
@@ -145,7 +153,7 @@ namespace MangaHomeService.Services
                 {
                     foreach (var genreId in genresIds)
                     {
-                        var genre = await dbContext.Tags.FirstOrDefaultAsync(g => g.Id == genreId) ?? 
+                        var genre = await dbContext.Tags.FirstOrDefaultAsync(g => g.Id == genreId) ??
                             throw new NotFoundException(typeof(Tag).Name + TagType.Gerne);
                         genres.Add(genre);
                     }
@@ -156,7 +164,7 @@ namespace MangaHomeService.Services
                 {
                     foreach (var themeId in themesIds)
                     {
-                        var theme = await dbContext.Tags.FirstOrDefaultAsync(g => g.Id == themeId) ?? 
+                        var theme = await dbContext.Tags.FirstOrDefaultAsync(g => g.Id == themeId) ??
                             throw new NotFoundException(typeof(Tag).Name + TagType.Theme);
                         themes.Add(theme);
                     }
@@ -167,7 +175,7 @@ namespace MangaHomeService.Services
                 {
                     foreach (var chapterId in chaptersIds)
                     {
-                        var chapter = await dbContext.Chapters.FirstOrDefaultAsync(c => c.Id == chapterId) ?? 
+                        var chapter = await dbContext.Chapters.FirstOrDefaultAsync(c => c.Id == chapterId) ??
                             throw new NotFoundException(typeof(Chapter).Name);
                         chapters.Add(chapter);
                     }
@@ -179,7 +187,7 @@ namespace MangaHomeService.Services
                 {
                     foreach (var commentId in commentsIds)
                     {
-                        var comment = await dbContext.Comments.FirstOrDefaultAsync(c => c.Id == commentId) ?? 
+                        var comment = await dbContext.Comments.FirstOrDefaultAsync(c => c.Id == commentId) ??
                             throw new NotFoundException(typeof(Comment).Name);
                         comments.Add(comment);
                     }
@@ -190,7 +198,7 @@ namespace MangaHomeService.Services
                 {
                     foreach (var demographicId in demographicsIds)
                     {
-                        var demographic = await dbContext.Tags.FirstOrDefaultAsync(c => c.Id == demographicId) ?? 
+                        var demographic = await dbContext.Tags.FirstOrDefaultAsync(c => c.Id == demographicId) ??
                             throw new NotFoundException(typeof(Tag).Name + TagType.Demographic);
                         demographics.Add(demographic);
                     }
@@ -237,9 +245,9 @@ namespace MangaHomeService.Services
             ICollection<string>? themesIds = null, ICollection<string>? demographicsIds = null, ICollection<string>? chaptersIds = null,
             ICollection<string>? commentsIds = null, bool? isApproved = null)
         {
-            using (var dbContext = await _contextFactory.CreateDbContextAsync()) 
+            using (var dbContext = await _contextFactory.CreateDbContextAsync())
             {
-                var title = await dbContext.Titles.FirstOrDefaultAsync(t => t.Id == id) ?? 
+                var title = await dbContext.Titles.FirstOrDefaultAsync(t => t.Id == id) ??
                     throw new NotFoundException(typeof(Title).Name);
 
                 var otherNames = new List<OtherName>();
@@ -329,11 +337,11 @@ namespace MangaHomeService.Services
 
                 title.Name = !string.IsNullOrEmpty(name) ? name : title.Name;
                 title.Description = !string.IsNullOrEmpty(description) ? description : title.Description;
-                title.Artwork = artwork == null ? title.Artwork : 
+                title.Artwork = artwork == null ? title.Artwork :
                     await Functions.UploadFileAsync(artwork, _configuration["FilesStoragePath.TitlesImagesPath"]);
-                title.Artist = artistId == null ? await dbContext.People.FirstOrDefaultAsync(a => a.Id == artistId) ?? 
+                title.Artist = artistId == null ? await dbContext.People.FirstOrDefaultAsync(a => a.Id == artistId) ??
                     throw new NotFoundException(typeof(Person).Name) : title.Artist;
-                title.Author = authorId == null ? await dbContext.People.FirstOrDefaultAsync(a => a.Id == authorId) ?? 
+                title.Author = authorId == null ? await dbContext.People.FirstOrDefaultAsync(a => a.Id == authorId) ??
                     throw new NotFoundException(typeof(Person).Name) : title.Author;
                 title.OtherNames = otherNames;
                 title.Gernes = genres;
@@ -342,7 +350,7 @@ namespace MangaHomeService.Services
                 title.Comments = comments;
                 title.Status = status != null ? (Enums.TitleStatus)status : title.Status;
                 title.IsAprroved = isApproved != null ? (bool)isApproved : title.IsAprroved;
-                title.OriginalLanguage = originalLanguageId == null ? await dbContext.Languages.FirstOrDefaultAsync(a => a.Id == originalLanguageId) ?? 
+                title.OriginalLanguage = originalLanguageId == null ? await dbContext.Languages.FirstOrDefaultAsync(a => a.Id == originalLanguageId) ??
                     throw new NotFoundException(typeof(Language).Name) : title.OriginalLanguage;
                 title.Demographics = demographics;
 
@@ -354,7 +362,7 @@ namespace MangaHomeService.Services
         public async Task<bool> Delete(string id)
         {
             using var dbContext = await _contextFactory.CreateDbContextAsync();
-            var title = await dbContext.Titles.Where(t => t.Id == id).FirstOrDefaultAsync() ?? 
+            var title = await dbContext.Titles.Where(t => t.Id == id).FirstOrDefaultAsync() ??
                 throw new NotFoundException(typeof(Title).Name);
             dbContext.Titles.Remove(title);
             await dbContext.SaveChangesAsync();
@@ -373,9 +381,9 @@ namespace MangaHomeService.Services
         public async Task<TitleRequest> SubmitRequest(string titleId, string groupId, string note)
         {
             using var dbContext = await _contextFactory.CreateDbContextAsync();
-            var title = await dbContext.Titles.Where(t => t.Id == titleId && t.IsAprroved == false).FirstOrDefaultAsync() ?? 
+            var title = await dbContext.Titles.Where(t => t.Id == titleId && t.IsAprroved == false).FirstOrDefaultAsync() ??
                 throw new NotFoundException(typeof(Title).Name);
-            var group = await dbContext.Groups.FirstOrDefaultAsync(g => g.Id == groupId) ?? 
+            var group = await dbContext.Groups.FirstOrDefaultAsync(g => g.Id == groupId) ??
                 throw new NotFoundException(typeof(Group).Name);
             var request = new TitleRequest
             {
@@ -393,7 +401,7 @@ namespace MangaHomeService.Services
         {
             using var dbContext = await _contextFactory.CreateDbContextAsync();
             var request = await dbContext.Requests.OfType<TitleRequest>().Where(r => r.Id == requestId).
-                Include(r => r.Title).FirstOrDefaultAsync() ?? 
+                Include(r => r.Title).FirstOrDefaultAsync() ??
                 throw new NotFoundException(typeof(TitleRequest).Name);
             if (request.IsReviewed)
             {
@@ -418,15 +426,16 @@ namespace MangaHomeService.Services
             }
 
             var ratingUserId = userId ?? _tokenInfoProvider.Id;
-            var existingRating = await dbContext.TitleRatings.Where(t => t.Title.Id == id && t.User.Id == ratingUserId).FirstOrDefaultAsync();
+            var existingRating = await dbContext.TitleRatings.Where(t => (t.Title != null && t.Title.Id == id) && 
+                (t.User != null && t.User.Id == ratingUserId)).FirstOrDefaultAsync();
             if (existingRating != null)
             {
                 throw new Exception();
             }
 
-            var title = await dbContext.Titles.FirstOrDefaultAsync(t => t.Id == id) ?? 
+            var title = await dbContext.Titles.FirstOrDefaultAsync(t => t.Id == id) ??
                 throw new NotFoundException(typeof(Title).Name);
-            var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == ratingUserId) ?? 
+            var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == ratingUserId) ??
                 throw new NotFoundException(typeof(User).Name);
             var rating = new TitleRating
             {
@@ -435,7 +444,7 @@ namespace MangaHomeService.Services
             };
             await dbContext.TitleRatings.AddAsync(rating);
 
-            var currentTitlesRatings = await dbContext.TitleRatings.Where(t => t.Title.Id == id).ToListAsync();
+            var currentTitlesRatings = await dbContext.TitleRatings.Where(t => (t.Title != null && t.Title.Id == id)).ToListAsync();
             int sumrating = 0;
             foreach (var currentTitle in currentTitlesRatings)
             {
@@ -450,12 +459,13 @@ namespace MangaHomeService.Services
         {
             using var dbContext = await _contextFactory.CreateDbContextAsync();
             var ratingUserId = userId == null ? _tokenInfoProvider.Id : userId;
-            var rating = await dbContext.TitleRatings.Where(t => t.Title.Id == id && t.User.Id == ratingUserId).FirstOrDefaultAsync() ?? 
+            var rating = await dbContext.TitleRatings.Where(t => (t.Title != null && t.Title.Id == id) 
+                && (t.User != null && t.User.Id == ratingUserId)).FirstOrDefaultAsync() ??
                 throw new NotFoundException(typeof(Title).Name);
             var title = await dbContext.Titles.FirstOrDefaultAsync(t => t.Id == id) ?? throw new NotFoundException(typeof(Title).Name);
             dbContext.TitleRatings.Remove(rating);
 
-            var currentTitlesRatings = await dbContext.TitleRatings.Where(t => t.Title.Id == id).ToListAsync();
+            var currentTitlesRatings = await dbContext.TitleRatings.Where(t => (t.Title != null && t.Title.Id == id)).ToListAsync();
             int sumrating = 0;
             foreach (var currentTitle in currentTitlesRatings)
             {

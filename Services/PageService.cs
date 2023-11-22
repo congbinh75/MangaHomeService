@@ -17,7 +17,7 @@ namespace MangaHomeService.Services
     {
         private readonly IDbContextFactory<MangaHomeDbContext> _contextFactory;
         private readonly IConfiguration _configuration;
-        public PageService(IDbContextFactory<MangaHomeDbContext> contextFactory, IConfiguration configuration) 
+        public PageService(IDbContextFactory<MangaHomeDbContext> contextFactory, IConfiguration configuration)
         {
             _contextFactory = contextFactory;
             _configuration = configuration;
@@ -33,7 +33,7 @@ namespace MangaHomeService.Services
         public async Task<ICollection<Page>> GetByChapter(string chapterId)
         {
             using var dbContext = await _contextFactory.CreateDbContextAsync();
-            var pages = await dbContext.Pages.Where(c => c.Chapter.Id == chapterId).ToListAsync();
+            var pages = await dbContext.Pages.Where(c => c.Chapter != null && c.Chapter.Id == chapterId).ToListAsync();
             return pages;
         }
 
@@ -46,10 +46,11 @@ namespace MangaHomeService.Services
                     throw new ArgumentException(nameof(file));
                 }
 
-                var chapter = await dbContext.Chapters.FirstOrDefaultAsync(c => c.Id == chapterId) ?? 
+                var chapter = await dbContext.Chapters.FirstOrDefaultAsync(c => c.Id == chapterId) ??
                     throw new NotFoundException(typeof(Chapter).Name);
-                var existingNumberPage = await dbContext.Pages.FirstOrDefaultAsync(p => p.Chapter.Id == chapterId && p.Number == number);
-                if (existingNumberPage != null) 
+                var existingNumberPage = await dbContext.Pages.FirstOrDefaultAsync(p => (p.Chapter != null && p.Chapter.Id == chapterId) 
+                    && p.Number == number);
+                if (existingNumberPage != null)
                 {
                     throw new ArgumentException();
                 }
@@ -88,7 +89,7 @@ namespace MangaHomeService.Services
 
             if (number > 0)
             {
-                var existingPage = await dbContext.Pages.FirstOrDefaultAsync(p => p.Chapter.Id == chapterId && p.Number == number);
+                var existingPage = await dbContext.Pages.FirstOrDefaultAsync(p => (p.Chapter != null && p.Chapter.Id == chapterId) && p.Number == number);
                 if (existingPage != null)
                 {
                     throw new ArgumentException();

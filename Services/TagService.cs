@@ -10,7 +10,7 @@ namespace MangaHomeService.Services
         public Task<ICollection<Tag>> GetByType(int type);
         public Task<Tag> Add(string name, int type, string? description = null, ICollection<string>? titlesIds = null,
             ICollection<string>? otherNamesIds = null);
-        public Task<Tag> Update(string id, string? name = null, int? type = null, string? description = null, 
+        public Task<Tag> Update(string id, string? name = null, int? type = null, string? description = null,
             ICollection<string>? titlesIds = null, ICollection<string>? otherNamesIds = null);
         public Task<bool> Delete(string id);
     }
@@ -37,7 +37,7 @@ namespace MangaHomeService.Services
             return await dbContext.Tags.Where(x => x.Type == type).ToListAsync();
         }
 
-        public async Task<Tag> Add(string name, int type, string? description = null, 
+        public async Task<Tag> Add(string name, int type, string? description = null,
             ICollection<string>? titlesIds = null, ICollection<string>? otherNamesIds = null)
         {
             using var dbContext = await _contextFactory.CreateDbContextAsync();
@@ -46,7 +46,7 @@ namespace MangaHomeService.Services
             {
                 foreach (string titleId in titlesIds)
                 {
-                    var title = await dbContext.Titles.FirstOrDefaultAsync(t => t.Id == titleId) ?? 
+                    var title = await dbContext.Titles.FirstOrDefaultAsync(t => t.Id == titleId) ??
                         throw new NotFoundException(typeof(Title).Name);
                     titles.Add(title);
                 }
@@ -57,7 +57,7 @@ namespace MangaHomeService.Services
             {
                 foreach (string otherNameId in otherNamesIds)
                 {
-                    var otherName = await dbContext.OtherNames.FirstOrDefaultAsync(t => t.Id == otherNameId) ?? 
+                    var otherName = await dbContext.OtherNames.FirstOrDefaultAsync(t => t.Id == otherNameId) ??
                         throw new NotFoundException(typeof(OtherName).Name);
                     otherNames.Add(otherName);
                 }
@@ -77,7 +77,7 @@ namespace MangaHomeService.Services
             return tag;
         }
 
-        public async Task<Tag> Update(string id, string? name = null, int? type = null, string? description = null, 
+        public async Task<Tag> Update(string id, string? name = null, int? type = null, string? description = null,
             ICollection<string>? titlesIds = null, ICollection<string>? otherNamesIds = null)
         {
             using var dbContext = await _contextFactory.CreateDbContextAsync();
@@ -87,7 +87,7 @@ namespace MangaHomeService.Services
             {
                 foreach (string titleId in titlesIds)
                 {
-                    var title = await dbContext.Titles.FirstOrDefaultAsync(t => t.Id == titleId) ?? 
+                    var title = await dbContext.Titles.FirstOrDefaultAsync(t => t.Id == titleId) ??
                         throw new NotFoundException(typeof(Title).Name);
                     titles.Add(title);
                 }
@@ -98,7 +98,7 @@ namespace MangaHomeService.Services
             {
                 foreach (string otherNameId in otherNamesIds)
                 {
-                    var otherName = await dbContext.OtherNames.FirstOrDefaultAsync(t => t.Id == otherNameId) ?? 
+                    var otherName = await dbContext.OtherNames.FirstOrDefaultAsync(t => t.Id == otherNameId) ??
                         throw new NotFoundException(typeof(OtherName).Name);
                     otherNames.Add(otherName);
                 }

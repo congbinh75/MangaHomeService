@@ -1,9 +1,9 @@
 ﻿using MangaHomeService.Models;
+using MangaHomeService.Utils;
 using Microsoft.AspNetCore.Cryptography.KeyDerivation;
-using System.Security.Cryptography;
 using Microsoft.EntityFrameworkCore;
 using System.Data;
-using MangaHomeService.Utils;
+using System.Security.Cryptography;
 
 namespace MangaHomeService.Services
 {
@@ -25,7 +25,7 @@ namespace MangaHomeService.Services
         public UserService(IDbContextFactory<MangaHomeDbContext> contextFactory, IConfiguration configuration)
         {
             _contextFactory = contextFactory;
-            _configuration = configuration; 
+            _configuration = configuration;
         }
 
         public async Task<User> Get(string id)
@@ -79,7 +79,7 @@ namespace MangaHomeService.Services
             bool? isEmailConfirmed = null, IFormFile? profilePicture = null, bool? isBanned = null)
         {
             using var dbContext = await _contextFactory.CreateDbContextAsync();
-            var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == userId) ?? 
+            var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == userId) ??
                 throw new NotFoundException(typeof(User).Name);
             var newPassword = user.Password;
             var newSalt = user.Salt;

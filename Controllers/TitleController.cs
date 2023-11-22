@@ -1,8 +1,8 @@
-﻿using MangaHomeService.Services; 
+﻿using MangaHomeService.Models.FormDatas.Title;
+using MangaHomeService.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
-using MangaHomeService.Models.FormDatas.Title;
 
 namespace MangaHomeService.Controllers
 {
@@ -26,7 +26,7 @@ namespace MangaHomeService.Controllers
 
         [AllowAnonymous]
         [HttpGet]
-        public async Task<IActionResult> Get(string id) 
+        public async Task<IActionResult> Get(string id)
         {
             try
             {
@@ -70,13 +70,13 @@ namespace MangaHomeService.Controllers
             try
             {
                 int pageNumber = 0;
-                if (!int.TryParse(input.PageNumber, out pageNumber)) 
+                if (!int.TryParse(input.PageNumber, out pageNumber))
                 {
-                    return BadRequest(); 
+                    return BadRequest();
                 }
 
                 int pageSize = 0;
-                if (!int.TryParse (input.PageSize, out pageSize)) 
+                if (!int.TryParse(input.PageSize, out pageSize))
                 {
                     return BadRequest();
                 }
@@ -110,16 +110,16 @@ namespace MangaHomeService.Controllers
                     }
                 }
 
-                var titles = await _titleService.AdvancedSearch(name: input.Name.Trim(), 
-                    author: input.Author.Trim(), 
-                    artist: input.Artist.Trim(), 
-                    genreIds: input.GenreIds?.Select(x => x.Trim()).ToList(), 
-                    themeIds: input.ThemeIds?.Select(x => x.Trim()).ToList(), 
-                    languageIds: input.LanguageIds?.Select(x => x.Trim()).ToList(), 
-                    statuses: statuses, 
-                    sortByLastest: input.SortByLastest, 
-                    sortByHottest: input.SortByHottest, 
-                    pageNumber: input.PageNumber, 
+                var titles = await _titleService.AdvancedSearch(name: input.Name.Trim(),
+                    author: input.Author.Trim(),
+                    artist: input.Artist.Trim(),
+                    genreIds: input.GenreIds?.Select(x => x.Trim()).ToList(),
+                    themeIds: input.ThemeIds?.Select(x => x.Trim()).ToList(),
+                    languageIds: input.LanguageIds?.Select(x => x.Trim()).ToList(),
+                    statuses: statuses,
+                    sortByLastest: input.SortByLastest,
+                    sortByHottest: input.SortByHottest,
+                    pageNumber: input.PageNumber,
                     pageSize: input.PageSize);
                 return Ok(titles);
             }

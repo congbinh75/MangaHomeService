@@ -17,7 +17,7 @@ namespace MangaHomeService.Controllers
         private ITitleService _titleService;
         private IChapterService _chapterService;
         private IPageService _pageService;
-        
+
         public ChapterController(
             IConfiguration configuration,
             IStringLocalizer<UserController> stringLocalizer,
@@ -48,7 +48,7 @@ namespace MangaHomeService.Controllers
                     return BadRequest(_stringLocalizer["ERR_INVALID_INPUT_DATA"]);
                 }
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
                 return BadRequest(ex.Message);
             }
@@ -62,7 +62,7 @@ namespace MangaHomeService.Controllers
             {
                 int number = 0;
                 if (!int.TryParse(input.Number.Trim(), out number)
-                    || !string.IsNullOrEmpty(input.TitleId.Trim()) 
+                    || !string.IsNullOrEmpty(input.TitleId.Trim())
                     || !string.IsNullOrEmpty(input.GroupId.Trim()))
                 {
                     var chapter = await _chapterService.Add(number, input.TitleId, input.GroupId, input.VolumeId, input.LanguageId);

@@ -2,6 +2,6 @@
 {
     public class ChapterTracking : BaseModel
     {
-        public Chapter Chapter { get; set; }
+        public Chapter? Chapter { get; set; }
     }
 }
