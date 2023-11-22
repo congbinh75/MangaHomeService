@@ -67,7 +67,7 @@ namespace MangaHomeService.Services
             var tag = new Tag
             {
                 Name = name,
-                Description = description == null ? "" : description,
+                Description = description ?? "",
                 Type = type,
                 Titles = titles,
                 OtherNames = otherNames

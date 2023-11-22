@@ -1,7 +1,7 @@
 ﻿namespace MangaHomeService.Models
 {
-    public class ChapterTracking : BaseModel
+    public class ChapterTracking : BaseEntity
     {
-        public Chapter? Chapter { get; set; }
+        public required Chapter Chapter { get; set; }
     }
 }

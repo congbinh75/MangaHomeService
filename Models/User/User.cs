@@ -1,16 +1,18 @@
-﻿namespace MangaHomeService.Models
+﻿using MangaHomeService.Utils;
+
+namespace MangaHomeService.Models
 {
-    public class User : BaseModel
+    public class User : BaseEntity
     {
-        public string? Name { get; set; }
-        public string? Email { get; set; }
-        public string? Password { get; set; }
-        public bool IsEmailConfirmed { get; set; }
-        public string? ProfilePicture { get; set; }
-        public int Role { get; set; }
-        public byte[]? Salt { get; set; }
-        public List<Group>? Groups { get; set; }
-        public List<Title>? UpdateFeed { get; set; }
-        public bool IsBanned { get; set; }
+        public required string Name { get; set; }
+        public required string Email { get; set; }
+        public required string Password { get; set; }
+        public required bool IsEmailConfirmed { get; set; } = false;
+        public string? ProfilePicture { get; set; } = string.Empty;
+        public required int Role { get; set; } = (int)Enums.Role.User;
+        public required byte[] Salt { get; set; } = [];
+        public List<Group> Groups { get; set; } = [];
+        public List<Title> UpdateFeed { get; set; } = [];
+        public required bool IsBanned { get; set; } = false;
     }
 }

@@ -42,7 +42,7 @@ namespace MangaHomeService.Services
             var title = await dbContext.Titles.FirstOrDefaultAsync(t => t.Id == titleId) ??
                 throw new NotFoundException(typeof(Title).Name);
             //TO BE FIXED
-            return await dbContext.Chapters.Where(c => c.Title != null && c.Title.Id == titleId && c.IsApproved).OrderByDescending(c => c.Number).
+            return await dbContext.Chapters.Where(c => c.Title.Id == titleId && c.IsApproved).OrderByDescending(c => c.Number).
                 GroupBy(c => c.Number).Select(c => c.First()).Distinct().Skip(pageSize * (pageNumber - 1)).Take(pageSize).ToListAsync();
         }
 

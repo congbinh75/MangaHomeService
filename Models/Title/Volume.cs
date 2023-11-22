@@ -1,9 +1,9 @@
 ﻿namespace MangaHomeService.Models
 {
-    public class Volume : BaseModel
+    public class Volume : BaseEntity
     {
-        public string? Number { get; set; }
-        public string? Name { get; set; }
-        public Title? Title { get; set; }
+        public required string Number { get; set; }
+        public string? Name { get; set; } = string.Empty;
+        public required Title Title { get; set; }
     }
 }

@@ -1,9 +1,9 @@
 ﻿namespace MangaHomeService.Models
 {
-    public class Page : BaseModel
+    public class Page : BaseEntity
     {
-        public Chapter? Chapter { get; set; }
-        public int Number { get; set; }
-        public string? File { get; set; }
+        public required Chapter Chapter { get; set; }
+        public required int Number { get; set; }
+        public required string File { get; set; }
     }
 }

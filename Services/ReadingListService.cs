@@ -49,7 +49,7 @@ namespace MangaHomeService.Services
             var currentUser = _tokenInfoProvider.Id;
             if (userId == null)
             {
-                return await dbContext.ReadingLists.Where(r => (r.User != null && r.User.Id == currentUser)).ToListAsync();
+                return await dbContext.ReadingLists.Where(r => r.User.Id == currentUser).ToListAsync();
             }
             else
             {
@@ -57,11 +57,11 @@ namespace MangaHomeService.Services
                     throw new NotFoundException(typeof(User).Name);
                 if (user.Id == currentUser)
                 {
-                    return await dbContext.ReadingLists.Where(r => (r.User != null && r.User.Id == currentUser)).ToListAsync();
+                    return await dbContext.ReadingLists.Where(r => r.User.Id == currentUser).ToListAsync();
                 }
                 else
                 {
-                    return await dbContext.ReadingLists.Where(r => (r.User != null && r.User.Id == currentUser) && r.IsPublic == true).ToListAsync();
+                    return await dbContext.ReadingLists.Where(r => r.User.Id == currentUser && r.IsPublic == true).ToListAsync();
                 }
             }
         }

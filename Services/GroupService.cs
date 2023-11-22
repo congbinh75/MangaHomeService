@@ -79,7 +79,7 @@ namespace MangaHomeService.Services
             }
             else
             {
-                newMembers = group.Members;
+                newMembers = (List<Member>)group.Members;
             }
 
             group.Name = name ?? group.Name;

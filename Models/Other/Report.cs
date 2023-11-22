@@ -1,34 +1,34 @@
 ﻿namespace MangaHomeService.Models
 {
-    public class Report : BaseModel
+    public class Report : BaseEntity
     {
-        public string? Reason { get; set; }
-        public string? Note { get; set; }
-        public string? IsReviewed { get; set; }
+        public required string Reason { get; set; }
+        public required string Note { get; set; } = string.Empty;
+        public required bool IsReviewed { get; set; } = false;
     }
 
     public class UserReport : Report
     {
-        public User? User { get; set; }
+        public required User User { get; set; }
     }
 
     public class TitleReport : Report
     {
-        public Title? Title { get; set; }
+        public required Title Title { get; set; }
     }
 
     public class ChapterReport : Report
     {
-        public Chapter? Chapter { get; set; }
+        public required Chapter Chapter { get; set; }
     }
 
     public class GroupReport : Report
     {
-        public Group? Group { get; set; }
+        public required Group Group { get; set; }
     }
 
     public class CommentReport : Report
     {
-        public Comment? Comment { get; set; }
+        public required Comment Comment { get; set; }
     }
 }

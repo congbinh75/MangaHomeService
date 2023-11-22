@@ -45,7 +45,8 @@ namespace MangaHomeService.Services
                 {
                     Reason = reason,
                     Note = note,
-                    User = user
+                    User = user,
+                    IsReviewed = false
                 };
                 await dbContext.Reports.AddAsync(report);
                 await dbContext.SaveChangesAsync();
@@ -58,7 +59,8 @@ namespace MangaHomeService.Services
                 {
                     Reason = reason,
                     Note = note,
-                    Title = title
+                    Title = title,
+                    IsReviewed = false
                 };
                 await dbContext.Reports.AddAsync(report);
                 await dbContext.SaveChangesAsync();
@@ -71,7 +73,8 @@ namespace MangaHomeService.Services
                 {
                     Reason = reason,
                     Note = note,
-                    Group = group
+                    Group = group,
+                    IsReviewed = false
                 };
                 await dbContext.Reports.AddAsync(report);
                 await dbContext.SaveChangesAsync();
@@ -84,7 +87,8 @@ namespace MangaHomeService.Services
                 {
                     Reason = reason,
                     Note = note,
-                    Chapter = chapter
+                    Chapter = chapter,
+                    IsReviewed = false
                 };
                 await dbContext.Reports.AddAsync(report);
                 await dbContext.SaveChangesAsync();

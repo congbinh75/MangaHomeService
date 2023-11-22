@@ -54,7 +54,7 @@ namespace MangaHomeService.Models
             var changedEntities = ChangeTracker.Entries();
             foreach (var changedEntity in changedEntities)
             {
-                if (changedEntity.Entity is BaseModel entity)
+                if (changedEntity.Entity is BaseEntity entity)
                 {
                     switch (changedEntity.State)
                     {

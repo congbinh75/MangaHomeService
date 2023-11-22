@@ -1,8 +1,8 @@
 ﻿namespace MangaHomeService.Models
 {
-    public class Language : BaseModel
+    public class Language : BaseEntity
     {
-        public string? Name { get; set; }
-        public string? Logo { get; set; }
+        public required string Name { get; set; }
+        public required string Logo { get; set; }
     }
 }

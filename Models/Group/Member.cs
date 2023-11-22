@@ -1,9 +1,11 @@
-﻿namespace MangaHomeService.Models
+﻿using static MangaHomeService.Utils.Enums;
+
+namespace MangaHomeService.Models
 {
-    public class Member : BaseModel
+    public class Member : BaseEntity
     {
-        public User? User { get; set; }
-        public Group? Group { get; set; }
-        public int Role { get; set; }
+        public required User User { get; set; }
+        public required Group Group { get; set; }
+        public required int Role { get; set; } = (int)GroupRole.Member;
     }
 }

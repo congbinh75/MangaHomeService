@@ -2,10 +2,10 @@
 
 namespace MangaHomeService.Models
 {
-    public class BaseModel
+    public class BaseEntity
     {
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public string? Id { get; set; }
+        public string Id { get; set; } = string.Empty;
         public DateTime CreatedTime { get; set; }
         public User? CreatedBy { get; set; }
         public DateTime UpdatedTime { get; set; }

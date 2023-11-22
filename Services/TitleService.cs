@@ -426,8 +426,7 @@ namespace MangaHomeService.Services
             }
 
             var ratingUserId = userId ?? _tokenInfoProvider.Id;
-            var existingRating = await dbContext.TitleRatings.Where(t => (t.Title != null && t.Title.Id == id) && 
-                (t.User != null && t.User.Id == ratingUserId)).FirstOrDefaultAsync();
+            var existingRating = await dbContext.TitleRatings.Where(t => t.Title.Id == id && t.User.Id == ratingUserId).FirstOrDefaultAsync();
             if (existingRating != null)
             {
                 throw new Exception();
@@ -440,11 +439,12 @@ namespace MangaHomeService.Services
             var rating = new TitleRating
             {
                 Title = title,
-                Rating = ratingValue
+                Rating = ratingValue,
+                User = user
             };
             await dbContext.TitleRatings.AddAsync(rating);
 
-            var currentTitlesRatings = await dbContext.TitleRatings.Where(t => (t.Title != null && t.Title.Id == id)).ToListAsync();
+            var currentTitlesRatings = await dbContext.TitleRatings.Where(t => t.Title.Id == id).ToListAsync();
             int sumrating = 0;
             foreach (var currentTitle in currentTitlesRatings)
             {
@@ -459,13 +459,12 @@ namespace MangaHomeService.Services
         {
             using var dbContext = await _contextFactory.CreateDbContextAsync();
             var ratingUserId = userId == null ? _tokenInfoProvider.Id : userId;
-            var rating = await dbContext.TitleRatings.Where(t => (t.Title != null && t.Title.Id == id) 
-                && (t.User != null && t.User.Id == ratingUserId)).FirstOrDefaultAsync() ??
+            var rating = await dbContext.TitleRatings.Where(t => t.Title.Id == id && t.User.Id == ratingUserId).FirstOrDefaultAsync() ??
                 throw new NotFoundException(typeof(Title).Name);
             var title = await dbContext.Titles.FirstOrDefaultAsync(t => t.Id == id) ?? throw new NotFoundException(typeof(Title).Name);
             dbContext.TitleRatings.Remove(rating);
 
-            var currentTitlesRatings = await dbContext.TitleRatings.Where(t => (t.Title != null && t.Title.Id == id)).ToListAsync();
+            var currentTitlesRatings = await dbContext.TitleRatings.Where(t => t.Title.Id == id).ToListAsync();
             int sumrating = 0;
             foreach (var currentTitle in currentTitlesRatings)
             {
