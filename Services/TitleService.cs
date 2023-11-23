@@ -14,16 +14,17 @@ namespace MangaHomeService.Services
             ICollection<string>? genreIds = null, ICollection<string>? themeIds = null, ICollection<string>? demographicsIds = null,
             string? originalLanguageId = null, ICollection<string>? languageIds = null, ICollection<int>? statuses = null,
             bool sortByLastest = false, bool sortByHottest = false, int pageNumber = 1, int pageSize = Constants.TitlesPerPage);
-        public Task<Title> Add(string name, string? description = null, IFormFile? artwork = null, string? authorId = null,
-            string? artistId = null, TitleStatus status = TitleStatus.NotYetReleased, double rating = 0, int ratingVotes = 0,
+        public Task<Title> Add(string name, string? description = null, IFormFile? artwork = null, ICollection<string>? authorsIds = null,
+            ICollection<string>? artistsIds = null, TitleStatus status = TitleStatus.NotYetReleased, double rating = 0, int ratingVotes = 0,
             int views = 0, int bookmarks = 0, ICollection<string>? otherNamesIds = null, string? originalLanguageId = null,
             ICollection<string>? genresIds = null, ICollection<string>? themesIds = null, ICollection<string>? demographicsIds = null,
             ICollection<string>? chaptersIds = null, ICollection<string>? commentsIds = null, bool isApproved = false);
-        public Task<Title> Update(string id, string name = "", string description = "", IFormFile? artwork = null, string authorId = "",
-            string artistId = "", TitleStatus? status = null, double rating = -1, int ratingVotes = -1, int views = -1, int bookmarks = -1,
-            ICollection<string>? otherNamesIds = null, string originalLanguageId = "", ICollection<string>? genresIds = null,
-            ICollection<string>? themesIds = null, ICollection<string>? demographicsIds = null, ICollection<string>? chaptersIds = null,
-            ICollection<string>? commentsIds = null, bool? isApproved = null);
+        public Task<Title> Update(string id, string name = "", string? description = null, IFormFile? artwork = null,
+            ICollection<string>? authorsIds = null, ICollection<string>? artistsIds = null, TitleStatus? status = null,
+            double rating = 0, int ratingVotes = 0, int views = 0, int bookmarks = 0, ICollection<string>? otherNamesIds = null,
+            string? originalLanguageId = null, ICollection<string>? genresIds = null, ICollection<string>? themesIds = null,
+            ICollection<string>? demographicsIds = null, ICollection<string>? chaptersIds = null, ICollection<string>? commentsIds = null,
+            bool? isApproved = null);
         public Task<bool> Delete(string id);
         public Task<TitleRequest> GetRequest(string id);
         public Task<TitleRequest> SubmitRequest(string titleId, string groupId, string note);
@@ -51,7 +52,7 @@ namespace MangaHomeService.Services
         {
             using var dbContext = await _contextFactory.CreateDbContextAsync();
             var title = await dbContext.Titles.Where(x => x.Id == id).Include(x => x.Chapters).FirstOrDefaultAsync() ??
-                throw new NotFoundException(typeof(Title).Name);
+                throw new NotFoundException(nameof(Title));
             return title;
         }
 
@@ -59,11 +60,10 @@ namespace MangaHomeService.Services
         {
             using var dbContext = await _contextFactory.CreateDbContextAsync();
             var titles = await dbContext.Titles
-                .Where(x =>
-                    (x.Name != null && x.Name.Contains(keyword))
-                    || (x.OtherNames != null && x.OtherNames.Any(y => y.Name != null && y.Name.Contains(keyword)))
-                    || (x.Author != null && x.Author.Name != null && x.Author.Name.Contains(keyword))
-                    || (x.Artist != null && x.Artist.Name != null && x.Artist.Name.Contains(keyword))
+                .Where(t => (t.Name.Contains(keyword))
+                    || t.OtherNames.Any(o => o.Name.Contains(keyword))
+                    || t.Authors.Any(a => a.Name.Contains(keyword))
+                    || t.Artists.Any(r => r.Name.Contains(keyword))
                 )
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
@@ -85,28 +85,25 @@ namespace MangaHomeService.Services
 
             titles = name == null ? titles : titles.Where(x => (x.Name?.Contains(name) ?? false)
             || (x.OtherNames?.Any(y => y.Name?.Contains(name) ?? false) ?? false)).ToList();
-            titles = author == null ? titles : titles.Where(x => x.Author?.Name?.Contains(author) ?? false).ToList();
-            titles = artist == null ? titles : titles.Where(x => x.Artist?.Name?.Contains(artist) ?? false).ToList();
+            titles = author == null ? titles : titles.Where(x => x.Authors.Any(a => a.Name.Contains(author))).ToList();
+            titles = artist == null ? titles : titles.Where(x => x.Artists.Any(a => a.Name.Contains(artist))).ToList();
             titles = originalLanguageId == null ? titles : titles.Where(x => x.OriginalLanguage?.Id == originalLanguageId).ToList();
 
             if (genreIds != null && genreIds.Count > 0)
             {
-                var gernes = await dbContext.Tags.Where(x => (x.Id != null && genreIds.Contains(x.Id)) 
-                    && x.Type == (int)TagType.Gerne).ToListAsync();
-                titles = titles.Where(x => gernes.All(y => x.Gernes?.Contains(y) ?? false)).ToList();
+                var gernes = await dbContext.Tags.Where(x => genreIds.Contains(x.Id)).ToListAsync();
+                titles = titles.Where(x => gernes.All(y => x.Gernes.Contains(y))).ToList();
             }
 
             if (themeIds != null && themeIds.Count > 0)
             {
-                var themes = await dbContext.Tags.Where(x => (x.Id != null && themeIds.Contains(x.Id))
-                    && x.Type == (int)TagType.Theme).ToListAsync();
+                var themes = await dbContext.Tags.Where(x => themeIds.Contains(x.Id)).ToListAsync();
                 titles = titles.Where(x => themes.All(y => x.Themes?.Contains(y) ?? false)).ToList();
             }
 
             if (demographicsIds != null && demographicsIds.Count > 0)
             {
-                var demographics = await dbContext.Tags.Where(x => (x.Id != null && demographicsIds.Contains(x.Id)) 
-                    && x.Type == (int)TagType.Demographic).ToListAsync();
+                var demographics = await dbContext.Tags.Where(x => demographicsIds.Contains(x.Id)).ToListAsync();
                 titles = titles.Where(x => demographics.All(y => x.Demographics?.Contains(y) ?? false)).ToList();
             }
 
@@ -117,253 +114,255 @@ namespace MangaHomeService.Services
 
             if (sortByLastest)
             {
-                titles = titles.OrderByDescending(x => x.UpdatedTime).ToList();
+                titles = [.. titles.OrderByDescending(x => x.UpdatedTime)];
             }
 
             if (sortByHottest)
             {
-                titles = titles.OrderByDescending(x => x.Views).ToList();
+                titles = [.. titles.OrderByDescending(x => x.Views)];
             }
 
             titles = titles.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToList();
             return titles;
         }
 
-        public async Task<Title> Add(string name, string? description = null, IFormFile? artwork = null, string? authorId = null,
-            string? artistId = null, TitleStatus status = TitleStatus.NotYetReleased, double rating = 0, int ratingVotes = 0,
+        public async Task<Title> Add(string name, string? description = null, IFormFile? artwork = null, ICollection<string>? authorsIds = null,
+            ICollection<string>? artistsIds = null, TitleStatus status = TitleStatus.NotYetReleased, double rating = 0, int ratingVotes = 0,
             int views = 0, int bookmarks = 0, ICollection<string>? otherNamesIds = null, string? originalLanguageId = null,
             ICollection<string>? genresIds = null, ICollection<string>? themesIds = null, ICollection<string>? demographicsIds = null,
             ICollection<string>? chaptersIds = null, ICollection<string>? commentsIds = null, bool isApproved = false)
         {
-            using (var dbContext = await _contextFactory.CreateDbContextAsync())
+            using var dbContext = await _contextFactory.CreateDbContextAsync();
+
+            var authors = new List<Person>();
+            if (authorsIds != null)
             {
-                var otherNames = new List<OtherName>();
-                if (otherNamesIds != null)
+                authors = await dbContext.People.Where(a => authorsIds.Contains(a.Id)).ToListAsync();
+                if (authors.Count != authorsIds.Count)
                 {
-                    foreach (var otherNameId in otherNamesIds)
-                    {
-                        var otherName = await dbContext.OtherNames.FirstOrDefaultAsync(t => t.Id == otherNameId) ??
-                            throw new NotFoundException(typeof(OtherName).Name);
-                        otherNames.Add(otherName);
-                    }
+                    throw new NotFoundException(nameof(Person) + " : " + nameof(Title.Authors));
                 }
-
-                var genres = new List<Tag>();
-                if (genresIds != null)
-                {
-                    foreach (var genreId in genresIds)
-                    {
-                        var genre = await dbContext.Tags.FirstOrDefaultAsync(g => g.Id == genreId) ??
-                            throw new NotFoundException(typeof(Tag).Name + TagType.Gerne);
-                        genres.Add(genre);
-                    }
-                }
-
-                var themes = new List<Tag>();
-                if (themesIds != null)
-                {
-                    foreach (var themeId in themesIds)
-                    {
-                        var theme = await dbContext.Tags.FirstOrDefaultAsync(g => g.Id == themeId) ??
-                            throw new NotFoundException(typeof(Tag).Name + TagType.Theme);
-                        themes.Add(theme);
-                    }
-                }
-
-                var chapters = new List<Chapter>();
-                if (chaptersIds != null)
-                {
-                    foreach (var chapterId in chaptersIds)
-                    {
-                        var chapter = await dbContext.Chapters.FirstOrDefaultAsync(c => c.Id == chapterId) ??
-                            throw new NotFoundException(typeof(Chapter).Name);
-                        chapters.Add(chapter);
-                    }
-                }
-
-
-                var comments = new List<Comment>();
-                if (commentsIds != null)
-                {
-                    foreach (var commentId in commentsIds)
-                    {
-                        var comment = await dbContext.Comments.FirstOrDefaultAsync(c => c.Id == commentId) ??
-                            throw new NotFoundException(typeof(Comment).Name);
-                        comments.Add(comment);
-                    }
-                }
-
-                var demographics = new List<Tag>();
-                if (demographicsIds != null)
-                {
-                    foreach (var demographicId in demographicsIds)
-                    {
-                        var demographic = await dbContext.Tags.FirstOrDefaultAsync(c => c.Id == demographicId) ??
-                            throw new NotFoundException(typeof(Tag).Name + TagType.Demographic);
-                        demographics.Add(demographic);
-                    }
-                }
-
-                var title = new Title
-                {
-                    Name = name,
-                    Description = description ?? "",
-                    Artwork = artwork == null ? "" :
-                    await Functions.UploadFileAsync(artwork, _configuration["FilesStoragePath.TitlesImagesPath"]),
-                    Author = authorId != null ?
-                        await dbContext.People.FirstOrDefaultAsync(a => a.Id == authorId) ??
-                        throw new NotFoundException(typeof(Person).Name) : null,
-                    Artist = artistId != null ?
-                        await dbContext.People.FirstOrDefaultAsync(a => a.Id == artistId) ??
-                        throw new NotFoundException(typeof(Person).Name) : null,
-                    Status = status,
-                    Rating = rating,
-                    RatingVotes = ratingVotes,
-                    Views = views,
-                    OtherNames = otherNames,
-                    Bookmarks = bookmarks,
-                    OriginalLanguage = originalLanguageId != null ?
-                    await dbContext.Languages.FirstOrDefaultAsync(a => a.Id == originalLanguageId) ??
-                    throw new NotFoundException(typeof(Language).Name) : null,
-                    Gernes = genres,
-                    Themes = themes,
-                    Chapters = chapters,
-                    Comments = comments,
-                    IsAprroved = isApproved,
-                    Demographics = demographics
-                };
-
-                await dbContext.Titles.AddAsync(title);
-                await dbContext.SaveChangesAsync();
-                return title;
             }
+
+            var artists = new List<Person>();
+            if (artistsIds != null)
+            {
+                artists = await dbContext.People.Where(a => artistsIds.Contains(a.Id)).ToListAsync();
+                if (artists.Count != artistsIds.Count)
+                {
+                    throw new NotFoundException(nameof(Person) + " : " + nameof(Title.Artists));
+                }
+            }
+
+            var otherNames = new List<OtherName>();
+            if (otherNamesIds != null)
+            {
+                otherNames = await dbContext.OtherNames.Where(o => otherNamesIds.Contains(o.Id)).ToListAsync();
+                if (otherNames.Count != otherNamesIds.Count)
+                {
+                    throw new NotFoundException(nameof(OtherName));
+                }
+            }
+
+            var genres = new List<Tag>();
+            if (genresIds != null)
+            {
+                genres = await dbContext.Tags.Where(g => genresIds.Contains(g.Id)).ToListAsync();
+                if (genres.Count != genresIds.Count)
+                {
+                    throw new NotFoundException(nameof(Tag) + ":" + nameof(Title.Gernes));
+                }
+            }
+
+            var themes = new List<Tag>();
+            if (themesIds != null)
+            {
+                themes = await dbContext.Tags.Where(t => themesIds.Contains(t.Id)).ToListAsync();
+                if (themes.Count != themesIds.Count)
+                {
+                    throw new NotFoundException(nameof(Tag) + ":" + nameof(Title.Themes));
+                }
+            }
+
+            var demographics = new List<Tag>();
+            if (demographicsIds != null)
+            {
+                demographics = await dbContext.Tags.Where(d => demographicsIds.Contains(d.Id)).ToListAsync();
+                if (demographics.Count != demographicsIds.Count)
+                {
+                    throw new NotFoundException(nameof(Tag) + ":" + nameof(Title.Demographics));
+                }
+            }
+
+            var chapters = new List<Chapter>();
+            if (chaptersIds != null)
+            {
+                chapters = await dbContext.Chapters.Where(c => chaptersIds.Contains(c.Id)).ToListAsync();
+                if (chapters.Count != chaptersIds.Count)
+                {
+                    throw new NotFoundException(nameof(Chapter));
+                }
+            }
+
+
+            var comments = new List<Comment>();
+            if (commentsIds != null)
+            {
+                comments = await dbContext.Comments.Where(c => commentsIds.Contains(c.Id)).ToListAsync();
+                if (comments.Count != commentsIds.Count)
+                {
+                    throw new NotFoundException(nameof(Comment));
+                }
+            }
+
+            var title = new Title
+            {
+                Name = name,
+                Description = description ?? "",
+                Artwork = artwork == null ? "" :
+                    await Functions.UploadFileAsync(artwork, _configuration["FilesStoragePath.TitlesImagesPath"]),
+                Authors = authors,
+                Artists = artists,
+                Status = status,
+                Rating = rating,
+                RatingVotes = ratingVotes,
+                Views = views,
+                OtherNames = otherNames,
+                Bookmarks = bookmarks,
+                OriginalLanguage = originalLanguageId != null ?
+                    await dbContext.Languages.FirstOrDefaultAsync(a => a.Id == originalLanguageId) ??
+                    throw new NotFoundException(nameof(Language)) : null,
+                Gernes = genres,
+                Themes = themes,
+                Chapters = chapters,
+                Comments = comments,
+                IsAprroved = isApproved,
+                Demographics = demographics
+            };
+
+            await dbContext.Titles.AddAsync(title);
+            await dbContext.SaveChangesAsync();
+            return title;
         }
 
-        public async Task<Title> Update(string id, string name = "", string description = "", IFormFile? artwork = null, string authorId = "",
-            string artistId = "", TitleStatus? status = null, double rating = -1, int ratingVotes = -1, int views = -1, int bookmarks = -1,
-            ICollection<string>? otherNamesIds = null, string originalLanguageId = "", ICollection<string>? genresIds = null,
-            ICollection<string>? themesIds = null, ICollection<string>? demographicsIds = null, ICollection<string>? chaptersIds = null,
-            ICollection<string>? commentsIds = null, bool? isApproved = null)
+        public async Task<Title> Update(string id, string name = "", string? description = null, IFormFile? artwork = null,
+            ICollection<string>? authorsIds = null, ICollection<string>? artistsIds = null, TitleStatus? status = null,
+            double rating = 0, int ratingVotes = 0, int views = 0, int bookmarks = 0, ICollection<string>? otherNamesIds = null,
+            string? originalLanguageId = null, ICollection<string>? genresIds = null, ICollection<string>? themesIds = null,
+            ICollection<string>? demographicsIds = null, ICollection<string>? chaptersIds = null, ICollection<string>? commentsIds = null,
+            bool? isApproved = null)
         {
-            using (var dbContext = await _contextFactory.CreateDbContextAsync())
+            using var dbContext = await _contextFactory.CreateDbContextAsync();
+            var title = await dbContext.Titles.FirstOrDefaultAsync(t => t.Id == id) ??
+                throw new NotFoundException(nameof(Title));
+
+            var authors = new List<Person>();
+            if (authorsIds != null)
             {
-                var title = await dbContext.Titles.FirstOrDefaultAsync(t => t.Id == id) ??
-                    throw new NotFoundException(typeof(Title).Name);
-
-                var otherNames = new List<OtherName>();
-                if (otherNamesIds != null)
+                authors = await dbContext.People.Where(a => authorsIds.Contains(a.Id)).ToListAsync();
+                if (authors.Count != authorsIds.Count)
                 {
-                    foreach (var otherNameId in otherNamesIds)
-                    {
-                        var otherName = await dbContext.OtherNames.FirstOrDefaultAsync(t => t.Id == otherNameId);
-                        if (otherName == null)
-                        {
-                            throw new NotFoundException(typeof(OtherName).Name);
-                        }
-                        otherNames.Add(otherName);
-                    }
+                    throw new NotFoundException(nameof(Person) + " : " + nameof(Title.Authors));
                 }
-
-                var genres = new List<Tag>();
-                if (genresIds != null)
-                {
-                    foreach (var genreId in genresIds)
-                    {
-                        var genre = await dbContext.Tags.FirstOrDefaultAsync(g => g.Id == genreId);
-                        if (genre == null)
-                        {
-                            throw new NotFoundException(typeof(Tag).Name + TagType.Gerne);
-                        }
-                        genres.Add(genre);
-                    }
-                }
-
-                var themes = new List<Tag>();
-                if (themesIds != null)
-                {
-                    foreach (var themeId in themesIds)
-                    {
-                        var theme = await dbContext.Tags.FirstOrDefaultAsync(g => g.Id == themeId);
-                        if (theme == null)
-                        {
-                            throw new NotFoundException(typeof(Tag).Name + TagType.Theme);
-                        }
-                        themes.Add(theme);
-                    }
-                }
-
-                var chapters = new List<Chapter>();
-                if (chaptersIds != null)
-                {
-                    foreach (var chapterId in chaptersIds)
-                    {
-                        var chapter = await dbContext.Chapters.FirstOrDefaultAsync(c => c.Id == chapterId);
-                        if (chapter == null)
-                        {
-                            throw new NotFoundException(typeof(Chapter).Name);
-                        }
-                        chapters.Add(chapter);
-                    }
-                }
-
-
-                var comments = new List<Comment>();
-                if (commentsIds != null)
-                {
-                    foreach (var commentId in commentsIds)
-                    {
-                        var comment = await dbContext.Comments.FirstOrDefaultAsync(c => c.Id == commentId);
-                        if (comment == null)
-                        {
-                            throw new NotFoundException(typeof(Comment).Name);
-                        }
-                        comments.Add(comment);
-                    }
-                }
-
-                var demographics = new List<Tag>();
-                if (demographicsIds != null)
-                {
-                    foreach (var demographicId in demographicsIds)
-                    {
-                        var demographic = await dbContext.Tags.FirstOrDefaultAsync(c => c.Id == demographicId);
-                        if (demographic == null)
-                        {
-                            throw new NotFoundException(typeof(Tag).Name + TagType.Demographic);
-                        }
-                        demographics.Add(demographic);
-                    }
-                }
-
-                title.Name = !string.IsNullOrEmpty(name) ? name : title.Name;
-                title.Description = !string.IsNullOrEmpty(description) ? description : title.Description;
-                title.Artwork = artwork == null ? title.Artwork :
-                    await Functions.UploadFileAsync(artwork, _configuration["FilesStoragePath.TitlesImagesPath"]);
-                title.Artist = artistId == null ? await dbContext.People.FirstOrDefaultAsync(a => a.Id == artistId) ??
-                    throw new NotFoundException(typeof(Person).Name) : title.Artist;
-                title.Author = authorId == null ? await dbContext.People.FirstOrDefaultAsync(a => a.Id == authorId) ??
-                    throw new NotFoundException(typeof(Person).Name) : title.Author;
-                title.OtherNames = otherNames;
-                title.Gernes = genres;
-                title.Themes = themes;
-                title.Chapters = chapters;
-                title.Comments = comments;
-                title.Status = status != null ? (Enums.TitleStatus)status : title.Status;
-                title.IsAprroved = isApproved != null ? (bool)isApproved : title.IsAprroved;
-                title.OriginalLanguage = originalLanguageId == null ? await dbContext.Languages.FirstOrDefaultAsync(a => a.Id == originalLanguageId) ??
-                    throw new NotFoundException(typeof(Language).Name) : title.OriginalLanguage;
-                title.Demographics = demographics;
-
-                await dbContext.SaveChangesAsync();
-                return title;
             }
+
+            var artists = new List<Person>();
+            if (artistsIds != null)
+            {
+                artists = await dbContext.People.Where(a => artistsIds.Contains(a.Id)).ToListAsync();
+                if (artists.Count != artistsIds.Count)
+                {
+                    throw new NotFoundException(nameof(Person) + " : " + nameof(Title.Artists));
+                }
+            }
+
+            var otherNames = new List<OtherName>();
+            if (otherNamesIds != null)
+            {
+                otherNames = await dbContext.OtherNames.Where(o => otherNamesIds.Contains(o.Id)).ToListAsync();
+                if (otherNames.Count != otherNamesIds.Count)
+                {
+                    throw new NotFoundException(nameof(OtherName));
+                }
+            }
+
+            var genres = new List<Tag>();
+            if (genresIds != null)
+            {
+                genres = await dbContext.Tags.Where(g => genresIds.Contains(g.Id)).ToListAsync();
+                if (genres.Count != genresIds.Count)
+                {
+                    throw new NotFoundException(nameof(Tag) + ":" + nameof(Title.Gernes));
+                }
+            }
+
+            var themes = new List<Tag>();
+            if (themesIds != null)
+            {
+                themes = await dbContext.Tags.Where(t => themesIds.Contains(t.Id)).ToListAsync();
+                if (themes.Count != themesIds.Count)
+                {
+                    throw new NotFoundException(nameof(Tag) + ":" + nameof(Title.Themes));
+                }
+            }
+
+            var demographics = new List<Tag>();
+            if (demographicsIds != null)
+            {
+                demographics = await dbContext.Tags.Where(d => demographicsIds.Contains(d.Id)).ToListAsync();
+                if (demographics.Count != demographicsIds.Count)
+                {
+                    throw new NotFoundException(nameof(Tag) + ":" + nameof(Title.Demographics));
+                }
+            }
+
+            var chapters = new List<Chapter>();
+            if (chaptersIds != null)
+            {
+                chapters = await dbContext.Chapters.Where(c => chaptersIds.Contains(c.Id)).ToListAsync();
+                if (chapters.Count != chaptersIds.Count)
+                {
+                    throw new NotFoundException(nameof(Chapter));
+                }
+            }
+
+
+            var comments = new List<Comment>();
+            if (commentsIds != null)
+            {
+                comments = await dbContext.Comments.Where(c => commentsIds.Contains(c.Id)).ToListAsync();
+                if (comments.Count != commentsIds.Count)
+                {
+                    throw new NotFoundException(nameof(Comment));
+                }
+            }
+
+            title.Name = !string.IsNullOrEmpty(name) ? name : title.Name;
+            title.Description = !string.IsNullOrEmpty(description) ? description : title.Description;
+            title.Artwork = artwork == null ? title.Artwork :
+                await Functions.UploadFileAsync(artwork, _configuration["FilesStoragePath.TitlesImagesPath"]);
+            title.Artists = artists;
+            title.Authors = authors;
+            title.OtherNames = otherNames;
+            title.Gernes = genres;
+            title.Themes = themes;
+            title.Chapters = chapters;
+            title.Comments = comments;
+            title.Status = status != null ? (Enums.TitleStatus)status : title.Status;
+            title.IsAprroved = isApproved != null ? (bool)isApproved : title.IsAprroved;
+            title.OriginalLanguage = originalLanguageId == null ? await dbContext.Languages.FirstOrDefaultAsync(a => a.Id == originalLanguageId) ??
+                throw new NotFoundException(nameof(Language)) : title.OriginalLanguage;
+            title.Demographics = demographics;
+
+            await dbContext.SaveChangesAsync();
+            return title;
         }
 
         public async Task<bool> Delete(string id)
         {
             using var dbContext = await _contextFactory.CreateDbContextAsync();
             var title = await dbContext.Titles.Where(t => t.Id == id).FirstOrDefaultAsync() ??
-                throw new NotFoundException(typeof(Title).Name);
+                throw new NotFoundException(nameof(Title));
             dbContext.Titles.Remove(title);
             await dbContext.SaveChangesAsync();
             return true;
@@ -374,7 +373,7 @@ namespace MangaHomeService.Services
             using var dbContext = await _contextFactory.CreateDbContextAsync();
             var request = await dbContext.Requests.OfType<TitleRequest>().Where(r => r.Id == requestId).
                 Include(r => r.Title).FirstOrDefaultAsync() ??
-                throw new NotFoundException(typeof(TitleRequest).Name);
+                throw new NotFoundException(nameof(TitleRequest));
             return request;
         }
 
@@ -382,9 +381,9 @@ namespace MangaHomeService.Services
         {
             using var dbContext = await _contextFactory.CreateDbContextAsync();
             var title = await dbContext.Titles.Where(t => t.Id == titleId && t.IsAprroved == false).FirstOrDefaultAsync() ??
-                throw new NotFoundException(typeof(Title).Name);
+                throw new NotFoundException(nameof(Title));
             var group = await dbContext.Groups.FirstOrDefaultAsync(g => g.Id == groupId) ??
-                throw new NotFoundException(typeof(Group).Name);
+                throw new NotFoundException(nameof(Group));
             var request = new TitleRequest
             {
                 Title = title,
@@ -402,7 +401,7 @@ namespace MangaHomeService.Services
             using var dbContext = await _contextFactory.CreateDbContextAsync();
             var request = await dbContext.Requests.OfType<TitleRequest>().Where(r => r.Id == requestId).
                 Include(r => r.Title).FirstOrDefaultAsync() ??
-                throw new NotFoundException(typeof(TitleRequest).Name);
+                throw new NotFoundException(nameof(TitleRequest));
             if (request.IsReviewed)
             {
                 throw new AlreadyReviewedException();
@@ -433,9 +432,9 @@ namespace MangaHomeService.Services
             }
 
             var title = await dbContext.Titles.FirstOrDefaultAsync(t => t.Id == id) ??
-                throw new NotFoundException(typeof(Title).Name);
+                throw new NotFoundException(nameof(Title));
             var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == ratingUserId) ??
-                throw new NotFoundException(typeof(User).Name);
+                throw new NotFoundException(nameof(User));
             var rating = new TitleRating
             {
                 Title = title,
@@ -444,13 +443,10 @@ namespace MangaHomeService.Services
             };
             await dbContext.TitleRatings.AddAsync(rating);
 
-            var currentTitlesRatings = await dbContext.TitleRatings.Where(t => t.Title.Id == id).ToListAsync();
-            int sumrating = 0;
-            foreach (var currentTitle in currentTitlesRatings)
-            {
-                sumrating += currentTitle.Rating;
-            }
-            title.Rating = sumrating / currentTitlesRatings.Count;
+            int ratingCount = await dbContext.TitleRatings.Where(t => t.Title.Id == id).CountAsync();
+            int ratingSum = await dbContext.TitleRatings.Where(t => t.Title.Id == id).SumAsync(t => t.Rating);
+            title.Rating = ratingSum / ratingCount;
+            title.RatingVotes = ratingCount;
             await dbContext.SaveChangesAsync();
             return title;
         }
@@ -460,17 +456,14 @@ namespace MangaHomeService.Services
             using var dbContext = await _contextFactory.CreateDbContextAsync();
             var ratingUserId = userId == null ? _tokenInfoProvider.Id : userId;
             var rating = await dbContext.TitleRatings.Where(t => t.Title.Id == id && t.User.Id == ratingUserId).FirstOrDefaultAsync() ??
-                throw new NotFoundException(typeof(Title).Name);
-            var title = await dbContext.Titles.FirstOrDefaultAsync(t => t.Id == id) ?? throw new NotFoundException(typeof(Title).Name);
+                throw new NotFoundException(nameof(Title));
+            var title = await dbContext.Titles.FirstOrDefaultAsync(t => t.Id == id) ?? throw new NotFoundException(nameof(Title));
             dbContext.TitleRatings.Remove(rating);
 
-            var currentTitlesRatings = await dbContext.TitleRatings.Where(t => t.Title.Id == id).ToListAsync();
-            int sumrating = 0;
-            foreach (var currentTitle in currentTitlesRatings)
-            {
-                sumrating += currentTitle.Rating;
-            }
-            title.Rating = sumrating / currentTitlesRatings.Count;
+            int ratingCount = await dbContext.TitleRatings.Where(t => t.Title.Id == id).CountAsync();
+            int ratingSum = await dbContext.TitleRatings.Where(t => t.Title.Id == id).SumAsync(t => t.Rating);
+            title.Rating = ratingSum / ratingCount;
+            title.RatingVotes = ratingCount;
             await dbContext.SaveChangesAsync();
             return title;
         }

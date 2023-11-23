@@ -81,7 +81,7 @@ namespace MangaHomeService.Controllers
                     return BadRequest();
                 }
 
-                var titles = await _titleService.Search(keyword: input.Keyword.Trim(), pageNumber: pageNumber, pageSize: pageSize);
+                var titles = await _titleService.Search(keyword: input?.Keyword?.Trim() ?? "", pageNumber: pageNumber, pageSize: pageSize);
                 return Ok(titles);
             }
             catch (Exception ex)
@@ -102,7 +102,7 @@ namespace MangaHomeService.Controllers
                 {
                     foreach (string num in input.Statuses)
                     {
-                        if (!int.TryParse((string)num, out status))
+                        if (!int.TryParse(num, out status))
                         {
                             return BadRequest();
                         }

@@ -31,7 +31,7 @@ namespace MangaHomeService.Services
         public async Task<User> Get(string id)
         {
             using var dbContext = await _contextFactory.CreateDbContextAsync();
-            var user = await dbContext.Users.Where(u => u.Id == id).FirstOrDefaultAsync() ?? throw new NotFoundException(typeof(User).Name);
+            var user = await dbContext.Users.Where(u => u.Id == id).FirstOrDefaultAsync() ?? throw new NotFoundException(nameof(User));
             return user;
         }
 
@@ -80,7 +80,7 @@ namespace MangaHomeService.Services
         {
             using var dbContext = await _contextFactory.CreateDbContextAsync();
             var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == userId) ??
-                throw new NotFoundException(typeof(User).Name);
+                throw new NotFoundException(nameof(User));
             var newPassword = user.Password;
             var newSalt = user.Salt;
             if (password != null)
@@ -107,7 +107,7 @@ namespace MangaHomeService.Services
         public async Task<bool> Delete(string id)
         {
             using var dbContext = await _contextFactory.CreateDbContextAsync();
-            var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == id) ?? throw new NotFoundException(typeof(User).Name);
+            var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == id) ?? throw new NotFoundException(nameof(User));
             dbContext.Users.Remove(user);
             await dbContext.SaveChangesAsync();
             return true;

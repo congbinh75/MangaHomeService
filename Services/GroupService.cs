@@ -32,7 +32,7 @@ namespace MangaHomeService.Services
         {
             using var dbContext = await _contextFactory.CreateDbContextAsync();
             var group = await dbContext.Groups.FirstOrDefaultAsync(g => g.Id == id) ??
-                throw new NotFoundException(typeof(Group).Name);
+                throw new NotFoundException(nameof(Group));
             return group;
         }
 
@@ -43,7 +43,7 @@ namespace MangaHomeService.Services
             foreach (string memberId in membersIds)
             {
                 var member = await dbContext.Members.FirstOrDefaultAsync(m => m.Id == memberId) ??
-                    throw new NotFoundException(typeof(Member).Name);
+                    throw new NotFoundException(nameof(Member));
                 members.Add(member);
             }
 
@@ -51,7 +51,7 @@ namespace MangaHomeService.Services
             {
                 Name = name,
                 Description = description,
-                ProfilePicture = await Functions.UploadFileAsync(profilePicture, _configuration["FilesStoragePath.GroupsImagesPath"] 
+                ProfilePicture = await Functions.UploadFileAsync(profilePicture, _configuration["FilesStoragePath.GroupsImagesPath"]
                 ?? throw new ConfigurationNotFoundException("FilesStoragePath.GroupsImagesPath")),
                 Members = members
             };
@@ -65,7 +65,7 @@ namespace MangaHomeService.Services
         {
             using var dbContext = await _contextFactory.CreateDbContextAsync();
             var group = await dbContext.Groups.FirstOrDefaultAsync(g => g.Id == id) ??
-                throw new NotFoundException(typeof(Group).Name);
+                throw new NotFoundException(nameof(Group));
 
             var newMembers = new List<Member>();
             if (membersIds != null)
@@ -73,7 +73,7 @@ namespace MangaHomeService.Services
                 foreach (var memberId in membersIds)
                 {
                     var member = await dbContext.Members.FirstOrDefaultAsync(m => m.Id == memberId) ??
-                        throw new NotFoundException(typeof(Member).Name);
+                        throw new NotFoundException(nameof(Member));
                     newMembers.Add(member);
                 }
             }
@@ -85,7 +85,7 @@ namespace MangaHomeService.Services
             group.Name = name ?? group.Name;
             group.Description = description ?? group.Description;
             group.ProfilePicture = profilePicture == null ? group.ProfilePicture :
-                await Functions.UploadFileAsync(profilePicture, _configuration["FilesStoragePath.GroupsImagesPath"] 
+                await Functions.UploadFileAsync(profilePicture, _configuration["FilesStoragePath.GroupsImagesPath"]
                 ?? throw new ConfigurationNotFoundException("FilesStoragePath.GroupsImagesPath"));
             group.Members = newMembers;
             await dbContext.SaveChangesAsync();
@@ -96,7 +96,7 @@ namespace MangaHomeService.Services
         {
             using var dbContext = await _contextFactory.CreateDbContextAsync();
             var group = await dbContext.Groups.FirstOrDefaultAsync(g => g.Id == id) ??
-                throw new NotFoundException(typeof(Group).Name);
+                throw new NotFoundException(nameof(Group));
             dbContext.Groups.Remove(group);
             await dbContext.SaveChangesAsync();
             return true;
@@ -107,7 +107,7 @@ namespace MangaHomeService.Services
             using var dbContext = await _contextFactory.CreateDbContextAsync();
             var request = await dbContext.Requests.OfType<GroupRequest>().Where(r => r.Id == requestId).
                 Include(r => r.Group).FirstOrDefaultAsync() ??
-                throw new NotFoundException(typeof(GroupRequest).Name);
+                throw new NotFoundException(nameof(GroupRequest));
             return request;
         }
 
@@ -115,7 +115,7 @@ namespace MangaHomeService.Services
         {
             using var dbContext = await _contextFactory.CreateDbContextAsync();
             var group = await dbContext.Groups.FirstOrDefaultAsync(g => g.Id == groupId) ??
-                throw new NotFoundException(typeof(Group).Name);
+                throw new NotFoundException(nameof(Group));
             if (group.IsApproved)
             {
                 throw new AlreadyApprovedException(nameof(Group));
@@ -136,7 +136,7 @@ namespace MangaHomeService.Services
         {
             using var dbContext = await _contextFactory.CreateDbContextAsync();
             var request = await dbContext.Requests.OfType<GroupRequest>().FirstOrDefaultAsync(g => g.Id == requestId) ??
-                throw new NotFoundException(typeof(GroupRequest).Name);
+                throw new NotFoundException(nameof(GroupRequest));
             if (request.IsReviewed)
             {
                 throw new AlreadyReviewedException(nameof(GroupRequest));

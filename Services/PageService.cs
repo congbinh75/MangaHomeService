@@ -26,7 +26,7 @@ namespace MangaHomeService.Services
         public async Task<Page> Get(string id)
         {
             using var dbContext = await _contextFactory.CreateDbContextAsync();
-            var page = await dbContext.Pages.FirstOrDefaultAsync(c => c.Id == id) ?? throw new NotFoundException(typeof(Page).Name);
+            var page = await dbContext.Pages.FirstOrDefaultAsync(c => c.Id == id) ?? throw new NotFoundException(nameof(Page));
             return page;
         }
 
@@ -47,7 +47,7 @@ namespace MangaHomeService.Services
                 }
 
                 var chapter = await dbContext.Chapters.FirstOrDefaultAsync(c => c.Id == chapterId) ??
-                    throw new NotFoundException(typeof(Chapter).Name);
+                    throw new NotFoundException(nameof(Chapter));
                 var existingNumberPage = await dbContext.Pages.FirstOrDefaultAsync(p => p.Chapter.Id == chapterId && p.Number == number);
                 if (existingNumberPage != null)
                 {
@@ -72,13 +72,13 @@ namespace MangaHomeService.Services
         {
             using var dbContext = await _contextFactory.CreateDbContextAsync();
             var page = await dbContext.Pages.FirstOrDefaultAsync(p => p.Id == id) ??
-                throw new NotFoundException(typeof(Page).Name);
+                throw new NotFoundException(nameof(Page));
             if (chapterId != "")
             {
                 var chapter = await dbContext.Chapters.FirstOrDefaultAsync(c => c.Id == chapterId);
                 if (chapter == null)
                 {
-                    throw new NotFoundException(typeof(Chapter).Name);
+                    throw new NotFoundException(nameof(Chapter));
                 }
                 else
                 {
@@ -114,7 +114,7 @@ namespace MangaHomeService.Services
         {
             using var dbContext = await _contextFactory.CreateDbContextAsync();
             var page = await dbContext.Pages.FirstOrDefaultAsync(c => c.Id == id) ??
-                throw new NotFoundException(typeof(Page).Name);
+                throw new NotFoundException(nameof(Page));
             dbContext.Pages.Remove(page);
             dbContext.SaveChanges();
             return true;

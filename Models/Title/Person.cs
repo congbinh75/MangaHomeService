@@ -7,5 +7,6 @@
         public string? Description { get; set; } = string.Empty;
         public required ICollection<Title> AuthoredTitles { get; set; } = [];
         public required ICollection<Title> IllustratedTitles { get; set; } = [];
+        public bool IsApproved { get; set; }
     }
 }

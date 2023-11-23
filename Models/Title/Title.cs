@@ -8,8 +8,8 @@ namespace MangaHomeService.Models
         public required string Name { get; set; }
         public string? Description { get; set; } = string.Empty;
         public string? Artwork { get; set; } = string.Empty;
-        public Person? Author { get; set; }
-        public Person? Artist { get; set; }
+        public required ICollection<Person> Authors { get; set; } = [];
+        public required ICollection<Person> Artists { get; set; } = [];
         public ICollection<Tag> Demographics { get; set; } = [];
         public required TitleStatus Status { get; set; } = 0;
         public required double Rating { get; set; } = 0;

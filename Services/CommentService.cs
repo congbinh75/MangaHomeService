@@ -7,44 +7,46 @@ namespace MangaHomeService.Services
     public interface ICommentService
     {
         public Task<ICollection<Comment>> Get(string id, string type, int pageNumber = 1, int pageSize = Constants.CommentsPerPage);
-        public Task<Comment> Add(string id, string type, string content);
-        public Task<Comment> Update(string id, string content, int? vote = null);
+        public Task<Comment> Add(string id, Type type, string content);
+        public Task<Comment> Update(string id, string? content = null, int? vote = null);
         public Task<bool> Delete(string id);
-        public Task<Comment> AddVote(string id, bool isUpvote);
-        public Task<Comment> RemoveVote(string id);
+        public Task<Comment> AddVote(string id, bool isUpvote, string? userId = null);
+        public Task<Comment> RemoveVote(string id, string? userId = null);
     }
 
     public class CommentService : ICommentService
     {
         private readonly IDbContextFactory<MangaHomeDbContext> _contextFactory;
+        private readonly ITokenInfoProvider _tokenInfoProvider;
 
-        public CommentService(IDbContextFactory<MangaHomeDbContext> contextFactory)
+        public CommentService(IDbContextFactory<MangaHomeDbContext> contextFactory, ITokenInfoProvider tokenInfoProvider)
         {
             _contextFactory = contextFactory;
+            _tokenInfoProvider = tokenInfoProvider;
         }
 
         public async Task<ICollection<Comment>> Get(string id, string type, int pageNumber = 1, int pageSize = Constants.CommentsPerPage)
         {
             using var dbContext = await _contextFactory.CreateDbContextAsync();
-            if (type == typeof(Title).Name)
+            if (type == nameof(Title))
             {
                 var title = await dbContext.Titles.Where(t => t.Id == id).
                     Include(t => t.Comments.Skip(pageSize * (pageNumber - 1)).Take(pageSize)).FirstOrDefaultAsync() ??
-                    throw new NotFoundException(typeof(Title).Name);
+                    throw new NotFoundException(nameof(Title));
                 return title.Comments;
             }
-            else if (type == typeof(Chapter).Name)
+            else if (type == nameof(Chapter))
             {
                 var chapter = await dbContext.Chapters.Where(c => c.Id == id).
                     Include(t => t.Comments.Skip(pageSize * (pageNumber - 1)).Take(pageSize)).FirstOrDefaultAsync() ??
-                    throw new NotFoundException(typeof(Chapter).Name);
+                    throw new NotFoundException(nameof(Chapter));
                 return chapter.Comments;
             }
-            else if (type == typeof(Group).Name)
+            else if (type == nameof(Group))
             {
                 var group = await dbContext.Groups.Where(g => g.Id == id).
                     Include(t => t.Comments.Skip(pageSize * (pageNumber - 1)).Take(pageSize)).FirstOrDefaultAsync() ??
-                    throw new NotFoundException(typeof(Group).Name);
+                    throw new NotFoundException(nameof(Group));
                 return group.Comments;
             }
             else
@@ -53,13 +55,13 @@ namespace MangaHomeService.Services
             }
         }
 
-        public async Task<Comment> Add(string id, string type, string content)
+        public async Task<Comment> Add(string id, Type type, string content)
         {
             using var dbContext = await _contextFactory.CreateDbContextAsync();
-            if (type == typeof(Title).Name)
+            if (type == typeof(Title))
             {
                 var title = await dbContext.Titles.Where(t => t.Id == id).FirstOrDefaultAsync() ??
-                    throw new NotFoundException(typeof(Title).Name);
+                    throw new NotFoundException(nameof(Title));
                 var comment = new TitleComment
                 {
                     Title = title,
@@ -70,10 +72,10 @@ namespace MangaHomeService.Services
                 await dbContext.SaveChangesAsync();
                 return comment;
             }
-            else if (type == typeof(Chapter).Name)
+            else if (type == typeof(Chapter))
             {
                 var chapter = await dbContext.Chapters.Where(c => c.Id == id).FirstOrDefaultAsync() ??
-                    throw new NotFoundException(typeof(Chapter).Name);
+                    throw new NotFoundException(nameof(Chapter));
                 var comment = new ChapterComment
                 {
                     Chapter = chapter,
@@ -84,10 +86,10 @@ namespace MangaHomeService.Services
                 await dbContext.SaveChangesAsync();
                 return comment;
             }
-            else if (type == typeof(Group).Name)
+            else if (type == typeof(Group))
             {
                 var group = await dbContext.Groups.Where(g => g.Id == id).FirstOrDefaultAsync() ??
-                    throw new NotFoundException(typeof(Group).Name);
+                    throw new NotFoundException(nameof(Group));
                 var comment = new GroupComment
                 {
                     Group = group,
@@ -100,16 +102,16 @@ namespace MangaHomeService.Services
             }
             else
             {
-                throw new ArgumentException(type);
+                throw new ArgumentException(nameof(type));
             }
         }
 
-        public async Task<Comment> Update(string id, string content, int? vote = null)
+        public async Task<Comment> Update(string id, string? content = null, int? vote = null)
         {
             using var dbContext = await _contextFactory.CreateDbContextAsync();
             var comment = await dbContext.Comments.Where(c => c.Id == id).FirstOrDefaultAsync() ??
-                throw new NotFoundException(typeof(Comment).Name);
-            comment.Content = content;
+                throw new NotFoundException(nameof(Comment));
+            comment.Content = content ?? comment.Content;
             comment.Vote = vote == null ? comment.Vote : (int)vote;
             await dbContext.SaveChangesAsync();
             return comment;
@@ -119,34 +121,38 @@ namespace MangaHomeService.Services
         {
             using var dbContext = await _contextFactory.CreateDbContextAsync();
             var comment = await dbContext.Comments.Where(c => c.Id == id).FirstOrDefaultAsync() ??
-                throw new NotFoundException(typeof(Comment).Name);
+                throw new NotFoundException(nameof(Comment));
             dbContext.Comments.Remove(comment);
             await dbContext.SaveChangesAsync();
             return true;
         }
 
-        public async Task<Comment> AddVote(string id, bool isUpvote)
+        public async Task<Comment> AddVote(string id, bool isUpvote, string? userId = null)
         {
             using var dbContext = await _contextFactory.CreateDbContextAsync();
             var comment = await dbContext.Comments.FirstOrDefaultAsync(c => c.Id == id) ??
-                throw new NotFoundException(typeof(Comment).Name);
+                throw new NotFoundException(nameof(Comment));
+            var votingUserId = userId ?? _tokenInfoProvider.Id;
+            var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == votingUserId) ?? throw new NotFoundException(nameof(User));
             var vote = new CommentVote
             {
                 Comment = comment,
-                IsUpvote = isUpvote
+                IsUpvote = isUpvote,
+                User = user
             };
             await dbContext.CommentVotes.AddAsync(vote);
             await dbContext.SaveChangesAsync();
             return comment;
         }
 
-        public async Task<Comment> RemoveVote(string id)
+        public async Task<Comment> RemoveVote(string id, string? userId = null)
         {
             using var dbContext = await _contextFactory.CreateDbContextAsync();
             var comment = await dbContext.Comments.FirstOrDefaultAsync(c => c.Id == id) ??
-                throw new NotFoundException(typeof(Comment).Name);
-            var vote = await dbContext.CommentVotes.Where(v => v.Comment.Id == id && v.User.Id == v.User.Id).FirstOrDefaultAsync() ??
-                throw new NotFoundException(typeof(CommentVote).Name);
+                throw new NotFoundException(nameof(Comment));
+            var votingUserId = userId ?? _tokenInfoProvider.Id;
+            var vote = await dbContext.CommentVotes.Where(v => v.Comment.Id == id && v.User.Id == votingUserId).FirstOrDefaultAsync() ??
+                throw new NotFoundException(nameof(CommentVote));
             dbContext.CommentVotes.Remove(vote);
             await dbContext.SaveChangesAsync();
             return comment;

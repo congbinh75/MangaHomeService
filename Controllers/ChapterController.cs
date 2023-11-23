@@ -75,19 +75,19 @@ namespace MangaHomeService.Controllers
             }
             catch (NotFoundException ex)
             {
-                if (ex.Message == typeof(Title).Name)
+                if (ex.Message == nameof(Title))
                 {
                     return BadRequest(_stringLocalizer["ERR_TITLE_NOT_FOUND"]);
                 }
-                else if (ex.Message == typeof(Group).Name)
+                else if (ex.Message == nameof(Group))
                 {
                     return BadRequest(_stringLocalizer["ERR_GROUP_NOT_FOUND"]);
                 }
-                else if (ex.Message == typeof(Volume).Name)
+                else if (ex.Message == nameof(Volume))
                 {
                     return BadRequest(_stringLocalizer["ERR_VOLUME_NOT_FOUND"]);
                 }
-                else if (ex.Message == typeof(Language).Name)
+                else if (ex.Message == nameof(Language))
                 {
                     return BadRequest(_stringLocalizer["ERR_LANGUAGE_NOT_FOUND"]);
                 }

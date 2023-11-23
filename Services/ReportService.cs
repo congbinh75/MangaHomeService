@@ -8,7 +8,7 @@ namespace MangaHomeService.Services
     {
         public Task<Report> Get(string id);
         public Task<ICollection<Report>> GetAll(int nums = Constants.ReportsPerPage, int page = 0);
-        public Task<Report> Add(string id, string reason, string note, int type);
+        public Task<Report> Add(string id, string reason, string note, Type type);
         public Task<Report> Update(string id, string? reason = null, string? note = null);
         public Task<bool> Delete(string id);
     }
@@ -25,7 +25,7 @@ namespace MangaHomeService.Services
         public async Task<Report> Get(string id)
         {
             using var dbContext = await _contextFactory.CreateDbContextAsync();
-            var report = await dbContext.Reports.FirstOrDefaultAsync(r => r.Id == id) ?? throw new NotFoundException(typeof(Report).Name);
+            var report = await dbContext.Reports.FirstOrDefaultAsync(r => r.Id == id) ?? throw new NotFoundException(nameof(Report));
             return report;
         }
 
@@ -35,12 +35,12 @@ namespace MangaHomeService.Services
             return await dbContext.Reports.Skip(page * nums).Take(nums).ToListAsync();
         }
 
-        public async Task<Report> Add(string id, string reason, string note, int type)
+        public async Task<Report> Add(string id, string reason, string note, Type type)
         {
             using var dbContext = await _contextFactory.CreateDbContextAsync();
-            if (type == (int)Enums.ReportType.User)
+            if (type == typeof(UserReport))
             {
-                var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == id) ?? throw new NotFoundException(typeof(User).Name);
+                var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == id) ?? throw new NotFoundException(nameof(User));
                 var report = new UserReport
                 {
                     Reason = reason,
@@ -52,9 +52,9 @@ namespace MangaHomeService.Services
                 await dbContext.SaveChangesAsync();
                 return report;
             }
-            else if (type == (int)Enums.ReportType.Title)
+            else if (type == typeof(TitleReport))
             {
-                var title = await dbContext.Titles.FirstOrDefaultAsync(t => t.Id == id) ?? throw new NotFoundException(typeof(User).Name);
+                var title = await dbContext.Titles.FirstOrDefaultAsync(t => t.Id == id) ?? throw new NotFoundException(nameof(User));
                 var report = new TitleReport
                 {
                     Reason = reason,
@@ -66,9 +66,9 @@ namespace MangaHomeService.Services
                 await dbContext.SaveChangesAsync();
                 return report;
             }
-            else if (type == (int)Enums.ReportType.Group)
+            else if (type == typeof(GroupReport))
             {
-                var group = await dbContext.Groups.FirstOrDefaultAsync(g => g.Id == id) ?? throw new NotFoundException(typeof(Group).Name);
+                var group = await dbContext.Groups.FirstOrDefaultAsync(g => g.Id == id) ?? throw new NotFoundException(nameof(Group));
                 var report = new GroupReport
                 {
                     Reason = reason,
@@ -80,9 +80,9 @@ namespace MangaHomeService.Services
                 await dbContext.SaveChangesAsync();
                 return report;
             }
-            else if (type == (int)Enums.ReportType.Chapter)
+            else if (type == typeof(ChapterReport))
             {
-                var chapter = await dbContext.Chapters.FirstOrDefaultAsync(c => c.Id == id) ?? throw new NotFoundException(typeof(Chapter).Name);
+                var chapter = await dbContext.Chapters.FirstOrDefaultAsync(c => c.Id == id) ?? throw new NotFoundException(nameof(Chapter));
                 var report = new ChapterReport
                 {
                     Reason = reason,
@@ -96,14 +96,14 @@ namespace MangaHomeService.Services
             }
             else
             {
-                throw new ArgumentException();
+                throw new ArgumentException(type.ToString());
             }
         }
 
         public async Task<Report> Update(string id, string? reason = null, string? note = null)
         {
             using var dbContext = await _contextFactory.CreateDbContextAsync();
-            var report = await dbContext.Reports.FirstOrDefaultAsync(r => r.Id == id) ?? throw new NotFoundException(typeof(Report).Name);
+            var report = await dbContext.Reports.FirstOrDefaultAsync(r => r.Id == id) ?? throw new NotFoundException(nameof(Report));
             report.Reason = reason ?? report.Reason;
             report.Note = note ?? report.Note;
             await dbContext.SaveChangesAsync();
@@ -113,7 +113,7 @@ namespace MangaHomeService.Services
         public async Task<bool> Delete(string id)
         {
             using var dbContext = await _contextFactory.CreateDbContextAsync();
-            var report = await dbContext.Reports.FirstOrDefaultAsync(r => r.Id == id) ?? throw new NotFoundException(typeof(Report).Name);
+            var report = await dbContext.Reports.FirstOrDefaultAsync(r => r.Id == id) ?? throw new NotFoundException(nameof(Report));
             dbContext.Reports.Remove(report);
             await dbContext.SaveChangesAsync();
             return true;

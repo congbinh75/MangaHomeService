@@ -23,20 +23,5 @@
             Completed = 2,
             Abandoned = 3
         }
-
-        public enum TagType
-        {
-            Gerne = 0,
-            Theme = 1,
-            Demographic = 2
-        }
-
-        public enum ReportType
-        {
-            User = 0,
-            Group = 1,
-            Title = 2,
-            Chapter = 3
-        }
     }
 }

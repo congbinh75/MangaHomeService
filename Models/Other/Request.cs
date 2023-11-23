@@ -30,5 +30,15 @@
     {
         public required Group Group { get; set; }
     }
+
+    public class ArtistRequest : Request
+    {
+        public required Person Artist { get; set; }
+    }
+
+    public class AuthorRequest : Request
+    {
+        public required Person Author { get; set; }
+    }
 }
 

@@ -36,14 +36,14 @@ namespace MangaHomeService.Models
             base.OnModelCreating(modelBuilder);
 
             modelBuilder.Entity<Title>()
-                .HasOne(t => t.Author)
+                .HasMany(t => t.Authors)
                 .WithMany(p => p.AuthoredTitles)
-                .HasForeignKey(t => t.Author);
+                .UsingEntity(j => j.ToTable("TitlesAuthors"));
 
             modelBuilder.Entity<Title>()
-                .HasOne(t => t.Artist)
+                .HasMany(t => t.Artists)
                 .WithMany(p => p.IllustratedTitles)
-                .HasForeignKey(t => t.Artist);
+                .UsingEntity(j => j.ToTable("TitlesArtists"));
         }
 
         public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
