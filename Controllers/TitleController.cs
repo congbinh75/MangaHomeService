@@ -11,12 +11,12 @@ namespace MangaHomeService.Controllers
     public class TitleController : ControllerBase
     {
         private readonly IConfiguration _configuration;
-        private readonly IStringLocalizer<UserController> _stringLocalizer;
+        private readonly IStringLocalizer<TitleController> _stringLocalizer;
         private readonly ITitleService _titleService;
 
         public TitleController(
             IConfiguration configuration,
-            IStringLocalizer<UserController> stringLocalizer,
+            IStringLocalizer<TitleController> stringLocalizer,
             ITitleService titleService)
         {
             _configuration = configuration;

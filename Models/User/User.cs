@@ -14,5 +14,6 @@ namespace MangaHomeService.Models
         public List<Group> Groups { get; set; } = [];
         public List<Title> UpdateFeed { get; set; } = [];
         public required bool IsBanned { get; set; } = false;
+        public string? EmailConfirmationToken { get; set; }
     }
 }

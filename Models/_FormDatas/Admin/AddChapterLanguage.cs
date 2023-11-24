@@ -1,6 +1,6 @@
 ﻿namespace MangaHomeService.Models.FormDatas.Admin
 {
-    public class AddTitleLanguage
+    public class AddChapterLanguage
     {
         public string? Name { get; set; }
         public string? Logo { get; set; }

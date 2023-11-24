@@ -13,14 +13,14 @@ namespace MangaHomeService.Controllers
     public class ChapterController : ControllerBase
     {
         private IConfiguration _configuration;
-        private IStringLocalizer<UserController> _stringLocalizer;
+        private IStringLocalizer<ChapterController> _stringLocalizer;
         private ITitleService _titleService;
         private IChapterService _chapterService;
         private IPageService _pageService;
 
         public ChapterController(
             IConfiguration configuration,
-            IStringLocalizer<UserController> stringLocalizer,
+            IStringLocalizer<ChapterController> stringLocalizer,
             ITitleService titleService,
             IChapterService chapterService,
             IPageService pageService)
@@ -54,15 +54,39 @@ namespace MangaHomeService.Controllers
             }
         }
 
-        [HttpPost]
-        [Authorize(Roles = "Admin, Moderator, User")]
-        public async Task<IActionResult> Add(Add input)
+        [HttpGet]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetByTitle(string titleId)
         {
             try
             {
-                int number = 0;
-                if (!int.TryParse(input.Number?.Trim(), out number)
-                    || !string.IsNullOrEmpty(input.TitleId?.Trim())
+                if (!string.IsNullOrEmpty(titleId.Trim()))
+                {
+                    var chapters = await _chapterService.GetByTitle(titleId);
+                    return Ok(chapters);
+                }
+                else
+                {
+                    return BadRequest(_stringLocalizer["ERR_INVALID_INPUT_DATA"]);
+                }
+            }
+            catch (NotFoundException)
+            {
+                return BadRequest(_stringLocalizer["ERR_TITLE_NOT_FOUND"]);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost]
+        [Authorize(Roles = "Admin, Moderator, User")]
+        public async Task<IActionResult> Create(Create input)
+        {
+            try
+            {
+                if (!int.TryParse(input.Number?.Trim(), out int number) || !string.IsNullOrEmpty(input.TitleId?.Trim())
                     || !string.IsNullOrEmpty(input.GroupId?.Trim()))
                 {
                     var chapter = await _chapterService.Add(number, input.TitleId, input.GroupId, input.VolumeId, input.LanguageId);
@@ -93,8 +117,132 @@ namespace MangaHomeService.Controllers
                 }
                 else
                 {
-                    return BadRequest();
+                    return BadRequest(ex.Message);
                 }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost]
+        [Authorize(Roles = "Admin, Moderator, User")]
+        public async Task<IActionResult> Update(Update input)
+        {
+            throw new NotImplementedException();
+        }
+
+        [HttpPost]
+        [Authorize(Roles = "Admin, Moderator, User")]
+        public async Task<IActionResult> Remove(string id)
+        {
+            try
+            {
+                if (!string.IsNullOrEmpty(id))
+                {
+                    await _chapterService.Delete(id);
+                    return Ok();
+                }
+                else
+                {
+                    return BadRequest(_stringLocalizer["ERR_INVALID_INPUT_DATA"]);
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost]
+        [Authorize(Roles = "Admin, Moderator, User")]
+        public async Task<IActionResult> UploadPage(UploadPage input)
+        {
+            try
+            {
+                if (!int.TryParse(input.Number?.Trim(), out int number)
+                || !string.IsNullOrEmpty(input.ChapterId?.Trim())
+                || input.File != null)
+                {
+                    if (4 * (input.File.Length / 3) > Constants.PageBytesLimit)
+                    {
+                        // TO BE FIXED
+                        return BadRequest("File size exceeded 10MB limit");
+                    }
+                    var page = await _pageService.Add(chapterId: input.ChapterId.Trim(), number: number, file: input.File);
+                    return Ok(page);
+                }
+                else
+                {
+                    return BadRequest(_stringLocalizer["ERR_INVALID_INPUT_DATA"]);
+                }
+            }
+            catch (NotFoundException)
+            {
+                return BadRequest(_stringLocalizer["ERR_CHAPTER_NOT_FOUND"]);
+            }
+            catch (ArgumentException)
+            {
+                //TO BE FIXED
+                return BadRequest(_stringLocalizer[""]);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost]
+        [Authorize(Roles = "Admin, Moderator, User")]
+        public async Task<IActionResult> UpdatePage(UpdatePage input)
+        {
+            try
+            {
+                if (!string.IsNullOrEmpty(input.Id?.Trim()) && int.TryParse(input.Number.Trim(), out int number))
+                {
+                    var page = await _pageService.Update(id: input.Id.Trim(), number: number);
+                    return Ok(page);
+                }
+                else
+                {
+                    return BadRequest(_stringLocalizer["ERR_INVALID_INPUT_DATA"]);
+                }
+            }
+            catch (NotFoundException)
+            {
+                return BadRequest(_stringLocalizer["ERR_CHAPTER_NOT_FOUND"]);
+            }
+            catch (ArgumentException)
+            {
+                //TO BE FIXED
+                return BadRequest(_stringLocalizer[""]);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost]
+        [Authorize(Roles = "Admin, Moderator, User")]
+        public async Task<IActionResult> RemovePage(string id)
+        {
+            try
+            {
+                if (!string.IsNullOrEmpty(id.Trim()))
+                {
+                    await _pageService.Delete(id.Trim());
+                    return Ok();
+                }
+                else
+                {
+                    return BadRequest(_stringLocalizer["ERR_INVALID_INPUT_DATA"]);
+                }
+            }
+            catch (NotFoundException)
+            {
+                return BadRequest(_stringLocalizer["ERR_PAGE_NOT_FOUND"]);
             }
             catch (Exception ex)
             {
@@ -103,3 +251,6 @@ namespace MangaHomeService.Controllers
         }
     }
 }
+
+
+

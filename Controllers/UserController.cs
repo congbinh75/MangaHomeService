@@ -33,36 +33,30 @@ namespace MangaHomeService.Controllers
         }
 
         [HttpPost]
+        [AllowAnonymous]
         public async Task<IActionResult> Register(Register input)
         {
             try
             {
-                if (!string.IsNullOrEmpty(input.Email) && !string.IsNullOrEmpty(input.Password)
-                    && !string.IsNullOrEmpty(input.Name))
-                {
-                    await _userService.Add(input.Name, input.Email, input.Password, 2);
-                    return Ok();
-                }
-                else
-                {
-                    return BadRequest(_stringLocalizer["ERR_INVALID_INPUT_DATA"]);
-                }
+                input.Validate();
+                await _userService.Add(input.Name, input.Email, input.Password, 2);
+                return Ok();
             }
             catch (Exception ex)
             {
                 return BadRequest(ex.Message);
             }
-
         }
 
         [HttpPost]
+        [AllowAnonymous]
         public async Task<IActionResult> Login(Login input)
         {
             try
             {
-                if (!string.IsNullOrEmpty(input.Email) && !string.IsNullOrEmpty(input.Password))
+                if (!string.IsNullOrEmpty(input.Username) && !string.IsNullOrEmpty(input.Password))
                 {
-                    var user = await _userService.Get(input.Email, input.Password);
+                    var user = await _userService.Get(input.Username, input.Password);
 
                     if (user != null)
                     {
@@ -103,8 +97,8 @@ namespace MangaHomeService.Controllers
             }
         }
 
-        [Authorize]
         [HttpPost]
+        [Authorize]
         public async Task<IActionResult> ChangePassword(ChangePassword input)
         {
             try
@@ -146,8 +140,8 @@ namespace MangaHomeService.Controllers
 
         }
 
-        [Authorize]
         [HttpPost]
+        [Authorize]
         public async Task<IActionResult> UpdateProfilePicture(IFormFile profilePicture)
         {
             try
@@ -156,6 +150,7 @@ namespace MangaHomeService.Controllers
                 {
                     if (4 * (profilePicture.Length / 3) > Constants.ProfilePictureBytesLimit)
                     {
+                        // TO BE FIXED
                         return BadRequest("File size exceeded 2MB limit");
                     }
                     string currentUserId = _tokenInfoProvider.Id;
@@ -173,8 +168,8 @@ namespace MangaHomeService.Controllers
             }
         }
 
-        [Authorize]
         [HttpPost]
+        [Authorize]
         public async Task<IActionResult> UpdateInfo(string email)
         {
             try
@@ -204,36 +199,13 @@ namespace MangaHomeService.Controllers
             }
         }
 
-        [AllowAnonymous]
         [HttpPost]
-        public async Task<IActionResult> ConfirmEmail(string id)
+        [Authorize]
+        public async Task<IActionResult> SendConfirmationEmail()
         {
             try
             {
-                if (!string.IsNullOrEmpty(id))
-                {
-                    try
-                    {
-                        var user = _userService.Get(id);
-                        if (user != null)
-                        {
-                            await _userService.Update(id: id, isEmailConfirmed: true);
-                        }
-                        else
-                        {
-                            return BadRequest();
-                        }
-                        return Ok();
-                    }
-                    catch (Exception ex)
-                    {
-                        return BadRequest(ex.Message);
-                    }
-                }
-                else
-                {
-                    return BadRequest(_stringLocalizer["ERR_INVALID_INPUT_DATA"]);
-                }
+
             }
             catch (Exception ex)
             {
@@ -241,9 +213,9 @@ namespace MangaHomeService.Controllers
             }
         }
 
-        [AllowAnonymous]
         [HttpPost]
-        public async Task<IActionResult> SendConfirmationEmail(string id)
+        [Authorize]
+        public async Task<IActionResult> ConfirmEmail()
         {
             throw new NotImplementedException();
         }

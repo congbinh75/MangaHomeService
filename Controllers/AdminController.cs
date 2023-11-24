@@ -27,17 +27,17 @@ namespace MangaHomeService.Controllers
 
         [HttpPost]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> UpdateRoleOfUser(UpdateRoleOfUser formData)
+        public async Task<IActionResult> UpdateRoleOfUser(UpdateRoleOfUser input)
         {
             try
             {
                 int role = -1;
-                if (string.IsNullOrEmpty(formData.UserId) || string.IsNullOrEmpty(formData.Role)
-                    || !int.TryParse(formData.Role, out role) || !Enum.IsDefined(typeof(Enums.Role), role))
+                if (string.IsNullOrEmpty(input.UserId) || string.IsNullOrEmpty(input.Role)
+                    || !int.TryParse(input.Role, out role) || !Enum.IsDefined(typeof(Enums.Role), role))
                 {
                     return BadRequest(_stringLocalizer["ERR_INVALID_INPUT_DATA"]);
                 }
-                var user = await _userService.Update(formData.UserId, role: role);
+                var user = await _userService.Update(input.UserId, role: role);
                 return Ok(user);
             }
             catch (Exception ex)
@@ -48,7 +48,7 @@ namespace MangaHomeService.Controllers
 
         [HttpPost]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> AddTitleLanguage(AddTitleLanguage formData)
+        public async Task<IActionResult> AddChapterLangauage(AddChapterLanguage input)
         {
             throw new NotImplementedException();
         }

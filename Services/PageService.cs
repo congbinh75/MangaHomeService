@@ -41,11 +41,6 @@ namespace MangaHomeService.Services
         {
             using (var dbContext = await _contextFactory.CreateDbContextAsync())
             {
-                if (file == null)
-                {
-                    throw new ArgumentException(nameof(file));
-                }
-
                 var chapter = await dbContext.Chapters.FirstOrDefaultAsync(c => c.Id == chapterId) ??
                     throw new NotFoundException(nameof(Chapter));
                 var existingNumberPage = await dbContext.Pages.FirstOrDefaultAsync(p => p.Chapter.Id == chapterId && p.Number == number);

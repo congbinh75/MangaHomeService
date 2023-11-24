@@ -15,17 +15,21 @@ namespace MangaHomeService.Services
             bool? isApproved = null);
         public Task<bool> Delete(string id);
         public Task<ChapterRequest> GetRequest(string requestId);
-        public Task<ChapterRequest> SubmitRequest(string chapterId, string note, string groupId);
+        public Task<ChapterRequest> SubmitRequest(string id, string note, string groupId);
         public Task<ChapterRequest> ReviewRequest(string requestId, string note, bool isApproved);
+        public Task<ChapterTracking> AddTracking(string id, string? userId = null);
+        public Task<ChapterTracking> RemoveTracking(string id, string? userId = null);
     }
 
     public class ChapterService : IChapterService
     {
         private readonly IDbContextFactory<MangaHomeDbContext> _contextFactory;
+        private readonly ITokenInfoProvider _tokenInfoProvider;
 
-        public ChapterService(IDbContextFactory<MangaHomeDbContext> contextFactory)
+        public ChapterService(IDbContextFactory<MangaHomeDbContext> contextFactory, ITokenInfoProvider tokenInfoProvider)
         {
             _contextFactory = contextFactory;
+            _tokenInfoProvider = tokenInfoProvider;
         }
 
         public async Task<Chapter> Get(string id)
@@ -41,9 +45,8 @@ namespace MangaHomeService.Services
             using var dbContext = await _contextFactory.CreateDbContextAsync();
             var title = await dbContext.Titles.FirstOrDefaultAsync(t => t.Id == titleId) ??
                 throw new NotFoundException(nameof(Title));
-            //TO BE FIXED
             return await dbContext.Chapters.Where(c => c.Title.Id == titleId && c.IsApproved).OrderByDescending(c => c.Number).
-                GroupBy(c => c.Number).Select(c => c.First()).Distinct().Skip(pageSize * (pageNumber - 1)).Take(pageSize).ToListAsync();
+                GroupBy(c => c.Number).SelectMany(c => c).Distinct().Skip(pageSize * (pageNumber - 1)).Take(pageSize).ToListAsync();
         }
 
         public async Task<Chapter> Add(double number, string titleId, string groupId, string? volumeId = null, string? languageId = null,
@@ -183,10 +186,10 @@ namespace MangaHomeService.Services
             return request;
         }
 
-        public async Task<ChapterRequest> SubmitRequest(string chapterId, string groupId, string note)
+        public async Task<ChapterRequest> SubmitRequest(string id, string groupId, string note)
         {
             using var dbContext = await _contextFactory.CreateDbContextAsync();
-            var chapter = await dbContext.Chapters.FirstOrDefaultAsync(t => t.Id == chapterId) ??
+            var chapter = await dbContext.Chapters.FirstOrDefaultAsync(t => t.Id == id) ??
                 throw new NotFoundException(nameof(Chapter));
             var group = await dbContext.Groups.FirstOrDefaultAsync(g => g.Id == groupId) ??
                 throw new NotFoundException(nameof(Group));
@@ -223,6 +226,33 @@ namespace MangaHomeService.Services
 
             await dbContext.SaveChangesAsync();
             return request;
+        }
+
+        public async Task<ChapterTracking> AddTracking(string id, string? userId = null)
+        {
+            using var dbContext = await _contextFactory.CreateDbContextAsync();
+            var trackingUserId = userId ?? _tokenInfoProvider.Id;
+            var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == trackingUserId) ?? throw new NotFoundException(nameof(User));
+            var chapter = await dbContext.Chapters.FirstOrDefaultAsync(c => c.Id == id) ?? throw new NotFoundException(nameof(Chapter));
+            var tracking = new ChapterTracking
+            {
+                User = user,
+                Chapter = chapter
+            };
+            await dbContext.ChapterTrackings.AddAsync(tracking);
+            await dbContext.SaveChangesAsync();
+            return tracking;
+        }
+
+        public async Task<ChapterTracking> RemoveTracking(string id, string? userId = null)
+        {
+            using var dbContext = await _contextFactory.CreateDbContextAsync();
+            var trackingUserId = userId ?? _tokenInfoProvider.Id;
+            var tracking = await dbContext.ChapterTrackings.FirstOrDefaultAsync(c => c.User.Id == trackingUserId && c.Chapter.Id == id)
+                ?? throw new NotFoundException(nameof(ChapterTracking));
+            dbContext.ChapterTrackings.Remove(tracking);
+            await dbContext.SaveChangesAsync();
+            return tracking;
         }
     }
 }
