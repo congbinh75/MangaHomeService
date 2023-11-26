@@ -10,6 +10,11 @@
         public EmailNotConfirmedException() { }
         public EmailNotConfirmedException(string message) : base(message) { }
     }
+    public class EmailAlreadyConfirmedException : Exception
+    {
+        public EmailAlreadyConfirmedException() { }
+        public EmailAlreadyConfirmedException(string message) : base(message) { }
+    }
     public class EmailAlreadyRegisteredException : Exception
     {
         public EmailAlreadyRegisteredException() { }

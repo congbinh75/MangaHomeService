@@ -3,6 +3,8 @@ using MangaHomeService.Utils;
 using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 using Microsoft.EntityFrameworkCore;
 using System.Data;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Security.Cryptography;
 
 namespace MangaHomeService.Services
@@ -15,17 +17,23 @@ namespace MangaHomeService.Services
         public Task<User> Update(string id, string? name = null, string? email = null, string? password = null, int? role = null,
             bool? isEmailConfirmed = null, IFormFile? profilePicture = null, bool? isBanned = null);
         public Task<bool> Delete(string id);
+        public Task<bool> SendEmailConfirmation(string? userId = null);
+        public Task<bool> ConfirmEmail(string userId, string token);
     }
 
     public class UserService : IUserService
     {
         private readonly IDbContextFactory<MangaHomeDbContext> _contextFactory;
         private readonly IConfiguration _configuration;
+        private readonly ITokenInfoProvider _tokenInfoProvider;
+        private readonly IHttpClientFactory _httpClientFactory;
 
-        public UserService(IDbContextFactory<MangaHomeDbContext> contextFactory, IConfiguration configuration)
+        public UserService(IDbContextFactory<MangaHomeDbContext> contextFactory, IConfiguration configuration, ITokenInfoProvider tokenInfoProvider, IHttpClientFactory httpClientFactory)
         {
             _contextFactory = contextFactory;
             _configuration = configuration;
+            _tokenInfoProvider = tokenInfoProvider;
+            _httpClientFactory = httpClientFactory;
         }
 
         public async Task<User> Get(string id)
@@ -113,7 +121,53 @@ namespace MangaHomeService.Services
             return true;
         }
 
-        private (string hashedPassword, byte[] salt) HashPassword(string password, byte[]? salt = null)
+        public async Task<bool> SendEmailConfirmation(string? userId = null)
+        {
+            using var dbContext = await _contextFactory.CreateDbContextAsync();
+            var id = userId ?? _tokenInfoProvider.Id;
+            var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == id) ?? throw new NotFoundException(nameof(User));
+            if (user.IsEmailConfirmed)
+            {
+                throw new EmailAlreadyConfirmedException();
+            }
+            string token = Guid.NewGuid().ToString();
+            user.EmailConfirmationToken = token;
+            await dbContext.SaveChangesAsync();
+
+            using var httpClient =  _httpClientFactory.CreateClient();
+            using var request = new HttpRequestMessage(new HttpMethod("POST"), _configuration["SMTP.Url"]);
+            request.Headers.TryAddWithoutValidation("api-key", _configuration["SMTP.APIKey"]);
+
+            //TO BE FIXED
+            request.Content = new StringContent("");
+            request.Content.Headers.ContentType = MediaTypeHeaderValue.Parse("application/x-www-form-urlencoded");
+
+            var response = await httpClient.SendAsync(request);
+            return response.IsSuccessStatusCode;
+        }
+
+        public async Task<bool> ConfirmEmail(string userId, string token)
+        {
+            using var dbContext = await _contextFactory.CreateDbContextAsync();
+            var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == userId) ?? throw new NotFoundException(nameof(User));
+            if (user.IsEmailConfirmed)
+            {
+                throw new EmailAlreadyConfirmedException();
+            }
+
+            if (user.EmailConfirmationToken == token) 
+            {
+                user.IsEmailConfirmed = true;
+                await dbContext.SaveChangesAsync();
+                return true;
+            }
+            else
+            {
+                throw new Exception();
+            }
+        }
+
+        private static (string hashedPassword, byte[] salt) HashPassword(string password, byte[]? salt = null)
         {
             salt ??= RandomNumberGenerator.GetBytes(128 / 8);
             string hassed = Convert.ToBase64String(KeyDerivation.Pbkdf2(

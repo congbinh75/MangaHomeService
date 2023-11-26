@@ -135,12 +135,6 @@
   <data name="ERR_LANGUAGE_NOT_FOUND" xml:space="preserve">
     <value>Không tìm thấy ngôn ngữ</value>
   </data>
-  <data name="ERR_PASSWORDS_NOT_MATCH" xml:space="preserve">
-    <value>Mật khẩu và xác nhận không trùng khớp</value>
-  </data>
-  <data name="ERR_PASSWORD_CONFIRMATION_NOT_MATCH" xml:space="preserve">
-    <value>Mật khẩu và xác nhận mật khẩu không trùng khớp</value>
-  </data>
   <data name="ERR_TITLE_NOT_APPROVED" xml:space="preserve">
     <value>Tựa truyện chưa được phê duyệt</value>
   </data>

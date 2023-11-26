@@ -15,10 +15,10 @@ namespace MangaHomeService.Controllers
     [ApiController]
     public class UserController : ControllerBase
     {
-        private IConfiguration _configuration;
-        private IStringLocalizer<UserController> _stringLocalizer;
-        private IUserService _userService;
-        private ITokenInfoProvider _tokenInfoProvider;
+        private readonly IConfiguration _configuration;
+        private readonly IStringLocalizer<UserController> _stringLocalizer;
+        private readonly IUserService _userService;
+        private readonly ITokenInfoProvider _tokenInfoProvider;
 
         public UserController(
             IConfiguration configuration,
@@ -103,35 +103,22 @@ namespace MangaHomeService.Controllers
         {
             try
             {
-                if (input != null)
+                input.Validate();
+                var currentUserName = _tokenInfoProvider.Name;
+                var user = await _userService.Get(currentUserName, input.OldPassword);
+                if (user != null)
                 {
-                    if (string.IsNullOrEmpty(input.OldPassword) || string.IsNullOrEmpty(input.NewPassword)
-                        || string.IsNullOrEmpty(input.RepeatNewPassword))
-                    {
-                        return BadRequest(_stringLocalizer["ERR_INVALID_INPUT_DATA"]);
-                    }
-
-                    if (input.NewPassword != input.RepeatNewPassword)
-                    {
-                        return BadRequest(_stringLocalizer["ERR_INVALID_INPUT_DATA"]);
-                    }
-
-                    string currentUserId = _tokenInfoProvider.Id;
-                    var user = _userService.Get(currentUserId);
-                    if (user != null)
-                    {
-                        await _userService.Update(id: currentUserId, password: input.NewPassword);
-                    }
-                    else
-                    {
-                        return NotFound();
-                    }
+                    await _userService.Update(id: _tokenInfoProvider.Id, password: input.NewPassword);
                     return Ok();
                 }
                 else
                 {
-                    return BadRequest(_stringLocalizer["ERR_INVALID_INPUT_DATA"]);
+                    return BadRequest();
                 }
+            }
+            catch (ArgumentException)
+            {
+                return BadRequest(_configuration["ERR_INVALID_INPUT_DATA"]);
             }
             catch (Exception ex)
             {
@@ -142,25 +129,23 @@ namespace MangaHomeService.Controllers
 
         [HttpPost]
         [Authorize]
-        public async Task<IActionResult> UpdateProfilePicture(IFormFile profilePicture)
+        public async Task<IActionResult> Update(Update input)
         {
             try
             {
-                if (profilePicture != null)
+
+                if (input.ProfilePicture != null)
                 {
-                    if (4 * (profilePicture.Length / 3) > Constants.ProfilePictureBytesLimit)
+                    if (4 * (input.ProfilePicture.Length / 3) > Constants.ProfilePictureBytesLimit)
                     {
                         // TO BE FIXED
                         return BadRequest("File size exceeded 2MB limit");
                     }
-                    string currentUserId = _tokenInfoProvider.Id;
-                    await _userService.Update(id: currentUserId, profilePicture: profilePicture);
-                    return Ok();
                 }
-                else
-                {
-                    return BadRequest(_stringLocalizer["ERR_INVALID_INPUT_DATA"]);
-                }
+
+                string currentUserId = _tokenInfoProvider.Id;
+                await _userService.Update(id: currentUserId, email: input.Email, profilePicture: input.ProfilePicture);
+                return Ok();
             }
             catch (Exception ex)
             {
@@ -168,44 +153,14 @@ namespace MangaHomeService.Controllers
             }
         }
 
-        [HttpPost]
-        [Authorize]
-        public async Task<IActionResult> UpdateInfo(string email)
-        {
-            try
-            {
-                if (!string.IsNullOrEmpty(email))
-                {
-                    string currentUserId = _tokenInfoProvider.Id;
-                    var user = _userService.Get(currentUserId);
-                    if (user != null)
-                    {
-                        await _userService.Update(id: currentUserId, email: email);
-                    }
-                    else
-                    {
-                        return BadRequest();
-                    }
-                    return Ok();
-                }
-                else
-                {
-                    return BadRequest(_stringLocalizer["ERR_INVALID_INPUT_DATA"]);
-                }
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
-
-        [HttpPost]
+        [HttpGet]
         [Authorize]
         public async Task<IActionResult> SendConfirmationEmail()
         {
             try
             {
-
+                await _userService.SendEmailConfirmation();
+                return Ok();
             }
             catch (Exception ex)
             {
@@ -213,11 +168,26 @@ namespace MangaHomeService.Controllers
             }
         }
 
-        [HttpPost]
+        [HttpGet]
         [Authorize]
-        public async Task<IActionResult> ConfirmEmail()
+        public async Task<IActionResult> ConfirmEmail(string userId, string token)
         {
-            throw new NotImplementedException();
+            try
+            {
+                if (!string.IsNullOrEmpty(userId) && !string.IsNullOrEmpty(token))
+                {
+                    await _userService.ConfirmEmail(userId, token);
+                    return Ok();
+                }
+                else
+                {
+                    return BadRequest(_stringLocalizer["ERR_INVALID_INPUT_DATA"]);
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
     }
 }

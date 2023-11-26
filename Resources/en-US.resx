@@ -135,12 +135,6 @@
   <data name="ERR_LANGUAGE_NOT_FOUND" xml:space="preserve">
     <value>Language not found</value>
   </data>
-  <data name="ERR_PASSWORDS_NOT_MATCH" xml:space="preserve">
-    <value>Password and confirm password does not match</value>
-  </data>
-  <data name="ERR_PASSWORD_CONFIRMATION_NOT_MATCH" xml:space="preserve">
-    <value>Password and confirmation not match</value>
-  </data>
   <data name="ERR_TITLE_NOT_APPROVED" xml:space="preserve">
     <value>Title not approved</value>
   </data>
