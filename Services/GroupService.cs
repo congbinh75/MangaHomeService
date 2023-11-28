@@ -8,6 +8,7 @@ namespace MangaHomeService.Services
     public interface IGroupService
     {
         public Task<Group> Get(string id);
+        public Task<ICollection<Group>> GetAll(int pageSize = Constants.GroupsPerPage, int pageNumber = 1);
         public Task<Group> Add(string name, string description, IFormFile profilePicture, ICollection<string> membersIds);
         public Task<Group> Update(string id, string? name = null, string? description = null, IFormFile? profilePicture = null,
             ICollection<string>? membersIds = null);
@@ -34,6 +35,13 @@ namespace MangaHomeService.Services
             var group = await dbContext.Groups.FirstOrDefaultAsync(g => g.Id == id) ??
                 throw new NotFoundException(nameof(Group));
             return group;
+        }
+
+        public async Task<ICollection<Group>> GetAll(int pageSize = Constants.GroupsPerPage, int pageNumber = 1)
+        {
+            using var dbContext = await _contextFactory.CreateDbContextAsync();
+            var groups = await dbContext.Groups.Where(x => x.IsApproved == true).Skip(pageSize * (pageNumber - 1)).Take(pageSize).ToListAsync();
+            return groups;
         }
 
         public async Task<Group> Add(string name, string description, IFormFile profilePicture, ICollection<string> membersIds)
