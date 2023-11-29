@@ -11,7 +11,7 @@ namespace MangaHomeService.Services
             ICollection<string>? authoredTitlesIds = null, ICollection<string>? illustratedTitlesIds = null);
         public Task<Person> Update(string id, string? name = null, IFormFile? image = null, string? description = null,
             ICollection<string>? authoredTitlesIds = null, ICollection<string>? illustratedTitlesIds = null);
-        public Task<bool> Delete(string id);
+        public Task<bool> Remove(string id);
     }
 
     public class PersonService : IPersonService
@@ -109,7 +109,7 @@ namespace MangaHomeService.Services
             return person;
         }
 
-        public async Task<bool> Delete(string id)
+        public async Task<bool> Remove(string id)
         {
             using var dbContext = await _contextFactory.CreateDbContextAsync();
             var person = await dbContext.People.FirstOrDefaultAsync(p => p.Id == id) ??

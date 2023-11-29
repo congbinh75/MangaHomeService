@@ -1,4 +1,4 @@
-﻿namespace MangaHomeService.Models.FormDatas.User
+﻿namespace MangaHomeService.Models.FormDatas
 {
     public class ChangePassword
     {

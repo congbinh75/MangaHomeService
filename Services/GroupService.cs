@@ -9,10 +9,11 @@ namespace MangaHomeService.Services
     {
         public Task<Group> Get(string id);
         public Task<ICollection<Group>> GetAll(int pageSize = Constants.GroupsPerPage, int pageNumber = 1);
-        public Task<Group> Add(string name, string description, IFormFile profilePicture, ICollection<string> membersIds);
+        public Task<Group> Add(string name, string? description = null, IFormFile? profilePicture = null, 
+            ICollection<string>? membersIds = null);
         public Task<Group> Update(string id, string? name = null, string? description = null, IFormFile? profilePicture = null,
             ICollection<string>? membersIds = null);
-        public Task<bool> Delete(string id);
+        public Task<bool> Remove(string id);
         public Task<GroupRequest> GetRequest(string groupId);
         public Task<GroupRequest> SubmitRequest(string groupId, string note);
         public Task<GroupRequest> ReviewRequest(string requestId, string note, bool isApproved);
@@ -44,23 +45,28 @@ namespace MangaHomeService.Services
             return groups;
         }
 
-        public async Task<Group> Add(string name, string description, IFormFile profilePicture, ICollection<string> membersIds)
+        public async Task<Group> Add(string name, string? description = null, IFormFile? profilePicture = null, 
+            ICollection<string>? membersIds = null)
         {
             using var dbContext = await _contextFactory.CreateDbContextAsync();
             var members = new List<Member>();
-            foreach (string memberId in membersIds)
+            if (membersIds != null) 
             {
-                var member = await dbContext.Members.FirstOrDefaultAsync(m => m.Id == memberId) ??
-                    throw new NotFoundException(nameof(Member));
-                members.Add(member);
+                foreach (string memberId in membersIds)
+                {
+                    var member = await dbContext.Members.FirstOrDefaultAsync(m => m.Id == memberId) ??
+                        throw new NotFoundException(nameof(Member));
+                    members.Add(member);
+                }
             }
 
             var group = new Group
             {
                 Name = name,
-                Description = description,
-                ProfilePicture = await Functions.UploadFileAsync(profilePicture, _configuration["FilesStoragePath.GroupsImagesPath"]
-                ?? throw new ConfigurationNotFoundException("FilesStoragePath.GroupsImagesPath")),
+                Description = description ?? "",
+                ProfilePicture = profilePicture != null ? 
+                (await Functions.UploadFileAsync(profilePicture, _configuration["FilesStoragePath.GroupsImagesPath"]
+                ?? throw new ConfigurationNotFoundException("FilesStoragePath.GroupsImagesPath"))) : "",
                 Members = members
             };
             await dbContext.Groups.AddAsync(group);
@@ -100,7 +106,7 @@ namespace MangaHomeService.Services
             return group;
         }
 
-        public async Task<bool> Delete(string id)
+        public async Task<bool> Remove(string id)
         {
             using var dbContext = await _contextFactory.CreateDbContextAsync();
             var group = await dbContext.Groups.FirstOrDefaultAsync(g => g.Id == id) ??

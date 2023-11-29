@@ -1,5 +1,5 @@
 ﻿using MangaHomeService.Models;
-using MangaHomeService.Models.FormDatas.Chapter;
+using MangaHomeService.Models.FormDatas;
 using MangaHomeService.Services;
 using MangaHomeService.Utils;
 using Microsoft.AspNetCore.Authorization;
@@ -82,7 +82,7 @@ namespace MangaHomeService.Controllers
 
         [HttpPost]
         [Authorize(Roles = "Admin, Moderator, User")]
-        public async Task<IActionResult> Create(Create input)
+        public async Task<IActionResult> Create(CreateChapter input)
         {
             try
             {
@@ -128,7 +128,7 @@ namespace MangaHomeService.Controllers
 
         [HttpPost]
         [Authorize(Roles = "Admin, Moderator, User")]
-        public async Task<IActionResult> Update(Update input)
+        public async Task<IActionResult> Update(UpdateChapter input)
         {
             throw new NotImplementedException();
         }
@@ -141,7 +141,7 @@ namespace MangaHomeService.Controllers
             {
                 if (!string.IsNullOrEmpty(id))
                 {
-                    await _chapterService.Delete(id);
+                    await _chapterService.Remove(id);
                     return Ok();
                 }
                 else
@@ -232,7 +232,7 @@ namespace MangaHomeService.Controllers
             {
                 if (!string.IsNullOrEmpty(id.Trim()))
                 {
-                    await _pageService.Delete(id.Trim());
+                    await _pageService.Remove(id.Trim());
                     return Ok();
                 }
                 else

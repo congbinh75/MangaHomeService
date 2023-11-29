@@ -10,7 +10,7 @@ namespace MangaHomeService.Services
         public Task<ICollection<Page>> GetByChapter(string chapterId);
         public Task<Page> Add(string chapterId, int number, IFormFile file);
         public Task<Page> Update(string id, string chapterId = "", int number = 0, IFormFile? file = null);
-        public Task<bool> Delete(string id);
+        public Task<bool> Remove(string id);
     }
 
     public class PageService : IPageService
@@ -105,7 +105,7 @@ namespace MangaHomeService.Services
             return page;
         }
 
-        public async Task<bool> Delete(string id)
+        public async Task<bool> Remove(string id)
         {
             using var dbContext = await _contextFactory.CreateDbContextAsync();
             var page = await dbContext.Pages.FirstOrDefaultAsync(c => c.Id == id) ??

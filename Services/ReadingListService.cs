@@ -12,7 +12,7 @@ namespace MangaHomeService.Services
             ICollection<string>? titlesIds = null);
         public Task<ReadingList> Update(string id, string? userId = null, string? name = null, string? description = null,
             bool? isPublic = null, ICollection<string>? titlesIds = null);
-        public Task<bool> Delete(string id);
+        public Task<bool> Remove(string id);
         public Task<ReadingList> AddTitle(string id, string titleId);
         public Task<ReadingList> RemoveTitle(string id, string titleId);
     }
@@ -129,7 +129,7 @@ namespace MangaHomeService.Services
             return list;
         }
 
-        public async Task<bool> Delete(string id)
+        public async Task<bool> Remove(string id)
         {
             using var dbContext = await _contextFactory.CreateDbContextAsync();
             var list = await dbContext.ReadingLists.FirstOrDefaultAsync(r => r.Id == id) ??

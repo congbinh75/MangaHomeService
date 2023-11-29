@@ -10,7 +10,7 @@ namespace MangaHomeService.Services
         public Task<ICollection<Report>> GetAll(int nums = Constants.ReportsPerPage, int page = 0);
         public Task<Report> Add(string id, string reason, string note, Type type);
         public Task<Report> Update(string id, string? reason = null, string? note = null);
-        public Task<bool> Delete(string id);
+        public Task<bool> Remove(string id);
     }
 
     public class ReportService : IReportService
@@ -110,7 +110,7 @@ namespace MangaHomeService.Services
             return report;
         }
 
-        public async Task<bool> Delete(string id)
+        public async Task<bool> Remove(string id)
         {
             using var dbContext = await _contextFactory.CreateDbContextAsync();
             var report = await dbContext.Reports.FirstOrDefaultAsync(r => r.Id == id) ?? throw new NotFoundException(nameof(Report));

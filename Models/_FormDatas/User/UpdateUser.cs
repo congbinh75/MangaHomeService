@@ -1,6 +1,6 @@
-﻿namespace MangaHomeService.Models.FormDatas.User
+﻿namespace MangaHomeService.Models.FormDatas
 {
-    public class Update
+    public class UpdateUser
     {
         public string? Email { get; set; }
         public IFormFile? ProfilePicture { get; set; }

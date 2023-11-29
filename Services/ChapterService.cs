@@ -13,7 +13,7 @@ namespace MangaHomeService.Services
         public Task<Chapter> Update(string id, double? number = null, string? titleId = null, string? groupId = null,
             string? volumeId = null, string? languageId = null, ICollection<string>? pagesIds = null, ICollection<string>? commentsIds = null,
             bool? isApproved = null);
-        public Task<bool> Delete(string id);
+        public Task<bool> Remove(string id);
         public Task<ChapterRequest> GetRequest(string requestId);
         public Task<ChapterRequest> SubmitRequest(string id, string note, string groupId);
         public Task<ChapterRequest> ReviewRequest(string requestId, string note, bool isApproved);
@@ -167,7 +167,7 @@ namespace MangaHomeService.Services
             return chapter;
         }
 
-        public async Task<bool> Delete(string id)
+        public async Task<bool> Remove(string id)
         {
             using var dbContext = await _contextFactory.CreateDbContextAsync();
             var chapter = await dbContext.Chapters.Where(c => c.Id == id).Include(c => c.Pages).Include(c => c.Comments).

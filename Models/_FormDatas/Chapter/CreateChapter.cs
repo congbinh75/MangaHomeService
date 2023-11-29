@@ -1,8 +1,7 @@
-﻿namespace MangaHomeService.Models.FormDatas.Chapter
+﻿namespace MangaHomeService.Models.FormDatas
 {
-    public class Update
+    public class CreateChapter
     {
-        public string? ChapterId { get; set; }
         public string? Number { get; set; }
         public string? TitleId { get; set; }
         public string? GroupId { get; set; }

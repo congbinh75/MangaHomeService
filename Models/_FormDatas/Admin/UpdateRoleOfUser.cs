@@ -1,4 +1,4 @@
-﻿namespace MangaHomeService.Models.FormDatas.Admin
+﻿namespace MangaHomeService.Models.FormDatas
 {
     public class UpdateRoleOfUser
     {

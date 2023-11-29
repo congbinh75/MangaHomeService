@@ -1,4 +1,6 @@
-﻿using MangaHomeService.Services;
+﻿using MangaHomeService.Models.FormDatas;
+using MangaHomeService.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 
@@ -15,12 +17,21 @@ namespace MangaHomeService.Controllers
             _stringLocalizer = stringLocalizer;
         }
 
+        [HttpGet]
+        [AllowAnonymous]
         public async Task<IActionResult> Get(string id)
         {
             try
             {
-                var group = await _groupService.Get(id);
-                return Ok(group);
+                if (!string.IsNullOrEmpty(id))
+                {
+                    var group = await _groupService.Get(id);
+                    return Ok(group);
+                }
+                else
+                {
+                    return BadRequest(_stringLocalizer["ERR_INVALID_INPUT_DATA"]);
+                }
             }
             catch (Exception ex)
             {
@@ -28,6 +39,8 @@ namespace MangaHomeService.Controllers
             }
         }
 
+        [HttpGet]
+        [AllowAnonymous]
         public async Task<IActionResult> GetAll(string pageSize, string pageNumber)
         {
             try
@@ -48,5 +61,34 @@ namespace MangaHomeService.Controllers
             }
         }
 
+        [HttpPost]
+        [Authorize]
+        public async Task<IActionResult> Create(CreateGroup input)
+        {
+            try
+            {
+                input.Validate();
+                var group = await _groupService.Add(input.Name, input.Description, input.ProfilePicture, input.MembersIds);
+                return Ok(group);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost]
+        [Authorize]
+        public async Task<IActionResult> Update(UpdateGroup input)
+        {
+            try
+            {
+
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
     }
 }

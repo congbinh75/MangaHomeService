@@ -1,4 +1,4 @@
-﻿using MangaHomeService.Models.FormDatas.Title;
+﻿using MangaHomeService.Models.FormDatas;
 using MangaHomeService.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

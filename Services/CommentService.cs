@@ -9,7 +9,7 @@ namespace MangaHomeService.Services
         public Task<ICollection<Comment>> Get(string id, string type, int pageNumber = 1, int pageSize = Constants.CommentsPerPage);
         public Task<Comment> Add(string id, Type type, string content);
         public Task<Comment> Update(string id, string? content = null, int? vote = null);
-        public Task<bool> Delete(string id);
+        public Task<bool> Remove(string id);
         public Task<Comment> AddVote(string id, bool isUpvote, string? userId = null);
         public Task<Comment> RemoveVote(string id, string? userId = null);
     }
@@ -117,7 +117,7 @@ namespace MangaHomeService.Services
             return comment;
         }
 
-        public async Task<bool> Delete(string id)
+        public async Task<bool> Remove(string id)
         {
             using var dbContext = await _contextFactory.CreateDbContextAsync();
             var comment = await dbContext.Comments.Where(c => c.Id == id).FirstOrDefaultAsync() ??

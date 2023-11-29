@@ -1,4 +1,4 @@
-﻿namespace MangaHomeService.Models.FormDatas.Chapter
+﻿namespace MangaHomeService.Models.FormDatas
 {
     public class UploadPage
     {

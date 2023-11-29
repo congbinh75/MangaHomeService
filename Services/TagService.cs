@@ -12,7 +12,7 @@ namespace MangaHomeService.Services
             ICollection<string>? otherNamesIds = null);
         public Task<Tag> Update(string id, string? name = null, string? description = null, ICollection<string>? titlesIds = null, 
             ICollection<string>? otherNamesIds = null);
-        public Task<bool> Delete(string id);
+        public Task<bool> Remove(string id);
     }
 
     public class TagService : ITagService
@@ -126,7 +126,7 @@ namespace MangaHomeService.Services
             return tag;
         }
 
-        public async Task<bool> Delete(string id)
+        public async Task<bool> Remove(string id)
         {
             using var dbContext = await _contextFactory.CreateDbContextAsync();
             var tag = await dbContext.Tags.FirstOrDefaultAsync(x => x.Id == id) ?? throw new NotFoundException(nameof(Tag));

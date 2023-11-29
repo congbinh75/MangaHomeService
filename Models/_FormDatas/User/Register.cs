@@ -1,6 +1,6 @@
 ﻿using MangaHomeService.Utils;
 
-namespace MangaHomeService.Models.FormDatas.User
+namespace MangaHomeService.Models.FormDatas
 {
     public class Register
     {

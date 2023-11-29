@@ -16,7 +16,7 @@ namespace MangaHomeService.Services
         public Task<User?> Get(string email, string password);
         public Task<User> Update(string id, string? name = null, string? email = null, string? password = null, int? role = null,
             bool? isEmailConfirmed = null, IFormFile? profilePicture = null, bool? isBanned = null);
-        public Task<bool> Delete(string id);
+        public Task<bool> Remove(string id);
         public Task<bool> SendEmailConfirmation(string? userId = null);
         public Task<bool> ConfirmEmail(string userId, string token);
     }
@@ -112,7 +112,7 @@ namespace MangaHomeService.Services
             return user;
         }
 
-        public async Task<bool> Delete(string id)
+        public async Task<bool> Remove(string id)
         {
             using var dbContext = await _contextFactory.CreateDbContextAsync();
             var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == id) ?? throw new NotFoundException(nameof(User));

@@ -25,7 +25,7 @@ namespace MangaHomeService.Services
             string? originalLanguageId = null, ICollection<string>? genresIds = null, ICollection<string>? themesIds = null,
             ICollection<string>? demographicsIds = null, ICollection<string>? chaptersIds = null, ICollection<string>? commentsIds = null,
             bool? isApproved = null);
-        public Task<bool> Delete(string id);
+        public Task<bool> Remove(string id);
         public Task<TitleRequest> GetRequest(string id);
         public Task<TitleRequest> SubmitRequest(string titleId, string groupId, string note);
         public Task<TitleRequest> ReviewRequest(string requestId, bool isApproved, string note);
@@ -358,7 +358,7 @@ namespace MangaHomeService.Services
             return title;
         }
 
-        public async Task<bool> Delete(string id)
+        public async Task<bool> Remove(string id)
         {
             using var dbContext = await _contextFactory.CreateDbContextAsync();
             var title = await dbContext.Titles.Where(t => t.Id == id).FirstOrDefaultAsync() ??
