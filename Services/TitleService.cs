@@ -1,8 +1,10 @@
 ﻿using MangaHomeService.Models;
+using MangaHomeService.Models.Entities;
 using MangaHomeService.Utils;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
 using static MangaHomeService.Utils.Enums;
-using Group = MangaHomeService.Models.Group;
+using Group = MangaHomeService.Models.Entities.Group;
 
 namespace MangaHomeService.Services
 {
@@ -65,8 +67,8 @@ namespace MangaHomeService.Services
                     || t.Authors.Any(a => a.Name.Contains(keyword))
                     || t.Artists.Any(r => r.Name.Contains(keyword))
                 )
-                .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize)
+                .Skip((pageNumber - 1) * (int)pageSize)
+                .Take((int)pageSize)
                 .ToListAsync();
             return titles;
         }

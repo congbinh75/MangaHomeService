@@ -1,5 +1,5 @@
-﻿using MangaHomeService.Models;
-using MangaHomeService.Models.FormDatas;
+﻿using MangaHomeService.Models.Entities;
+using MangaHomeService.Models.InputModels;
 using MangaHomeService.Services;
 using MangaHomeService.Utils;
 using Microsoft.AspNetCore.Authorization;
@@ -48,9 +48,9 @@ namespace MangaHomeService.Controllers
                     return BadRequest(_stringLocalizer["ERR_INVALID_INPUT_DATA"]);
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                return BadRequest(ex.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = _stringLocalizer["ERR_UNEXPECTED_ERROR"] });
             }
         }
 
@@ -74,9 +74,9 @@ namespace MangaHomeService.Controllers
             {
                 return BadRequest(_stringLocalizer["ERR_TITLE_NOT_FOUND"]);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                return BadRequest(ex.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = _stringLocalizer["ERR_UNEXPECTED_ERROR"] });
             }
         }
 
@@ -86,16 +86,8 @@ namespace MangaHomeService.Controllers
         {
             try
             {
-                if (!int.TryParse(input.Number?.Trim(), out int number) || !string.IsNullOrEmpty(input.TitleId?.Trim())
-                    || !string.IsNullOrEmpty(input.GroupId?.Trim()))
-                {
-                    var chapter = await _chapterService.Add(number, input.TitleId, input.GroupId, input.VolumeId, input.LanguageId);
-                    return Ok(chapter);
-                }
-                else
-                {
-                    return BadRequest(_stringLocalizer["ERR_INVALID_INPUT_DATA"]);
-                }
+                var chapter = await _chapterService.Add(input.Number, input.TitleId, input.GroupId, input.VolumeId, input.LanguageId);
+                return Ok(chapter);
             }
             catch (NotFoundException ex)
             {
@@ -117,12 +109,12 @@ namespace MangaHomeService.Controllers
                 }
                 else
                 {
-                    return BadRequest(ex.Message);
+                    return StatusCode(StatusCodes.Status500InternalServerError, new { Message = _stringLocalizer["ERR_UNEXPECTED_ERROR"] });
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                return BadRequest(ex.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = _stringLocalizer["ERR_UNEXPECTED_ERROR"] });
             }
         }
 
@@ -149,9 +141,9 @@ namespace MangaHomeService.Controllers
                     return BadRequest(_stringLocalizer["ERR_INVALID_INPUT_DATA"]);
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                return BadRequest(ex.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = _stringLocalizer["ERR_UNEXPECTED_ERROR"] });
             }
         }
 
@@ -161,22 +153,13 @@ namespace MangaHomeService.Controllers
         {
             try
             {
-                if (!int.TryParse(input.Number?.Trim(), out int number)
-                || !string.IsNullOrEmpty(input.ChapterId?.Trim())
-                || input.File != null)
+                if (4 * (input.File.Length / 3) > Constants.PageBytesLimit)
                 {
-                    if (4 * (input.File.Length / 3) > Constants.PageBytesLimit)
-                    {
-                        // TO BE FIXED
-                        return BadRequest("File size exceeded 10MB limit");
-                    }
-                    var page = await _pageService.Add(chapterId: input.ChapterId.Trim(), number: number, file: input.File);
-                    return Ok(page);
+                    // TO BE FIXED
+                    return BadRequest("File size exceeded 10MB limit");
                 }
-                else
-                {
-                    return BadRequest(_stringLocalizer["ERR_INVALID_INPUT_DATA"]);
-                }
+                var page = await _pageService.Add(chapterId: input.ChapterId.Trim(), number: input.Number, file: input.File);
+                return Ok(page);
             }
             catch (NotFoundException)
             {
@@ -187,9 +170,9 @@ namespace MangaHomeService.Controllers
                 //TO BE FIXED
                 return BadRequest(_stringLocalizer[""]);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                return BadRequest(ex.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = _stringLocalizer["ERR_UNEXPECTED_ERROR"] });
             }
         }
 
@@ -218,9 +201,9 @@ namespace MangaHomeService.Controllers
                 //TO BE FIXED
                 return BadRequest(_stringLocalizer[""]);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                return BadRequest(ex.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = _stringLocalizer["ERR_UNEXPECTED_ERROR"] });
             }
         }
 
@@ -244,9 +227,9 @@ namespace MangaHomeService.Controllers
             {
                 return BadRequest(_stringLocalizer["ERR_PAGE_NOT_FOUND"]);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                return BadRequest(ex.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = _stringLocalizer["ERR_UNEXPECTED_ERROR"] });
             }
         }
     }

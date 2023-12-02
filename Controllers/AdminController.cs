@@ -1,4 +1,4 @@
-﻿using MangaHomeService.Models.FormDatas;
+﻿using MangaHomeService.Models.InputModels;
 using MangaHomeService.Services;
 using MangaHomeService.Utils;
 using Microsoft.AspNetCore.Authorization;
@@ -40,9 +40,9 @@ namespace MangaHomeService.Controllers
                 var user = await _userService.Update(input.UserId, role: role);
                 return Ok(user);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                return BadRequest(ex.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = _stringLocalizer["ERR_UNEXPECTED_ERROR"] });
             }
         }
 

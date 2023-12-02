@@ -1,4 +1,4 @@
-﻿using MangaHomeService.Models.FormDatas;
+﻿using MangaHomeService.Models.InputModels;
 using MangaHomeService.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -33,9 +33,9 @@ namespace MangaHomeService.Controllers
                     return BadRequest(_stringLocalizer["ERR_INVALID_INPUT_DATA"]);
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                return BadRequest(ex.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = _stringLocalizer["ERR_UNEXPECTED_ERROR"] });
             }
         }
 
@@ -55,9 +55,9 @@ namespace MangaHomeService.Controllers
                     return BadRequest(_stringLocalizer["ERR_INVALID_INPUT_DATA"]);
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                return BadRequest(ex.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = _stringLocalizer["ERR_UNEXPECTED_ERROR"] });
             }
         }
 
@@ -67,13 +67,12 @@ namespace MangaHomeService.Controllers
         {
             try
             {
-                input.Validate();
                 var group = await _groupService.Add(input.Name, input.Description, input.ProfilePicture, input.MembersIds);
                 return Ok(group);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                return BadRequest(ex.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = _stringLocalizer["ERR_UNEXPECTED_ERROR"] });
             }
         }
 
@@ -83,11 +82,34 @@ namespace MangaHomeService.Controllers
         {
             try
             {
-
+                var group = await _groupService.Update(input.Id, input.Name, input.Description, input.ProfilePicture, input.MembersIds);
+                return Ok(group);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                return BadRequest(ex.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = _stringLocalizer["ERR_UNEXPECTED_ERROR"] });
+            }
+        }
+
+        [HttpPost]
+        [Authorize]
+        public async Task<IActionResult> Update(string id)
+        {
+            try
+            {
+                if (!string.IsNullOrEmpty(id))
+                {
+                    await _groupService.Remove(id);
+                    return Ok();
+                }
+                else
+                {
+                    return BadRequest(_stringLocalizer["ERR_INVALID_INPUT_DATA"]);
+                }
+            }
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = _stringLocalizer["ERR_UNEXPECTED_ERROR"] });
             }
         }
     }

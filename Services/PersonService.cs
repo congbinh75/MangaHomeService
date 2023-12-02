@@ -1,4 +1,5 @@
 ﻿using MangaHomeService.Models;
+using MangaHomeService.Models.Entities;
 using MangaHomeService.Utils;
 using Microsoft.EntityFrameworkCore;
 

@@ -1,4 +1,4 @@
-﻿using MangaHomeService.Models.FormDatas;
+﻿using MangaHomeService.Models.InputModels;
 using MangaHomeService.Services;
 using MangaHomeService.Utils;
 using Microsoft.AspNetCore.Authorization;
@@ -38,13 +38,12 @@ namespace MangaHomeService.Controllers
         {
             try
             {
-                input.Validate();
                 await _userService.Add(input.Name, input.Email, input.Password, 2);
                 return Ok();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                return BadRequest(ex.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = _stringLocalizer["ERR_UNEXPECTED_ERROR"] });
             }
         }
 
@@ -66,7 +65,7 @@ namespace MangaHomeService.Controllers
                             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                             new Claim(JwtRegisteredClaimNames.Iat, DateTime.UtcNow.ToString()),
                             new Claim(ClaimTypes.NameIdentifier, user.Id),
-                            new Claim(ClaimTypes.Name, user.Name ?? ""),
+                            new Claim(ClaimTypes.Name, user.Username ?? ""),
                             new Claim(ClaimTypes.Role, ((Enums.Role)user.Role).ToString())
                         };
 
@@ -91,9 +90,9 @@ namespace MangaHomeService.Controllers
                     return BadRequest(_stringLocalizer["ERR_INVALID_INPUT_DATA"]);
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                return BadRequest(ex.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = _stringLocalizer["ERR_UNEXPECTED_ERROR"] });
             }
         }
 
@@ -103,7 +102,6 @@ namespace MangaHomeService.Controllers
         {
             try
             {
-                input.Validate();
                 var currentUserName = _tokenInfoProvider.Name;
                 var user = await _userService.Get(currentUserName, input.OldPassword);
                 if (user != null)
@@ -120,16 +118,16 @@ namespace MangaHomeService.Controllers
             {
                 return BadRequest(_configuration["ERR_INVALID_INPUT_DATA"]);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                return BadRequest(ex.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = _stringLocalizer["ERR_UNEXPECTED_ERROR"] });
             }
 
         }
 
         [HttpPost]
         [Authorize]
-        public async Task<IActionResult> Update(Update input)
+        public async Task<IActionResult> Update(UpdateUser input)
         {
             try
             {
@@ -147,9 +145,9 @@ namespace MangaHomeService.Controllers
                 await _userService.Update(id: currentUserId, email: input.Email, profilePicture: input.ProfilePicture);
                 return Ok();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                return BadRequest(ex.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = _stringLocalizer["ERR_UNEXPECTED_ERROR"] });
             }
         }
 
@@ -162,9 +160,9 @@ namespace MangaHomeService.Controllers
                 await _userService.SendEmailConfirmation();
                 return Ok();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                return BadRequest(ex.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = _stringLocalizer["ERR_UNEXPECTED_ERROR"] });
             }
         }
 
@@ -184,9 +182,9 @@ namespace MangaHomeService.Controllers
                     return BadRequest(_stringLocalizer["ERR_INVALID_INPUT_DATA"]);
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                return BadRequest(ex.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = _stringLocalizer["ERR_UNEXPECTED_ERROR"] });
             }
         }
     }

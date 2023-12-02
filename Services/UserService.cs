@@ -1,9 +1,9 @@
 ﻿using MangaHomeService.Models;
+using MangaHomeService.Models.Entities;
 using MangaHomeService.Utils;
 using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 using Microsoft.EntityFrameworkCore;
 using System.Data;
-using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Security.Cryptography;
 
@@ -69,7 +69,7 @@ namespace MangaHomeService.Services
             (string hashed, byte[] salt) passAndSalt = HashPassword(password);
             var user = new User
             {
-                Name = name,
+                Username = name,
                 Email = email,
                 Password = passAndSalt.hashed,
                 IsEmailConfirmed = false,
@@ -98,7 +98,7 @@ namespace MangaHomeService.Services
                 newSalt = passAndSalt.salt;
             }
 
-            user.Name = name == null ? user.Name : name;
+            user.Username = name == null ? user.Username : name;
             user.Email = email == null ? user.Email : email;
             user.Role = role == null ? user.Role : (int)role;
             user.IsEmailConfirmed = isEmailConfirmed == null ? user.IsEmailConfirmed : (bool)isEmailConfirmed;

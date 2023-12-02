@@ -1,7 +1,8 @@
 ﻿using MangaHomeService.Models;
+using MangaHomeService.Models.Entities;
 using MangaHomeService.Utils;
 using Microsoft.EntityFrameworkCore;
-using Group = MangaHomeService.Models.Group;
+using Group = MangaHomeService.Models.Entities.Group;
 
 namespace MangaHomeService.Services
 {

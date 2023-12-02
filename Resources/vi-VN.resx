@@ -141,6 +141,9 @@
   <data name="ERR_TITLE_NOT_FOUND" xml:space="preserve">
     <value>Không tìm thấy tựa truyện</value>
   </data>
+  <data name="ERR_UNEXPECTED_ERROR" xml:space="preserve">
+    <value>Lỗi hệ thống. Vui lòng thử lại sau hoặc liên hệ đội hỗ trợ</value>
+  </data>
   <data name="ERR_VOLUME_NOT_FOUND" xml:space="preserve">
     <value>Không tìm thấy tập truyện</value>
   </data>
