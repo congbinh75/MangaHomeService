@@ -65,11 +65,11 @@ namespace MangaHomeService.Models.Entities
         public required ICollection<Comment> Comments { get; set; } = [];
 
         [Required]
-        public required bool IsAprroved { get; set; }
+        public required bool IsApproved { get; set; }
 
         public void CheckUploadConditions()
         {
-            if (!IsAprroved)
+            if (!IsApproved)
             {
                 throw new NotApprovedException(Name ?? "");
             }

@@ -120,9 +120,17 @@ namespace MangaHomeService.Controllers
 
         [HttpPost]
         [Authorize(Roles = "Admin, Moderator, User")]
-        public async Task<IActionResult> Update(UpdateChapter input)
+        public async Task<IActionResult> Update([FromBody] UpdateChapter input)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var chapter = await _chapterService.Update(input.Id, input.Number, input.TitleId, input.GroupId, input.VolumeId, input.LanguageId);
+                return Ok(chapter);
+            }
+            catch
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = _stringLocalizer["ERR_UNEXPECTED_ERROR"] });
+            }
         }
 
         [HttpPost]
@@ -208,7 +216,7 @@ namespace MangaHomeService.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "Admin, Moderator, User")]
+        [Authorize]
         public async Task<IActionResult> RemovePage(string id)
         {
             try

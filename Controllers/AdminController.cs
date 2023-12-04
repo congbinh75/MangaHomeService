@@ -9,7 +9,7 @@ namespace MangaHomeService.Controllers
 {
     [Route("api/[controller]/[action]")]
     [ApiController]
-    public class AdminController : Controller
+    public class AdminController : ControllerBase
     {
         private IConfiguration _configuration;
         private IStringLocalizer<AdminController> _stringLocalizer;

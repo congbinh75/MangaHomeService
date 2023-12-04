@@ -6,7 +6,9 @@ using Microsoft.Extensions.Localization;
 
 namespace MangaHomeService.Controllers
 {
-    public class GroupController : Controller
+    [Route("api/[controller]/[action]")]
+    [ApiController]
+    public class GroupController : ControllerBase
     {
         private readonly IGroupService _groupService;
         private readonly IStringLocalizer<GroupController> _stringLocalizer;
@@ -93,13 +95,13 @@ namespace MangaHomeService.Controllers
 
         [HttpPost]
         [Authorize]
-        public async Task<IActionResult> Update(string id)
+        public async Task<IActionResult> Remove(string id)
         {
             try
             {
                 if (!string.IsNullOrEmpty(id))
                 {
-                    await _groupService.Remove(id);
+                    var group = await _groupService.Remove(id);
                     return Ok();
                 }
                 else

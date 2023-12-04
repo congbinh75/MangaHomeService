@@ -28,9 +28,6 @@ namespace MangaHomeService.Services
             ICollection<string>? demographicsIds = null, ICollection<string>? chaptersIds = null, ICollection<string>? commentsIds = null,
             bool? isApproved = null);
         public Task<bool> Remove(string id);
-        public Task<TitleRequest> GetRequest(string id);
-        public Task<TitleRequest> SubmitRequest(string titleId, string groupId, string note);
-        public Task<TitleRequest> ReviewRequest(string requestId, bool isApproved, string note);
         public Task<Title> AddRating(string id, int rating, string? userId = null);
         public Task<Title> RemoveRating(string id, string? userId = null);
     }
@@ -238,7 +235,7 @@ namespace MangaHomeService.Services
                 Themes = themes,
                 Chapters = chapters,
                 Comments = comments,
-                IsAprroved = isApproved,
+                IsApproved = isApproved,
                 Demographics = demographics
             };
 
@@ -351,7 +348,7 @@ namespace MangaHomeService.Services
             title.Chapters = chapters;
             title.Comments = comments;
             title.Status = status != null ? (Enums.TitleStatus)status : title.Status;
-            title.IsAprroved = isApproved != null ? (bool)isApproved : title.IsAprroved;
+            title.IsApproved = isApproved != null ? (bool)isApproved : title.IsApproved;
             title.OriginalLanguage = originalLanguageId == null ? await dbContext.Languages.FirstOrDefaultAsync(a => a.Id == originalLanguageId) ??
                 throw new NotFoundException(nameof(Language)) : title.OriginalLanguage;
             title.Demographics = demographics;
@@ -382,7 +379,7 @@ namespace MangaHomeService.Services
         public async Task<TitleRequest> SubmitRequest(string titleId, string groupId, string note)
         {
             using var dbContext = await _contextFactory.CreateDbContextAsync();
-            var title = await dbContext.Titles.Where(t => t.Id == titleId && t.IsAprroved == false).FirstOrDefaultAsync() ??
+            var title = await dbContext.Titles.Where(t => t.Id == titleId && t.IsApproved == false).FirstOrDefaultAsync() ??
                 throw new NotFoundException(nameof(Title));
             var group = await dbContext.Groups.FirstOrDefaultAsync(g => g.Id == groupId) ??
                 throw new NotFoundException(nameof(Group));
@@ -411,7 +408,7 @@ namespace MangaHomeService.Services
 
             request.ReviewNote = note;
             request.IsApproved = isApproved;
-            request.Title.IsAprroved = isApproved;
+            request.Title.IsApproved = isApproved;
             request.IsReviewed = true;
 
             await dbContext.SaveChangesAsync();

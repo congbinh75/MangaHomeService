@@ -15,9 +15,6 @@ namespace MangaHomeService.Services
             string? volumeId = null, string? languageId = null, ICollection<string>? pagesIds = null, ICollection<string>? commentsIds = null,
             bool? isApproved = null);
         public Task<bool> Remove(string id);
-        public Task<ChapterRequest> GetRequest(string requestId);
-        public Task<ChapterRequest> SubmitRequest(string id, string note, string groupId);
-        public Task<ChapterRequest> ReviewRequest(string requestId, string note, bool isApproved);
         public Task<ChapterTracking> AddTracking(string id, string? userId = null);
         public Task<ChapterTracking> RemoveTracking(string id, string? userId = null);
     }
@@ -184,29 +181,6 @@ namespace MangaHomeService.Services
             var request = await dbContext.Requests.OfType<ChapterRequest>().Where(r => r.Id == requestId)
                 .Include(r => r.Chapter).FirstOrDefaultAsync() ??
                 throw new NotFoundException(nameof(ChapterRequest));
-            return request;
-        }
-
-        public async Task<ChapterRequest> SubmitRequest(string id, string groupId, string note)
-        {
-            using var dbContext = await _contextFactory.CreateDbContextAsync();
-            var chapter = await dbContext.Chapters.FirstOrDefaultAsync(t => t.Id == id) ??
-                throw new NotFoundException(nameof(Chapter));
-            var group = await dbContext.Groups.FirstOrDefaultAsync(g => g.Id == groupId) ??
-                throw new NotFoundException(nameof(Group));
-            group.CheckUploadContions();
-
-            var request = new ChapterRequest
-            {
-                Chapter = chapter,
-                Group = group,
-                SubmitNote = note,
-                IsApproved = false,
-                IsReviewed = false
-            };
-
-            await dbContext.Requests.AddAsync(request);
-            await dbContext.SaveChangesAsync();
             return request;
         }
 

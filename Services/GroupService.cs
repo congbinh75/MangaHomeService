@@ -15,9 +15,6 @@ namespace MangaHomeService.Services
         public Task<Group> Update(string id, string? name = null, string? description = null, IFormFile? profilePicture = null,
             ICollection<string>? membersIds = null);
         public Task<bool> Remove(string id);
-        public Task<GroupRequest> GetRequest(string groupId);
-        public Task<GroupRequest> SubmitRequest(string groupId, string note);
-        public Task<GroupRequest> ReviewRequest(string requestId, string note, bool isApproved);
     }
 
     public class GroupService : IGroupService
@@ -115,52 +112,6 @@ namespace MangaHomeService.Services
             dbContext.Groups.Remove(group);
             await dbContext.SaveChangesAsync();
             return true;
-        }
-
-        public async Task<GroupRequest> GetRequest(string requestId)
-        {
-            using var dbContext = await _contextFactory.CreateDbContextAsync();
-            var request = await dbContext.Requests.OfType<GroupRequest>().Where(r => r.Id == requestId).
-                Include(r => r.Group).FirstOrDefaultAsync() ??
-                throw new NotFoundException(nameof(GroupRequest));
-            return request;
-        }
-
-        public async Task<GroupRequest> SubmitRequest(string groupId, string note)
-        {
-            using var dbContext = await _contextFactory.CreateDbContextAsync();
-            var group = await dbContext.Groups.FirstOrDefaultAsync(g => g.Id == groupId) ??
-                throw new NotFoundException(nameof(Group));
-            if (group.IsApproved)
-            {
-                throw new AlreadyApprovedException(nameof(Group));
-            }
-            var request = new GroupRequest
-            {
-                Group = group,
-                SubmitNote = note,
-                IsApproved = false,
-                IsReviewed = false
-            };
-            await dbContext.Requests.AddAsync(request);
-            await dbContext.SaveChangesAsync();
-            return request;
-        }
-
-        public async Task<GroupRequest> ReviewRequest(string requestId, string note, bool isApproved)
-        {
-            using var dbContext = await _contextFactory.CreateDbContextAsync();
-            var request = await dbContext.Requests.OfType<GroupRequest>().FirstOrDefaultAsync(g => g.Id == requestId) ??
-                throw new NotFoundException(nameof(GroupRequest));
-            if (request.IsReviewed)
-            {
-                throw new AlreadyReviewedException(nameof(GroupRequest));
-            }
-            request.ReviewNote = note;
-            request.IsReviewed = true;
-            request.IsApproved = isApproved;
-            await dbContext.SaveChangesAsync();
-            return request;
         }
     }
 }

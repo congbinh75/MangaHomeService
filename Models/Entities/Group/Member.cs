@@ -14,5 +14,8 @@ namespace MangaHomeService.Models.Entities
         [Required]
         [Range(0, 2)]
         public required int Role { get; set; } = (int)GroupRole.Member;
+
+        [Required]
+        public required bool IsApproved { get; set; }
     }
 }
