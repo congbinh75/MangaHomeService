@@ -11,7 +11,7 @@ using System.Text;
 
 namespace MangaHomeService.Controllers
 {
-    [Route("api/[controller]/[action]")]
+    [Route("api/user")]
     [ApiController]
     public class UserController : ControllerBase
     {
@@ -34,7 +34,8 @@ namespace MangaHomeService.Controllers
 
         [HttpPost]
         [AllowAnonymous]
-        public async Task<IActionResult> Register(Register input)
+        [Route("register")]
+        public async Task<IActionResult> Register([FromBody] RegisterUser input)
         {
             try
             {
@@ -49,45 +50,39 @@ namespace MangaHomeService.Controllers
 
         [HttpPost]
         [AllowAnonymous]
-        public async Task<IActionResult> Login(Login input)
+        [Route("login")]
+        public async Task<IActionResult> Login([FromBody] LoginUser input)
         {
             try
             {
-                if (!string.IsNullOrEmpty(input.Username) && !string.IsNullOrEmpty(input.Password))
+                var user = await _userService.Get(input.Username, input.Password);
+
+                if (user != null)
                 {
-                    var user = await _userService.Get(input.Username, input.Password);
-
-                    if (user != null)
+                    var claims = new[]
                     {
-                        var claims = new[]
-                        {
-                            new Claim(JwtRegisteredClaimNames.Sub, _configuration["Jwt:Subject"] ?? ""),
-                            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                            new Claim(JwtRegisteredClaimNames.Iat, DateTime.UtcNow.ToString()),
-                            new Claim(ClaimTypes.NameIdentifier, user.Id),
-                            new Claim(ClaimTypes.Name, user.Username ?? ""),
-                            new Claim(ClaimTypes.Role, ((Enums.Role)user.Role).ToString())
-                        };
+                        new Claim(JwtRegisteredClaimNames.Sub, _configuration["Jwt:Subject"] ?? ""),
+                        new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                        new Claim(JwtRegisteredClaimNames.Iat, DateTime.UtcNow.ToString()),
+                        new Claim(ClaimTypes.NameIdentifier, user.Id),
+                        new Claim(ClaimTypes.Name, user.Username ?? ""),
+                        new Claim(ClaimTypes.Role, ((Enums.Role)user.Role).ToString())
+                    };
 
-                        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"] ?? ""));
-                        var signIn = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-                        var token = new JwtSecurityToken(
-                            _configuration["Jwt:Issuer"],
-                            _configuration["Jwt:Audience"],
-                            claims,
-                            expires: DateTime.UtcNow.AddDays(7),
-                            signingCredentials: signIn);
+                    var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"] ?? ""));
+                    var signIn = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+                    var token = new JwtSecurityToken(
+                        _configuration["Jwt:Issuer"],
+                        _configuration["Jwt:Audience"],
+                        claims,
+                        expires: DateTime.UtcNow.AddDays(7),
+                        signingCredentials: signIn);
 
-                        return Ok(new JwtSecurityTokenHandler().WriteToken(token));
-                    }
-                    else
-                    {
-                        return BadRequest(_stringLocalizer["ERR_INVALID_CREDENTIALS"]);
-                    }
+                    return Ok(new JwtSecurityTokenHandler().WriteToken(token));
                 }
                 else
                 {
-                    return BadRequest(_stringLocalizer["ERR_INVALID_INPUT_DATA"]);
+                    return BadRequest(_stringLocalizer["ERR_INVALID_CREDENTIALS"]);
                 }
             }
             catch (Exception)
@@ -98,7 +93,8 @@ namespace MangaHomeService.Controllers
 
         [HttpPost]
         [Authorize]
-        public async Task<IActionResult> ChangePassword(ChangePassword input)
+        [Route("change-password")]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordUser input)
         {
             try
             {
@@ -127,6 +123,7 @@ namespace MangaHomeService.Controllers
 
         [HttpPost]
         [Authorize]
+        [Route("update")]
         public async Task<IActionResult> Update(UpdateUser input)
         {
             try
@@ -153,6 +150,7 @@ namespace MangaHomeService.Controllers
 
         [HttpGet]
         [Authorize]
+        [Route("send-confirmation-email")]
         public async Task<IActionResult> SendConfirmationEmail()
         {
             try
@@ -168,7 +166,8 @@ namespace MangaHomeService.Controllers
 
         [HttpGet]
         [Authorize]
-        public async Task<IActionResult> ConfirmEmail(string userId, string token)
+        [Route("confirm-email")]
+        public async Task<IActionResult> ConfirmEmail([FromQuery] string userId, string token)
         {
             try
             {

@@ -132,6 +132,9 @@
   <data name="ERR_INVALID_INPUT_DATA" xml:space="preserve">
     <value>Dữ liệu đầu vào không hợp lệ hoặc rỗng</value>
   </data>
+  <data name="ERR_INVALID_ROLE_VALUE" xml:space="preserve">
+    <value>Giá trị quyền không hợp lệ</value>
+  </data>
   <data name="ERR_LANGUAGE_NOT_FOUND" xml:space="preserve">
     <value>Không tìm thấy ngôn ngữ</value>
   </data>

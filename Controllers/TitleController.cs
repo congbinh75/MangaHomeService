@@ -6,7 +6,7 @@ using Microsoft.Extensions.Localization;
 
 namespace MangaHomeService.Controllers
 {
-    [Route("api/[controller]/[action]")]
+    [Route("api/title")]
     [ApiController]
     public class TitleController : ControllerBase
     {
@@ -26,19 +26,12 @@ namespace MangaHomeService.Controllers
 
         [AllowAnonymous]
         [HttpGet]
-        public async Task<IActionResult> Get(string id)
+        public async Task<IActionResult> Get([FromQuery] string id)
         {
             try
             {
-                if (!string.IsNullOrEmpty(id.Trim()))
-                {
-                    var title = await _titleService.Get(id);
-                    return Ok(title);
-                }
-                else
-                {
-                    return BadRequest(_stringLocalizer["ERR_INVALID_INPUT_DATA"]);
-                }
+                var title = await _titleService.Get(id);
+                return Ok(title);
             }
             catch (Exception)
             {
@@ -48,28 +41,12 @@ namespace MangaHomeService.Controllers
 
         [AllowAnonymous]
         [HttpGet]
-        public async Task<IActionResult> Index()
+        [Route("search")]
+        public async Task<IActionResult> Search([FromQuery] TitleSearch input)
         {
             try
             {
-                var hottestTitles = await _titleService.AdvancedSearch(sortByHottest: true);
-                var lastestTitles = await _titleService.AdvancedSearch(sortByLastest: true);
-
-                return Ok(new { hottestTitles, lastestTitles });
-            }
-            catch (Exception)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = _stringLocalizer["ERR_UNEXPECTED_ERROR"] });
-            }
-        }
-
-        [AllowAnonymous]
-        [HttpGet]
-        public async Task<IActionResult> Search(Search input)
-        {
-            try
-            {
-                var titles = await _titleService.Search(keyword: input?.Keyword?.Trim() ?? "", pageNumber: input.PageNumber, pageSize: input.PageSize);
+                var titles = await _titleService.Search(keyword: input.Keyword, pageNumber: input.PageNumber, pageSize: input.PageSize);
                 return Ok(titles);
             }
             catch (Exception)
@@ -80,12 +57,13 @@ namespace MangaHomeService.Controllers
 
         [AllowAnonymous]
         [HttpGet]
-        public async Task<IActionResult> AdvancedSearch(AdvancedSearch input)
+        [Route("advanced-search")]
+        public async Task<IActionResult> AdvancedSearch([FromQuery] AdvancedTitleSearch input)
         {
             try
             {
                 int status = 0;
-                List<int> statuses = new List<int>();
+                List<int> statuses = [];
                 if (input.Statuses != null)
                 {
                     foreach (string num in input.Statuses)

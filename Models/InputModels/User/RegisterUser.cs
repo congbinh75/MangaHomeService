@@ -2,7 +2,7 @@
 
 namespace MangaHomeService.Models.InputModels
 {
-    public class Register
+    public class RegisterUser
     {
         [Required]
         [MinLength(6)]

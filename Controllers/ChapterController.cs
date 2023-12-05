@@ -8,7 +8,7 @@ using Microsoft.Extensions.Localization;
 
 namespace MangaHomeService.Controllers
 {
-    [Route("api/[controller]/[action]")]
+    [Route("api/chapter")]
     [ApiController]
     public class ChapterController : ControllerBase
     {
@@ -34,7 +34,7 @@ namespace MangaHomeService.Controllers
 
         [HttpGet]
         [AllowAnonymous]
-        public async Task<IActionResult> Get(string id)
+        public async Task<IActionResult> Get([FromQuery] string id)
         {
             try
             {
@@ -48,6 +48,10 @@ namespace MangaHomeService.Controllers
                     return BadRequest(_stringLocalizer["ERR_INVALID_INPUT_DATA"]);
                 }
             }
+            catch (NotFoundException)
+            {
+                return NotFound();
+            }
             catch (Exception)
             {
                 return StatusCode(StatusCodes.Status500InternalServerError, new { Message = _stringLocalizer["ERR_UNEXPECTED_ERROR"] });
@@ -56,13 +60,13 @@ namespace MangaHomeService.Controllers
 
         [HttpGet]
         [AllowAnonymous]
-        public async Task<IActionResult> GetByTitle(string titleId)
+        public async Task<IActionResult> GetByTitle([FromQuery] string titleId, int pageNumber, int pageSize)
         {
             try
             {
                 if (!string.IsNullOrEmpty(titleId.Trim()))
                 {
-                    var chapters = await _chapterService.GetByTitle(titleId);
+                    var chapters = await _chapterService.GetByTitle(titleId, pageNumber, pageSize);
                     return Ok(chapters);
                 }
                 else
@@ -82,7 +86,8 @@ namespace MangaHomeService.Controllers
 
         [HttpPost]
         [Authorize(Roles = "Admin, Moderator, User")]
-        public async Task<IActionResult> Create(CreateChapter input)
+        [Route("create")]
+        public async Task<IActionResult> Create([FromBody] CreateChapter input)
         {
             try
             {
@@ -120,6 +125,7 @@ namespace MangaHomeService.Controllers
 
         [HttpPost]
         [Authorize(Roles = "Admin, Moderator, User")]
+        [Route("update")]
         public async Task<IActionResult> Update([FromBody] UpdateChapter input)
         {
             try
@@ -135,7 +141,8 @@ namespace MangaHomeService.Controllers
 
         [HttpPost]
         [Authorize(Roles = "Admin, Moderator, User")]
-        public async Task<IActionResult> Remove(string id)
+        [Route("remove")]
+        public async Task<IActionResult> Remove([FromBody] string id)
         {
             try
             {
@@ -157,7 +164,8 @@ namespace MangaHomeService.Controllers
 
         [HttpPost]
         [Authorize(Roles = "Admin, Moderator, User")]
-        public async Task<IActionResult> UploadPage(UploadPage input)
+        [Route("upload-page")]
+        public async Task<IActionResult> UploadPage([FromBody] UploadPage input)
         {
             try
             {
@@ -186,7 +194,8 @@ namespace MangaHomeService.Controllers
 
         [HttpPost]
         [Authorize(Roles = "Admin, Moderator, User")]
-        public async Task<IActionResult> UpdatePage(UpdatePage input)
+        [Route("update-page")]
+        public async Task<IActionResult> UpdatePage([FromBody] UpdatePage input)
         {
             try
             {
@@ -217,7 +226,8 @@ namespace MangaHomeService.Controllers
 
         [HttpPost]
         [Authorize]
-        public async Task<IActionResult> RemovePage(string id)
+        [Route("remove-page")]
+        public async Task<IActionResult> RemovePage([FromBody] string id)
         {
             try
             {

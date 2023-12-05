@@ -6,7 +6,7 @@ using Microsoft.Extensions.Localization;
 
 namespace MangaHomeService.Controllers
 {
-    [Route("api/[controller]/[action]")]
+    [Route("api/group")]
     [ApiController]
     public class GroupController : ControllerBase
     {
@@ -21,7 +21,7 @@ namespace MangaHomeService.Controllers
 
         [HttpGet]
         [AllowAnonymous]
-        public async Task<IActionResult> Get(string id)
+        public async Task<IActionResult> Get([FromQuery] string id)
         {
             try
             {
@@ -43,19 +43,13 @@ namespace MangaHomeService.Controllers
 
         [HttpGet]
         [AllowAnonymous]
-        public async Task<IActionResult> GetAll(string pageSize, string pageNumber)
+        [Route("list")]
+        public async Task<IActionResult> GetAll([FromQuery] int pageSize, int pageNumber)
         {
             try
             {
-                if (int.TryParse(pageSize, out int pSize) && int.TryParse(pageNumber, out int pNumber))
-                {
-                    var group = await _groupService.GetAll(pSize, pNumber);
-                    return Ok(group);
-                }
-                else
-                {
-                    return BadRequest(_stringLocalizer["ERR_INVALID_INPUT_DATA"]);
-                }
+                var group = await _groupService.GetAll(pageSize, pageNumber);
+                return Ok(group);
             }
             catch (Exception)
             {
@@ -65,7 +59,8 @@ namespace MangaHomeService.Controllers
 
         [HttpPost]
         [Authorize]
-        public async Task<IActionResult> Create(CreateGroup input)
+        [Route("create")]
+        public async Task<IActionResult> Create([FromBody] CreateGroup input)
         {
             try
             {
@@ -80,7 +75,8 @@ namespace MangaHomeService.Controllers
 
         [HttpPost]
         [Authorize]
-        public async Task<IActionResult> Update(UpdateGroup input)
+        [Route("update")]
+        public async Task<IActionResult> Update([FromBody] UpdateGroup input)
         {
             try
             {
@@ -95,7 +91,8 @@ namespace MangaHomeService.Controllers
 
         [HttpPost]
         [Authorize]
-        public async Task<IActionResult> Remove(string id)
+        [Route("remove")]
+        public async Task<IActionResult> Remove([FromBody] string id)
         {
             try
             {

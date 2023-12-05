@@ -34,23 +34,14 @@ namespace MangaHomeService.Services
                 .Include(r => (r as ChapterRequest).Chapter)
                 .Include(r => (r as ChapterRequest).Group)
                 .Include(r => (r as TitleRequest).Title)
-                .Include(r => (r as ChapterRequest).Group)
+                .Include(r => (r as TitleRequest).Group)
                 .Include(r => (r as MemberRequest).Member)
-                .Include(r => (r as ChapterRequest).Group)
+                .Include(r => (r as MemberRequest).Group)
                 .Include(r => (r as GroupRequest).Group)
                 .Include(r => (r as ArtistRequest).Artist)
                 .Include(r => (r as AuthorRequest).Author)
                 .FirstOrDefaultAsync()
                 ?? throw new NotFoundException();
-            return request;
-        }
-
-        public async Task<Request> Update(string id, string note)
-        {
-            using var dbContext = await _contextFactory.CreateDbContextAsync();
-            var request = await dbContext.Requests.FirstOrDefaultAsync(r => r.Id == id) ?? throw new NotFoundException(typeof(Request).Name);
-            request.ReviewNote = note;
-            await dbContext.SaveChangesAsync();
             return request;
         }
 
@@ -167,10 +158,19 @@ namespace MangaHomeService.Services
             }
         }
 
+        public async Task<Request> Update(string id, string note)
+        {
+            using var dbContext = await _contextFactory.CreateDbContextAsync();
+            var request = await dbContext.Requests.FirstOrDefaultAsync(r => r.Id == id) ?? throw new NotFoundException(typeof(Request).Name);
+            request.ReviewNote = note;
+            await dbContext.SaveChangesAsync();
+            return request;
+        }
+
         public async Task<Request> Review(string id, string note, bool isApproved)
         {
             using var dbContext = await _contextFactory.CreateDbContextAsync();
-            var request = await dbContext.Requests.Where(r => r.Id == id)
+            var request = await dbContext.Requests.Where(r => r.Id == id)?
                 .Include(r => (r as ChapterRequest).Chapter)
                 .Include(r => (r as TitleRequest).Title)
                 .Include(r => (r as MemberRequest).Member)
@@ -178,7 +178,7 @@ namespace MangaHomeService.Services
                 .Include(r => (r as ArtistRequest).Artist)
                 .Include(r => (r as AuthorRequest).Author)
                 .FirstOrDefaultAsync()
-                ?? throw new NotFoundException();
+                ?? throw new NotFoundException(typeof(Request).Name);
             if (request.IsReviewed)
             {
                 throw new AlreadyReviewedException();

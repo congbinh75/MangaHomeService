@@ -132,6 +132,9 @@
   <data name="ERR_INVALID_INPUT_DATA" xml:space="preserve">
     <value>Invalid or missing input data</value>
   </data>
+  <data name="ERR_INVALID_ROLE_VALUE" xml:space="preserve">
+    <value>Invalid role value</value>
+  </data>
   <data name="ERR_LANGUAGE_NOT_FOUND" xml:space="preserve">
     <value>Language not found</value>
   </data>

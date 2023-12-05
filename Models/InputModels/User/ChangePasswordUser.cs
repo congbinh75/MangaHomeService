@@ -2,7 +2,7 @@
 
 namespace MangaHomeService.Models.InputModels
 {
-    public class ChangePassword
+    public class ChangePasswordUser
     {
         [Required]
         public required string OldPassword { get; set; }
