@@ -23,5 +23,15 @@
             Completed = 2,
             Abandoned = 3
         }
+
+        public enum RequestType
+        {
+            Group = 0,
+            Member = 1,
+            Title = 2,
+            Chapter = 3,
+            Author = 4,
+            Artist = 5
+        }
     }
 }

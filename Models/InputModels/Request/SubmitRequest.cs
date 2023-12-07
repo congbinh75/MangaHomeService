@@ -10,12 +10,9 @@ namespace MangaHomeService.Models.InputModels
         [Required]
         [MaxLength(256)]
         public required string SubmitNote { get; set; }
-
-        [Required]
-        public required object Data { get; set; }
     }
 
-    public class ChapterRequestData
+    public class ChapterRequestData : SubmitRequest
     {
         [Required]  
         public required string ChapterId { get; set; }
@@ -24,13 +21,13 @@ namespace MangaHomeService.Models.InputModels
         public required string GroupId { get; set;}
     }
 
-    public class GroupRequestData
+    public class GroupRequestData : SubmitRequest
     {
         [Required]
         public required string GroupId { get; set; }
     }
 
-    public class TitleRequestData
+    public class TitleRequestData : SubmitRequest
     {
         [Required]
         public required string TitleId { get; set; }
@@ -39,7 +36,7 @@ namespace MangaHomeService.Models.InputModels
         public required string GroupId { get; set; }
     }
 
-    public class MemberRequestData
+    public class MemberRequestData : SubmitRequest
     {
         [Required]
         public required string MemberId { get; set;}
@@ -48,13 +45,13 @@ namespace MangaHomeService.Models.InputModels
         public required string GroupId { get; set;}
     }
 
-    public class ArtistRequestData
+    public class ArtistRequestData : SubmitRequest
     {
         [Required]
         public required string PersonId { get; set; }
     }
 
-    public class AuthorRequestData
+    public class AuthorRequestData : SubmitRequest
     {
         [Required]
         public required string PersonId { get; set; }

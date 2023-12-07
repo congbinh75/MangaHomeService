@@ -9,5 +9,6 @@
         public const int ChaptersPerPage = 50;
         public const int ReportsPerPage = 15;
         public const int GroupsPerPage = 10;
+        public const int RequestsPerPage = 15;
     }
 }
