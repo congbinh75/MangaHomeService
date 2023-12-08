@@ -3,6 +3,7 @@ using MangaHomeService.Models.Entities;
 using MangaHomeService.Models.InputModels;
 using MangaHomeService.Utils;
 using Microsoft.EntityFrameworkCore;
+using Org.BouncyCastle.Ocsp;
 using Group = MangaHomeService.Models.Entities.Group;
 
 namespace MangaHomeService.Services
@@ -10,7 +11,7 @@ namespace MangaHomeService.Services
     public interface IRequestService
     {
         public Task<Request> Get(string id);
-        public Task<ICollection<Request>> GetAll(int? pageNumber = 1, int? pageSize = Constants.RequestsPerPage, int? requestType = null);
+        public Task<ICollection<Request>> GetAll(int pageNumber = 1, int pageSize = Constants.RequestsPerPage, int? requestType = null, bool isReviewedIncluded = true);
         public Task<GroupRequest> Submit(GroupRequestData data);
         public Task<ChapterRequest> Submit(ChapterRequestData data);
         public Task<TitleRequest> Submit(TitleRequestData data);
@@ -36,88 +37,47 @@ namespace MangaHomeService.Services
         public async Task<Request> Get(string id)
         {
             using var dbContext = await _contextFactory.CreateDbContextAsync();
-            var request = await dbContext.Requests.Where(r => r.Id == id)
-                .Include(r => (r as ChapterRequest).Chapter)
-                .Include(r => (r as ChapterRequest).Group)
-                .Include(r => (r as TitleRequest).Title)
-                .Include(r => (r as TitleRequest).Group)
-                .Include(r => (r as MemberRequest).Member)
-                .Include(r => (r as MemberRequest).Group)
-                .Include(r => (r as GroupRequest).Group)
-                .Include(r => (r as ArtistRequest).Artist)
-                .Include(r => (r as AuthorRequest).Author)
-                .FirstOrDefaultAsync()
+            var request = await dbContext.Requests.Where(r => r.Id == id).FirstOrDefaultAsync()
                 ?? throw new NotFoundException();
+            if (request is GroupRequest groupRequest)
+            {
+                await dbContext.Entry(groupRequest).Reference(r => r.Group).LoadAsync();
+            }
+            else if (request is MemberRequest memberRequest)
+            {
+                await dbContext.Entry(memberRequest).Reference(r => r.Group).LoadAsync();
+                await dbContext.Entry(memberRequest).Reference(r => r.Member).LoadAsync();
+                await dbContext.Entry(memberRequest.Member).Reference(m => m.User).LoadAsync();
+            }
+            else if (request is TitleRequest titleRequest)
+            {
+                await dbContext.Entry(titleRequest).Reference(r => r.Title).LoadAsync();
+                await dbContext.Entry(titleRequest).Reference(r => r.Group).LoadAsync();
+            }
+            else if (request is ChapterRequest chapterRequest)
+            {
+                await dbContext.Entry(chapterRequest).Reference(r => r.Chapter).LoadAsync();
+                await dbContext.Entry(chapterRequest).Reference(r => r.Group).LoadAsync();
+            }
+            else if (request is AuthorRequest authorRequest)
+            {
+                await dbContext.Entry(authorRequest).Reference(r => r.Author).LoadAsync();
+            }
+            else if (request is ArtistRequest artistRequest)
+            {
+                await dbContext.Entry(artistRequest).Reference(r => r.Artist).LoadAsync();
+            }
+            else
+            {
+                //TO BE FIXED
+                throw new Exception();
+            }
             return request;
         }
 
-        public async Task<GroupRequest> GetGroupRequest(string id)
+        public async Task<ICollection<Request>> GetAll(int pageNumber = 1, int pageSize = Constants.RequestsPerPage, int? requestType = null, bool isReviewedIncluded = true)
         {
-            using var dbContext = await _contextFactory.CreateDbContextAsync();
-            var request = await dbContext.Requests.Where(r => r.Id == id)
-                .OfType<GroupRequest>()
-                .Include(r => r.Group)
-                .FirstOrDefaultAsync()
-                ?? throw new Exception(nameof(GroupRequest));
-            return request;
-        }
-
-        public async Task<MemberRequest> GetMemberRequest(string id)
-        {
-            using var dbContext = await _contextFactory.CreateDbContextAsync();
-            var request = await dbContext.Requests.Where(r => r.Id == id)
-                .OfType<MemberRequest>()
-                .Include(r => r.Member)
-                .Include(r => r.Group)
-                .FirstOrDefaultAsync()
-                ?? throw new Exception(nameof(MemberRequest));
-            return request;
-        }
-
-        public async Task<TitleRequest> GetTitleRequest(string id)
-        {
-            using var dbContext = await _contextFactory.CreateDbContextAsync();
-            var request = await dbContext.Requests.Where(r => r.Id == id)
-                .OfType<TitleRequest>()
-                .Include(r => r.Title)
-                .Include(r => r.Group)
-                .FirstOrDefaultAsync()
-                ?? throw new Exception(nameof(TitleRequest));
-            return request;
-        }
-
-        public async Task<ChapterRequest> GetChapterRequest(string id)
-        {
-            using var dbContext = await _contextFactory.CreateDbContextAsync();
-            var request = await dbContext.Requests.Where(r => r.Id == id)
-                .OfType<ChapterRequest>()
-                .Include(r => r.Chapter)
-                .Include(r => r.Group)
-                .FirstOrDefaultAsync()
-                ?? throw new Exception(nameof(ChapterRequest));
-            return request;
-        }
-
-        public async Task<AuthorRequest> GetAuthorRequest(string id)
-        {
-            using var dbContext = await _contextFactory.CreateDbContextAsync();
-            var request = await dbContext.Requests.Where(r => r.Id == id)
-                .OfType<AuthorRequest>()
-                .Include(r => r.Author)
-                .FirstOrDefaultAsync()
-                ?? throw new Exception(nameof(AuthorRequest));
-            return request;
-        }
-
-        public async Task<ArtistRequest> GetArtistRequest(string id)
-        {
-            using var dbContext = await _contextFactory.CreateDbContextAsync();
-            var request = await dbContext.Requests.Where(r => r.Id == id)
-                .OfType<ArtistRequest>()
-                .Include(r => r.Artist)
-                .FirstOrDefaultAsync()
-                ?? throw new Exception(nameof(ArtistRequest));
-            return request;
+            throw new NotImplementedException();   
         }
 
         public async Task<GroupRequest> Submit(GroupRequestData data)
@@ -251,7 +211,8 @@ namespace MangaHomeService.Services
         public async Task<Request> Update(string id, string note)
         {
             using var dbContext = await _contextFactory.CreateDbContextAsync();
-            var request = await dbContext.Requests.FirstOrDefaultAsync(r => r.Id == id) ?? throw new NotFoundException(typeof(Request).Name);
+            var request = await dbContext.Requests.FirstOrDefaultAsync(r => r.Id == id) 
+                ?? throw new NotFoundException(typeof(Request).Name);
             request.ReviewNote = note;
             await dbContext.SaveChangesAsync();
             return request;
@@ -260,15 +221,38 @@ namespace MangaHomeService.Services
         public async Task<Request> Review(string id, string note, bool isApproved)
         {
             using var dbContext = await _contextFactory.CreateDbContextAsync();
-            var request = await dbContext.Requests.Where(r => r.Id == id)
-                .Include(r => (r as ChapterRequest).Chapter)
-                .Include(r => (r as TitleRequest).Title)
-                .Include(r => (r as MemberRequest).Member)
-                .Include(r => (r as GroupRequest).Group)
-                .Include(r => (r as ArtistRequest).Artist)
-                .Include(r => (r as AuthorRequest).Author)
-                .FirstOrDefaultAsync()
-                ?? throw new NotFoundException(typeof(Request).Name);
+            var request = await dbContext.Requests.Where(r => r.Id == id).FirstOrDefaultAsync()
+                ?? throw new NotFoundException();
+            if (request is GroupRequest groupRequest)
+            {
+                await dbContext.Entry(groupRequest).Reference(r => r.Group).LoadAsync();
+            }
+            else if (request is MemberRequest memberRequest)
+            {
+                await dbContext.Entry(memberRequest).Reference(r => r.Member).LoadAsync();
+            }
+            else if (request is TitleRequest titleRequest)
+            {
+                await dbContext.Entry(titleRequest).Reference(r => r.Title).LoadAsync();
+            }
+            else if (request is ChapterRequest chapterRequest)
+            {
+                await dbContext.Entry(chapterRequest).Reference(r => r.Chapter).LoadAsync();
+            }
+            else if (request is AuthorRequest authorRequest)
+            {
+                await dbContext.Entry(authorRequest).Reference(r => r.Author).LoadAsync();
+            }
+            else if (request is ArtistRequest artistRequest)
+            {
+                await dbContext.Entry(artistRequest).Reference(r => r.Artist).LoadAsync();
+            }
+            else
+            {
+                //TO BE FIXED
+                throw new Exception();
+            }
+
             if (request.IsReviewed)
             {
                 throw new AlreadyReviewedException();
