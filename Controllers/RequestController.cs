@@ -1,5 +1,6 @@
 using MangaHomeService.Models.InputModels;
 using MangaHomeService.Services;
+using MangaHomeService.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
@@ -38,6 +39,21 @@ namespace MangaHomeService.Controllers
             catch (Exception)
             {
                 return StatusCode(StatusCodes.Status500InternalServerError, new { Message = _stringLocalizer["ERR_UNEXPECTED_ERROR"] });
+            }
+        }
+
+        [HttpGet]
+        [Authorize]
+        [Route("list")]
+        public async Task<IActionResult> GetAll([FromQuery] GetAllRequest input)
+        {
+            try
+            {
+                return (IActionResult)await _requestService.GetAll(input.Keyword, input.PageNumber, input.PageSize, input.RequestType, input.IsReviewedIncluded);
+            }
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = _stringLocalizer["ERR_UNEXPECTED_ERROR"] });    
             }
         }
 
