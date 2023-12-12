@@ -64,7 +64,7 @@ namespace MangaHomeService.Controllers
         {
             try
             {
-                var request = await _requestService.Submit(input);
+                var request = await _requestService.Add(input);
                 return Ok(request);
             }
             catch (Exception)
@@ -80,7 +80,7 @@ namespace MangaHomeService.Controllers
         {
             try
             {
-                var request = await _requestService.Submit(input);
+                var request = await _requestService.Add(input);
                 return Ok(request);
             }
             catch (Exception)
@@ -96,7 +96,7 @@ namespace MangaHomeService.Controllers
         {
             try
             {
-                var request = await _requestService.Submit(input);
+                var request = await _requestService.Add(input);
                 return Ok(request);
             }
             catch (Exception)
@@ -112,7 +112,7 @@ namespace MangaHomeService.Controllers
         {
             try
             {
-                var request = await _requestService.Submit(input);
+                var request = await _requestService.Add(input);
                 return Ok(request);
             }
             catch (Exception)
@@ -128,7 +128,7 @@ namespace MangaHomeService.Controllers
         {
             try
             {
-                var request = await _requestService.Submit(input);
+                var request = await _requestService.Add(input);
                 return Ok(request);
             }
             catch (Exception)
@@ -144,7 +144,7 @@ namespace MangaHomeService.Controllers
         {
             try
             {
-                var request = await _requestService.Submit(input);
+                var request = await _requestService.Add(input);
                 return Ok(request);
             }
             catch (Exception)

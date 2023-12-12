@@ -11,12 +11,12 @@ namespace MangaHomeService.Services
     {
         public Task<Request> Get(string id);
         public Task<ICollection<object>> GetAll(string keyword = "", int pageNumber = 1, int pageSize = Constants.RequestsPerPage, int? requestType = null, bool isReviewedIncluded = true);
-        public Task<GroupRequest> Submit(GroupRequestData data);
-        public Task<ChapterRequest> Submit(ChapterRequestData data);
-        public Task<TitleRequest> Submit(TitleRequestData data);
-        public Task<MemberRequest> Submit(MemberRequestData data);
-        public Task<AuthorRequest> Submit(AuthorRequestData data);
-        public Task<ArtistRequest> Submit(ArtistRequestData data);
+        public Task<GroupRequest> Add(GroupRequestData data);
+        public Task<ChapterRequest> Add(ChapterRequestData data);
+        public Task<TitleRequest> Add(TitleRequestData data);
+        public Task<MemberRequest> Add(MemberRequestData data);
+        public Task<AuthorRequest> Add(AuthorRequestData data);
+        public Task<ArtistRequest> Add(ArtistRequestData data);
         public Task<Request> Update(string id, string note);
         public Task<Request> Review(string id, string note, bool isApproved);
         public Task<bool> Remove(string id);
@@ -244,7 +244,7 @@ namespace MangaHomeService.Services
             }
         }
 
-        public async Task<GroupRequest> Submit(GroupRequestData data)
+        public async Task<GroupRequest> Add(GroupRequestData data)
         {
             using var dbContext = await _contextFactory.CreateDbContextAsync();
             var group = await dbContext.Groups.FirstOrDefaultAsync(g => g.Id == data.GroupId) ??
@@ -265,7 +265,7 @@ namespace MangaHomeService.Services
             return request;
         }
 
-        public async Task<MemberRequest> Submit(MemberRequestData data)
+        public async Task<MemberRequest> Add(MemberRequestData data)
         {
             using var dbContext = await _contextFactory.CreateDbContextAsync();
             var member = await dbContext.Members.Where(t => t.Id == data.MemberId && t.IsApproved == false).FirstOrDefaultAsync() ??
@@ -284,7 +284,7 @@ namespace MangaHomeService.Services
             return request;
         }
 
-        public async Task<TitleRequest> Submit(TitleRequestData data)
+        public async Task<TitleRequest> Add(TitleRequestData data)
         {
             using var dbContext = await _contextFactory.CreateDbContextAsync();
             var title = await dbContext.Titles.Where(t => t.Id == data.TitleId && t.IsApproved == false).FirstOrDefaultAsync() ??
@@ -303,7 +303,7 @@ namespace MangaHomeService.Services
             return request;
         }
 
-        public async Task<ChapterRequest> Submit(ChapterRequestData data)
+        public async Task<ChapterRequest> Add(ChapterRequestData data)
         {
             using var dbContext = await _contextFactory.CreateDbContextAsync();
             var chapter = await dbContext.Chapters.FirstOrDefaultAsync(t => t.Id == data.ChapterId) ??
@@ -330,7 +330,7 @@ namespace MangaHomeService.Services
             return request;
         }
 
-        public async Task<AuthorRequest> Submit(AuthorRequestData data)
+        public async Task<AuthorRequest> Add(AuthorRequestData data)
         {
             using var dbContext = await _contextFactory.CreateDbContextAsync();
             var person = await dbContext.People.FirstOrDefaultAsync(p => p.Id == data.PersonId) ??
@@ -351,7 +351,7 @@ namespace MangaHomeService.Services
             return request;
         }
 
-        public async Task<ArtistRequest> Submit(ArtistRequestData data)
+        public async Task<ArtistRequest> Add(ArtistRequestData data)
         {
             using var dbContext = await _contextFactory.CreateDbContextAsync();
             var person = await dbContext.People.FirstOrDefaultAsync(p => p.Id == data.PersonId) ??
