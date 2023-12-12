@@ -33,5 +33,14 @@
             Author = 4,
             Artist = 5
         }
+
+        public enum ReportType
+        {
+            Group = 0,
+            Member = 1,
+            Title = 2,
+            Chapter = 3,
+            User = 4
+        }
     }
 }

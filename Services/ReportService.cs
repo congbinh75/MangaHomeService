@@ -8,7 +8,7 @@ namespace MangaHomeService.Services
     public interface IReportService
     {
         public Task<Report> Get(string id);
-        public Task<ICollection<Report>> GetAll(int nums = Constants.ReportsPerPage, int page = 0);
+        public Task<ICollection<object>> GetAll(string keyword = "", int pageSize = Constants.ReportsPerPage, int pageNumber = 0, int? reportType = null, bool isReviewedIncluded = true);
         public Task<Report> Add(string id, string reason, string note, Type type);
         public Task<Report> Update(string id, string? reason = null, string? note = null);
         public Task<bool> Remove(string id);
@@ -30,10 +30,174 @@ namespace MangaHomeService.Services
             return report;
         }
 
-        public async Task<ICollection<Report>> GetAll(int nums = Constants.ReportsPerPage, int page = 0)
+        public async Task<ICollection<object>> GetAll(string keyword = "", int pageSize = Constants.ReportsPerPage, int pageNumber = 0, int? reportType = null, bool isReviewedIncluded = true)
         {
             using var dbContext = await _contextFactory.CreateDbContextAsync();
-            return await dbContext.Reports.Skip(page * nums).Take(nums).ToListAsync();
+            if (isReviewedIncluded)
+            {
+                if (reportType == (int)Enums.RequestType.Group)
+                {
+                    var results = await dbContext.Requests.OfType<GroupRequest>()
+                        .Include(r => r.Group).Skip(pageSize * (pageNumber - 1)).Take(pageSize).ToListAsync();
+                    return (ICollection<object>)results.Where(r => r.Group.Name.Contains(keyword)).ToList();
+                }
+                else if (reportType == (int)Enums.RequestType.Member)
+                {
+                    return (ICollection<object>)await dbContext.Requests.OfType<MemberRequest>()
+                        .Include(r => r.Group).Include(r => r.Member)
+                        .Skip(pageSize * (pageNumber - 1)).Take(pageSize).ToListAsync();
+                }
+                else if (reportType == (int)Enums.RequestType.Title)
+                {
+                    return (ICollection<object>)await dbContext.Requests.OfType<TitleRequest>()
+                        .Include(r => r.Group).Include(r => r.Title)
+                        .Skip(pageSize * (pageNumber - 1)).Take(pageSize).ToListAsync();
+                }
+                else if (reportType == (int)Enums.RequestType.Chapter)
+                {
+                    return (ICollection<object>)await dbContext.Requests.OfType<ChapterRequest>()
+                        .Include(r => r.Group).Include(r => r.Chapter)
+                        .Skip(pageSize * (pageNumber - 1)).Take(pageSize).ToListAsync();
+                }
+                else if (reportType == (int)Enums.RequestType.Author)
+                {
+                    return (ICollection<object>)await dbContext.Requests.OfType<AuthorRequest>()
+                        .Include(r => r.Author).Skip(pageSize * (pageNumber - 1)).Take(pageSize).ToListAsync();
+                }
+                else if (reportType == (int)Enums.RequestType.Group)
+                {
+                    return (ICollection<object>)await dbContext.Requests.OfType<ArtistRequest>()
+                        .Include(r => r.Artist).Skip(pageSize * (pageNumber - 1)).Take(pageSize).ToListAsync();
+                }
+                else if (reportType == null)
+                {
+                    var requests = (ICollection<object>)await dbContext.Requests.Skip(pageSize * (pageNumber - 1)).Take(pageSize).ToListAsync();
+                    foreach (var request in requests)
+                    {
+                        if (request is GroupRequest groupRequest)
+                        {
+                            await dbContext.Entry(groupRequest).Reference(r => r.Group).LoadAsync();
+                        }
+                        else if (request is MemberRequest memberRequest)
+                        {
+                            await dbContext.Entry(memberRequest).Reference(r => r.Group).LoadAsync();
+                            await dbContext.Entry(memberRequest).Reference(r => r.Member).LoadAsync();
+                            await dbContext.Entry(memberRequest.Member).Reference(m => m.User).LoadAsync();
+                        }
+                        else if (request is TitleRequest titleRequest)
+                        {
+                            await dbContext.Entry(titleRequest).Reference(r => r.Title).LoadAsync();
+                            await dbContext.Entry(titleRequest).Reference(r => r.Group).LoadAsync();
+                        }
+                        else if (request is ChapterRequest chapterRequest)
+                        {
+                            await dbContext.Entry(chapterRequest).Reference(r => r.Chapter).LoadAsync();
+                            await dbContext.Entry(chapterRequest).Reference(r => r.Group).LoadAsync();
+                        }
+                        else if (request is AuthorRequest authorRequest)
+                        {
+                            await dbContext.Entry(authorRequest).Reference(r => r.Author).LoadAsync();
+                        }
+                        else if (request is ArtistRequest artistRequest)
+                        {
+                            await dbContext.Entry(artistRequest).Reference(r => r.Artist).LoadAsync();
+                        }
+                        else
+                        {
+                            //TO BE FIXED
+                            throw new Exception();
+                        }
+                    }
+                    return requests;
+                }
+                else
+                {
+                    //TO BE FIXED
+                    throw new Exception();
+                }
+            }
+            else
+            {
+                if (reportType == (int)Enums.RequestType.Group)
+                {
+                    return (ICollection<object>)await dbContext.Requests.OfType<GroupRequest>()
+                        .Include(r => r.Group).Skip(pageSize * (pageNumber - 1)).Take(pageSize).ToListAsync();
+                }
+                else if (reportType == (int)Enums.RequestType.Member)
+                {
+                    return (ICollection<object>)await dbContext.Requests.OfType<MemberRequest>()
+                        .Include(r => r.Group).Include(r => r.Member)
+                        .Skip(pageSize * (pageNumber - 1)).Take(pageSize).ToListAsync();
+                }
+                else if (reportType == (int)Enums.RequestType.Title)
+                {
+                    return (ICollection<object>)await dbContext.Requests.OfType<TitleRequest>()
+                        .Include(r => r.Group).Include(r => r.Title)
+                        .Skip(pageSize * (pageNumber - 1)).Take(pageSize).ToListAsync();
+                }
+                else if (reportType == (int)Enums.RequestType.Chapter)
+                {
+                    return (ICollection<object>)await dbContext.Requests.OfType<ChapterRequest>()
+                        .Include(r => r.Group).Include(r => r.Chapter)
+                        .Skip(pageSize * (pageNumber - 1)).Take(pageSize).ToListAsync();
+                }
+                else if (reportType == (int)Enums.RequestType.Author)
+                {
+                    return (ICollection<object>)await dbContext.Requests.OfType<AuthorRequest>()
+                        .Include(r => r.Author).Skip(pageSize * (pageNumber - 1)).Take(pageSize).ToListAsync();
+                }
+                else if (reportType == (int)Enums.RequestType.Group)
+                {
+                    return (ICollection<object>)await dbContext.Requests.OfType<ArtistRequest>()
+                        .Include(r => r.Artist).Skip(pageSize * (pageNumber - 1)).Take(pageSize).ToListAsync();
+                }
+                else if (reportType == null)
+                {
+                    var requests = (ICollection<object>)await dbContext.Requests.Skip(pageSize * (pageNumber - 1)).Take(pageSize).ToListAsync();
+                    foreach (var request in requests)
+                    {
+                        if (request is GroupRequest groupRequest)
+                        {
+                            await dbContext.Entry(groupRequest).Reference(r => r.Group).LoadAsync();
+                        }
+                        else if (request is MemberRequest memberRequest)
+                        {
+                            await dbContext.Entry(memberRequest).Reference(r => r.Group).LoadAsync();
+                            await dbContext.Entry(memberRequest).Reference(r => r.Member).LoadAsync();
+                            await dbContext.Entry(memberRequest.Member).Reference(m => m.User).LoadAsync();
+                        }
+                        else if (request is TitleRequest titleRequest)
+                        {
+                            await dbContext.Entry(titleRequest).Reference(r => r.Title).LoadAsync();
+                            await dbContext.Entry(titleRequest).Reference(r => r.Group).LoadAsync();
+                        }
+                        else if (request is ChapterRequest chapterRequest)
+                        {
+                            await dbContext.Entry(chapterRequest).Reference(r => r.Chapter).LoadAsync();
+                            await dbContext.Entry(chapterRequest).Reference(r => r.Group).LoadAsync();
+                        }
+                        else if (request is AuthorRequest authorRequest)
+                        {
+                            await dbContext.Entry(authorRequest).Reference(r => r.Author).LoadAsync();
+                        }
+                        else if (request is ArtistRequest artistRequest)
+                        {
+                            await dbContext.Entry(artistRequest).Reference(r => r.Artist).LoadAsync();
+                        }
+                        else
+                        {
+                            //TO BE FIXED
+                            throw new Exception();
+                        }
+                    }
+                    return requests;
+                }
+                else
+                {
+                    //TO BE FIXED
+                    throw new Exception();
+                }
+            }
         }
 
         public async Task<Report> Add(string id, string reason, string note, Type type)
