@@ -1,5 +1,6 @@
 ﻿using MangaHomeService.Models;
 using MangaHomeService.Models.Entities;
+using MangaHomeService.Models.InputModels;
 using MangaHomeService.Utils;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,8 +10,9 @@ namespace MangaHomeService.Services
     {
         public Task<Report> Get(string id);
         public Task<ICollection<object>> GetAll(string keyword = "", int pageSize = Constants.ReportsPerPage, int pageNumber = 0, int? reportType = null, bool isReviewedIncluded = true);
-        public Task<Report> Add(string id, string reason, string note, Type type);
+        public Task<Report> Add(SubmitReport data);
         public Task<Report> Update(string id, string? reason = null, string? note = null);
+        public Task<Report> Review(string id);
         public Task<bool> Remove(string id);
     }
 
@@ -35,72 +37,52 @@ namespace MangaHomeService.Services
             using var dbContext = await _contextFactory.CreateDbContextAsync();
             if (isReviewedIncluded)
             {
-                if (reportType == (int)Enums.RequestType.Group)
+                if (reportType == (int)Enums.ReportType.Group)
                 {
-                    var results = await dbContext.Requests.OfType<GroupRequest>()
-                        .Include(r => r.Group).Skip(pageSize * (pageNumber - 1)).Take(pageSize).ToListAsync();
+                    var results = await dbContext.Reports.OfType<GroupReport>()
+                        .Include(r => r.Group)
+                        .Skip(pageSize * (pageNumber - 1)).Take(pageSize).ToListAsync();
                     return (ICollection<object>)results.Where(r => r.Group.Name.Contains(keyword)).ToList();
                 }
-                else if (reportType == (int)Enums.RequestType.Member)
+                else if (reportType == (int)Enums.ReportType.Title)
                 {
-                    return (ICollection<object>)await dbContext.Requests.OfType<MemberRequest>()
-                        .Include(r => r.Group).Include(r => r.Member)
+                    return (ICollection<object>)await dbContext.Reports.OfType<TitleReport>()
+                        .Include(r => r.Title)
                         .Skip(pageSize * (pageNumber - 1)).Take(pageSize).ToListAsync();
                 }
-                else if (reportType == (int)Enums.RequestType.Title)
+                else if (reportType == (int)Enums.ReportType.Chapter)
                 {
-                    return (ICollection<object>)await dbContext.Requests.OfType<TitleRequest>()
-                        .Include(r => r.Group).Include(r => r.Title)
+                    return (ICollection<object>)await dbContext.Reports.OfType<ChapterReport>()
+                        .Include(r => r.Chapter)
                         .Skip(pageSize * (pageNumber - 1)).Take(pageSize).ToListAsync();
                 }
-                else if (reportType == (int)Enums.RequestType.Chapter)
+                else if (reportType == (int)Enums.ReportType.User)
                 {
-                    return (ICollection<object>)await dbContext.Requests.OfType<ChapterRequest>()
-                        .Include(r => r.Group).Include(r => r.Chapter)
+                    return (ICollection<object>)await dbContext.Reports.OfType<UserReport>()
+                        .Include(r => r.User)
                         .Skip(pageSize * (pageNumber - 1)).Take(pageSize).ToListAsync();
-                }
-                else if (reportType == (int)Enums.RequestType.Author)
-                {
-                    return (ICollection<object>)await dbContext.Requests.OfType<AuthorRequest>()
-                        .Include(r => r.Author).Skip(pageSize * (pageNumber - 1)).Take(pageSize).ToListAsync();
-                }
-                else if (reportType == (int)Enums.RequestType.Group)
-                {
-                    return (ICollection<object>)await dbContext.Requests.OfType<ArtistRequest>()
-                        .Include(r => r.Artist).Skip(pageSize * (pageNumber - 1)).Take(pageSize).ToListAsync();
                 }
                 else if (reportType == null)
                 {
-                    var requests = (ICollection<object>)await dbContext.Requests.Skip(pageSize * (pageNumber - 1)).Take(pageSize).ToListAsync();
+                    var requests = (ICollection<object>)await dbContext.Reports.Skip(pageSize * (pageNumber - 1)).Take(pageSize).ToListAsync();
                     foreach (var request in requests)
                     {
-                        if (request is GroupRequest groupRequest)
+                        if (request is GroupReport groupReport)
                         {
-                            await dbContext.Entry(groupRequest).Reference(r => r.Group).LoadAsync();
+                            await dbContext.Entry(groupReport).Reference(r => r.Group).LoadAsync();
                         }
-                        else if (request is MemberRequest memberRequest)
+                        else if (request is TitleReport titleReport)
                         {
-                            await dbContext.Entry(memberRequest).Reference(r => r.Group).LoadAsync();
-                            await dbContext.Entry(memberRequest).Reference(r => r.Member).LoadAsync();
-                            await dbContext.Entry(memberRequest.Member).Reference(m => m.User).LoadAsync();
+                            await dbContext.Entry(titleReport).Reference(r => r.Title).LoadAsync();
                         }
-                        else if (request is TitleRequest titleRequest)
+                        else if (request is ChapterReport chapterReport)
                         {
-                            await dbContext.Entry(titleRequest).Reference(r => r.Title).LoadAsync();
-                            await dbContext.Entry(titleRequest).Reference(r => r.Group).LoadAsync();
+                            await dbContext.Entry(chapterReport).Reference(r => r.Chapter).LoadAsync();
+                            await dbContext.Entry(chapterReport.Chapter).Reference(r => r.Group).LoadAsync();
                         }
-                        else if (request is ChapterRequest chapterRequest)
+                        else if (request is UserReport userReport)
                         {
-                            await dbContext.Entry(chapterRequest).Reference(r => r.Chapter).LoadAsync();
-                            await dbContext.Entry(chapterRequest).Reference(r => r.Group).LoadAsync();
-                        }
-                        else if (request is AuthorRequest authorRequest)
-                        {
-                            await dbContext.Entry(authorRequest).Reference(r => r.Author).LoadAsync();
-                        }
-                        else if (request is ArtistRequest artistRequest)
-                        {
-                            await dbContext.Entry(artistRequest).Reference(r => r.Artist).LoadAsync();
+                            await dbContext.Entry(userReport).Reference(r => r.User).LoadAsync();
                         }
                         else
                         {
@@ -200,16 +182,16 @@ namespace MangaHomeService.Services
             }
         }
 
-        public async Task<Report> Add(string id, string reason, string note, Type type)
+        public async Task<Report> Add(SubmitReport data)
         {
             using var dbContext = await _contextFactory.CreateDbContextAsync();
-            if (type == typeof(UserReport))
+            if (data is UserReportData userReportData)
             {
-                var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == id) ?? throw new NotFoundException(nameof(User));
+                var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == userReportData.UserId) ?? throw new NotFoundException(nameof(User));
                 var report = new UserReport
                 {
-                    Reason = reason,
-                    Note = note,
+                    Reason = userReportData.Reason,
+                    Note = userReportData.Note,
                     User = user,
                     IsReviewed = false
                 };
@@ -217,13 +199,13 @@ namespace MangaHomeService.Services
                 await dbContext.SaveChangesAsync();
                 return report;
             }
-            else if (type == typeof(TitleReport))
+            else if (data is TitleReportData titleReportData)
             {
-                var title = await dbContext.Titles.FirstOrDefaultAsync(t => t.Id == id) ?? throw new NotFoundException(nameof(User));
+                var title = await dbContext.Titles.FirstOrDefaultAsync(t => t.Id == titleReportData.TitleId) ?? throw new NotFoundException(nameof(User));
                 var report = new TitleReport
                 {
-                    Reason = reason,
-                    Note = note,
+                    Reason = titleReportData.Reason,
+                    Note = titleReportData.Note,
                     Title = title,
                     IsReviewed = false
                 };
@@ -231,13 +213,13 @@ namespace MangaHomeService.Services
                 await dbContext.SaveChangesAsync();
                 return report;
             }
-            else if (type == typeof(GroupReport))
+            else if (data is GroupReportData groupReportData)
             {
-                var group = await dbContext.Groups.FirstOrDefaultAsync(g => g.Id == id) ?? throw new NotFoundException(nameof(Group));
+                var group = await dbContext.Groups.FirstOrDefaultAsync(g => g.Id == groupReportData.GroupId) ?? throw new NotFoundException(nameof(Group));
                 var report = new GroupReport
                 {
-                    Reason = reason,
-                    Note = note,
+                    Reason = groupReportData.Reason,
+                    Note = groupReportData.Note,
                     Group = group,
                     IsReviewed = false
                 };
@@ -245,13 +227,13 @@ namespace MangaHomeService.Services
                 await dbContext.SaveChangesAsync();
                 return report;
             }
-            else if (type == typeof(ChapterReport))
+            else if (data is ChapterReportData chapterReportData)
             {
-                var chapter = await dbContext.Chapters.FirstOrDefaultAsync(c => c.Id == id) ?? throw new NotFoundException(nameof(Chapter));
+                var chapter = await dbContext.Chapters.FirstOrDefaultAsync(c => c.Id == chapterReportData.ChapterId) ?? throw new NotFoundException(nameof(Chapter));
                 var report = new ChapterReport
                 {
-                    Reason = reason,
-                    Note = note,
+                    Reason = chapterReportData.Reason,
+                    Note = chapterReportData.Note,
                     Chapter = chapter,
                     IsReviewed = false
                 };
@@ -261,7 +243,7 @@ namespace MangaHomeService.Services
             }
             else
             {
-                throw new ArgumentException(type.ToString());
+                throw new ArgumentException(data.GetType().Name);
             }
         }
 
@@ -271,6 +253,44 @@ namespace MangaHomeService.Services
             var report = await dbContext.Reports.FirstOrDefaultAsync(r => r.Id == id) ?? throw new NotFoundException(nameof(Report));
             report.Reason = reason ?? report.Reason;
             report.Note = note ?? report.Note;
+            await dbContext.SaveChangesAsync();
+            return report;
+        }
+
+        public async Task<Report> Review(string id)
+        {
+            using var dbContext = await _contextFactory.CreateDbContextAsync();
+            var report = await dbContext.Reports.FirstOrDefaultAsync(r => r.Id == id) ?? throw new NotFoundException(nameof(Report));
+            
+            if (report is GroupReport groupReport)
+            {
+                await dbContext.Entry(groupReport).Reference(r => r.Group).LoadAsync();
+            }
+            else if (report is TitleReport titleReport)
+            {
+                await dbContext.Entry(titleReport).Reference(r => r.Title).LoadAsync();
+            }
+            else if (report is ChapterReport chapterReport)
+            {
+                await dbContext.Entry(chapterReport).Reference(r => r.Chapter).LoadAsync();
+            }
+            else if (report is UserReport userReport)
+            {
+                await dbContext.Entry(userReport).Reference(r => r.User).LoadAsync();
+            }
+            else
+            {
+                //TO BE FIXED
+                throw new Exception();
+            }
+
+            if (report.IsReviewed)
+            {
+                throw new AlreadyReviewedException();
+            }
+
+            report.IsReviewed = true;
+
             await dbContext.SaveChangesAsync();
             return report;
         }

@@ -11,12 +11,7 @@ namespace MangaHomeService.Services
     {
         public Task<Request> Get(string id);
         public Task<ICollection<object>> GetAll(string keyword = "", int pageNumber = 1, int pageSize = Constants.RequestsPerPage, int? requestType = null, bool isReviewedIncluded = true);
-        public Task<GroupRequest> Add(GroupRequestData data);
-        public Task<ChapterRequest> Add(ChapterRequestData data);
-        public Task<TitleRequest> Add(TitleRequestData data);
-        public Task<MemberRequest> Add(MemberRequestData data);
-        public Task<AuthorRequest> Add(AuthorRequestData data);
-        public Task<ArtistRequest> Add(ArtistRequestData data);
+        public Task<Request> Add(SubmitRequest submitRequest);
         public Task<Request> Update(string id, string note);
         public Task<Request> Review(string id, string note, bool isApproved);
         public Task<bool> Remove(string id);
@@ -165,39 +160,49 @@ namespace MangaHomeService.Services
                 if (requestType == (int)Enums.RequestType.Group)
                 {
                     return (ICollection<object>)await dbContext.Requests.OfType<GroupRequest>()
-                        .Include(r => r.Group).Skip(pageSize * (pageNumber - 1)).Take(pageSize).ToListAsync();
+                        .Where(r => !r.IsReviewed)
+                        .Include(r => r.Group)
+                        .Skip(pageSize * (pageNumber - 1)).Take(pageSize).ToListAsync();
                 }
                 else if (requestType == (int)Enums.RequestType.Member)
                 {
                     return (ICollection<object>)await dbContext.Requests.OfType<MemberRequest>()
+                        .Where(r => !r.IsReviewed)
                         .Include(r => r.Group).Include(r => r.Member)
                         .Skip(pageSize * (pageNumber - 1)).Take(pageSize).ToListAsync();
                 }
                 else if (requestType == (int)Enums.RequestType.Title)
                 {
                     return (ICollection<object>)await dbContext.Requests.OfType<TitleRequest>()
+                        .Where(r => !r.IsReviewed)
                         .Include(r => r.Group).Include(r => r.Title)
                         .Skip(pageSize * (pageNumber - 1)).Take(pageSize).ToListAsync();
                 }
                 else if (requestType == (int)Enums.RequestType.Chapter)
                 {
                     return (ICollection<object>)await dbContext.Requests.OfType<ChapterRequest>()
+                        .Where(r => !r.IsReviewed)
                         .Include(r => r.Group).Include(r => r.Chapter)
                         .Skip(pageSize * (pageNumber - 1)).Take(pageSize).ToListAsync();
                 }
                 else if (requestType == (int)Enums.RequestType.Author)
                 {
                     return (ICollection<object>)await dbContext.Requests.OfType<AuthorRequest>()
-                        .Include(r => r.Author).Skip(pageSize * (pageNumber - 1)).Take(pageSize).ToListAsync();
+                        .Where(r => !r.IsReviewed)
+                        .Include(r => r.Author)
+                        .Skip(pageSize * (pageNumber - 1)).Take(pageSize).ToListAsync();
                 }
-                else if (requestType == (int)Enums.RequestType.Group)
+                else if (requestType == (int)Enums.RequestType.Artist)
                 {
                     return (ICollection<object>)await dbContext.Requests.OfType<ArtistRequest>()
-                        .Include(r => r.Artist).Skip(pageSize * (pageNumber - 1)).Take(pageSize).ToListAsync();
+                        .Where(r => !r.IsReviewed)
+                        .Include(r => r.Artist)
+                        .Skip(pageSize * (pageNumber - 1)).Take(pageSize).ToListAsync();
                 }
                 else if (requestType == null)
                 {
-                    var requests = (ICollection<object>)await dbContext.Requests.Skip(pageSize * (pageNumber - 1)).Take(pageSize).ToListAsync();
+                    var requests = (ICollection<object>)await dbContext.Requests.Where(r => !r.IsReviewed)
+                        .Skip(pageSize * (pageNumber - 1)).Take(pageSize).ToListAsync();
                     foreach (var request in requests)
                     {
                         if (request is GroupRequest groupRequest)
@@ -244,132 +249,130 @@ namespace MangaHomeService.Services
             }
         }
 
-        public async Task<GroupRequest> Add(GroupRequestData data)
+        public async Task<Request> Add(SubmitRequest data)
         {
             using var dbContext = await _contextFactory.CreateDbContextAsync();
-            var group = await dbContext.Groups.FirstOrDefaultAsync(g => g.Id == data.GroupId) ??
-                throw new NotFoundException(nameof(Group));
-            if (group.IsApproved)
+            if (data is GroupRequestData groupRequestData)
             {
-                throw new AlreadyApprovedException(nameof(Group));
+                var group = await dbContext.Groups.FirstOrDefaultAsync(g => g.Id == groupRequestData.GroupId) ??
+                    throw new NotFoundException(nameof(Group));
+                if (group.IsApproved)
+                {
+                    throw new AlreadyApprovedException(nameof(Group));
+                }
+                var request = new GroupRequest
+                {
+                    Group = group,
+                    SubmitNote = groupRequestData.SubmitNote,
+                    IsApproved = false,
+                    IsReviewed = false
+                };
+                await dbContext.Requests.AddAsync(request);
+                await dbContext.SaveChangesAsync();
+                return request;
             }
-            var request = new GroupRequest
+            else if (data is MemberRequestData memberRequestData)
             {
-                Group = group,
-                SubmitNote = data.SubmitNote,
-                IsApproved = false,
-                IsReviewed = false
-            };
-            await dbContext.Requests.AddAsync(request);
-            await dbContext.SaveChangesAsync();
-            return request;
-        }
+                var member = await dbContext.Members.Where(t => t.Id == memberRequestData.MemberId && t.IsApproved == false).FirstOrDefaultAsync() ??
+                    throw new NotFoundException(nameof(Member));
+                var group = await dbContext.Groups.FirstOrDefaultAsync(g => g.Id == memberRequestData.GroupId) ??
+                    throw new NotFoundException(nameof(Group));
+                var request = new MemberRequest
+                {
+                    Member = member,
+                    Group = group,
+                    SubmitNote = memberRequestData.SubmitNote
+                };
 
-        public async Task<MemberRequest> Add(MemberRequestData data)
-        {
-            using var dbContext = await _contextFactory.CreateDbContextAsync();
-            var member = await dbContext.Members.Where(t => t.Id == data.MemberId && t.IsApproved == false).FirstOrDefaultAsync() ??
-                throw new NotFoundException(nameof(Member));
-            var group = await dbContext.Groups.FirstOrDefaultAsync(g => g.Id == data.GroupId) ??
-                throw new NotFoundException(nameof(Group));
-            var request = new MemberRequest
-            {
-                Member = member,
-                Group = group,
-                SubmitNote = data.SubmitNote
-            };
-
-            await dbContext.Requests.AddAsync(request);
-            await dbContext.SaveChangesAsync();
-            return request;
-        }
-
-        public async Task<TitleRequest> Add(TitleRequestData data)
-        {
-            using var dbContext = await _contextFactory.CreateDbContextAsync();
-            var title = await dbContext.Titles.Where(t => t.Id == data.TitleId && t.IsApproved == false).FirstOrDefaultAsync() ??
-                throw new NotFoundException(nameof(Title));
-            var group = await dbContext.Groups.FirstOrDefaultAsync(g => g.Id == data.GroupId) ??
-                throw new NotFoundException(nameof(Group));
-            var request = new TitleRequest
-            {
-                Title = title,
-                Group = group,
-                SubmitNote = data.SubmitNote
-            };
-
-            await dbContext.Requests.AddAsync(request);
-            await dbContext.SaveChangesAsync();
-            return request;
-        }
-
-        public async Task<ChapterRequest> Add(ChapterRequestData data)
-        {
-            using var dbContext = await _contextFactory.CreateDbContextAsync();
-            var chapter = await dbContext.Chapters.FirstOrDefaultAsync(t => t.Id == data.ChapterId) ??
-                throw new NotFoundException(nameof(Chapter));
-            if (chapter.IsApproved)
-            {
-                throw new AlreadyApprovedException(nameof(Chapter));
+                await dbContext.Requests.AddAsync(request);
+                await dbContext.SaveChangesAsync();
+                return request;
             }
-            var group = await dbContext.Groups.FirstOrDefaultAsync(g => g.Id == data.GroupId) ??
-                throw new NotFoundException(nameof(Group));
-            group.CheckUploadContions();
-
-            var request = new ChapterRequest
+            else if (data is TitleRequestData titleRequestData)
             {
-                Chapter = chapter,
-                Group = group,
-                SubmitNote = data.SubmitNote,
-                IsApproved = false,
-                IsReviewed = false
-            };
+                var title = await dbContext.Titles.Where(t => t.Id == titleRequestData.TitleId && t.IsApproved == false).FirstOrDefaultAsync() ??
+                    throw new NotFoundException(nameof(Title));
+                var group = await dbContext.Groups.FirstOrDefaultAsync(g => g.Id == titleRequestData.GroupId) ??
+                    throw new NotFoundException(nameof(Group));
+                var request = new TitleRequest
+                {
+                    Title = title,
+                    Group = group,
+                    SubmitNote = titleRequestData.SubmitNote
+                };
 
-            await dbContext.Requests.AddAsync(request);
-            await dbContext.SaveChangesAsync();
-            return request;
-        }
-
-        public async Task<AuthorRequest> Add(AuthorRequestData data)
-        {
-            using var dbContext = await _contextFactory.CreateDbContextAsync();
-            var person = await dbContext.People.FirstOrDefaultAsync(p => p.Id == data.PersonId) ??
-                throw new NotFoundException(nameof(Person));
-            if (person.IsApproved)
-            {
-                throw new AlreadyApprovedException(nameof(Group));
+                await dbContext.Requests.AddAsync(request);
+                await dbContext.SaveChangesAsync();
+                return request;
             }
-            var request = new AuthorRequest
+            else if (data is ChapterRequestData chapterRequestData)
             {
-                Author = person,
-                SubmitNote = data.SubmitNote,
-                IsApproved = false,
-                IsReviewed = false
-            };
-            await dbContext.Requests.AddAsync(request);
-            await dbContext.SaveChangesAsync();
-            return request;
-        }
+                var chapter = await dbContext.Chapters.FirstOrDefaultAsync(t => t.Id == chapterRequestData.ChapterId) ??
+                    throw new NotFoundException(nameof(Chapter));
+                if (chapter.IsApproved)
+                {
+                    throw new AlreadyApprovedException(nameof(Chapter));
+                }
+                var group = await dbContext.Groups.FirstOrDefaultAsync(g => g.Id == chapterRequestData.GroupId) ??
+                    throw new NotFoundException(nameof(Group));
+                group.CheckUploadContions();
 
-        public async Task<ArtistRequest> Add(ArtistRequestData data)
-        {
-            using var dbContext = await _contextFactory.CreateDbContextAsync();
-            var person = await dbContext.People.FirstOrDefaultAsync(p => p.Id == data.PersonId) ??
-                throw new NotFoundException(nameof(Person));
-            if (person.IsApproved)
-            {
-                throw new AlreadyApprovedException(nameof(Group));
+                var request = new ChapterRequest
+                {
+                    Chapter = chapter,
+                    Group = group,
+                    SubmitNote = chapterRequestData.SubmitNote,
+                    IsApproved = false,
+                    IsReviewed = false
+                };
+
+                await dbContext.Requests.AddAsync(request);
+                await dbContext.SaveChangesAsync();
+                return request;
             }
-            var request = new ArtistRequest
+            else if (data is AuthorRequestData authorRequestData)
             {
-                Artist = person,
-                SubmitNote = data.SubmitNote,
-                IsApproved = false,
-                IsReviewed = false
-            };
-            await dbContext.Requests.AddAsync(request);
-            await dbContext.SaveChangesAsync();
-            return request;
+                var person = await dbContext.People.FirstOrDefaultAsync(p => p.Id == authorRequestData.PersonId) ??
+                    throw new NotFoundException(nameof(Person));
+                if (person.IsApproved)
+                {
+                    throw new AlreadyApprovedException(nameof(Group));
+                }
+                var request = new AuthorRequest
+                {
+                    Author = person,
+                    SubmitNote = authorRequestData.SubmitNote,
+                    IsApproved = false,
+                    IsReviewed = false
+                };
+                await dbContext.Requests.AddAsync(request);
+                await dbContext.SaveChangesAsync();
+                return request;
+            }
+            else if (data is ArtistRequestData artistRequestData)
+            {
+                var person = await dbContext.People.FirstOrDefaultAsync(p => p.Id == artistRequestData.PersonId) ??
+                    throw new NotFoundException(nameof(Person));
+                if (person.IsApproved)
+                {
+                    throw new AlreadyApprovedException(nameof(Group));
+                }
+                var request = new ArtistRequest
+                {
+                    Artist = person,
+                    SubmitNote = artistRequestData.SubmitNote,
+                    IsApproved = false,
+                    IsReviewed = false
+                };
+                await dbContext.Requests.AddAsync(request);
+                await dbContext.SaveChangesAsync();
+                return request;
+            }
+            else
+            {
+                //TO BE FIXED
+                throw new Exception();
+            }
         }
 
         public async Task<Request> Update(string id, string note)
@@ -377,7 +380,7 @@ namespace MangaHomeService.Services
             using var dbContext = await _contextFactory.CreateDbContextAsync();
             var request = await dbContext.Requests.FirstOrDefaultAsync(r => r.Id == id)
                 ?? throw new NotFoundException(typeof(Request).Name);
-            request.ReviewNote = note;
+            request.SubmitNote = note;
             await dbContext.SaveChangesAsync();
             return request;
         }

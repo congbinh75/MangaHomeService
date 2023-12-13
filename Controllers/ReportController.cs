@@ -1,3 +1,4 @@
+using MangaHomeService.Models.Entities;
 using MangaHomeService.Models.InputModels;
 using MangaHomeService.Services;
 using MangaHomeService.Utils;
@@ -7,16 +8,16 @@ using Microsoft.Extensions.Localization;
 
 namespace MangaHomeService.Controllers
 {
-    [Route("api/request")]
+    [Route("api/report")]
     [ApiController]
     public class ReportController : ControllerBase
     {
-        private readonly IRequestService _requestService;
+        private readonly IReportService _reportService;
         private readonly IStringLocalizer<ReportController> _stringLocalizer;
 
-        public ReportController(IRequestService requestService, IStringLocalizer<ReportController> stringLocalizer)
+        public ReportController(IReportService reportService, IStringLocalizer<ReportController> stringLocalizer)
         {
-            _requestService = requestService;
+            _reportService = reportService;
             _stringLocalizer = stringLocalizer;
         }
 
@@ -28,7 +29,7 @@ namespace MangaHomeService.Controllers
             {
                 if (!string.IsNullOrEmpty(id))
                 {
-                    var group = await _requestService.Get(id);
+                    var group = await _reportService.Get(id);
                     return Ok(group);
                 }
                 else
@@ -49,7 +50,7 @@ namespace MangaHomeService.Controllers
         {
             try
             {
-                return (IActionResult)await _requestService.GetAll(input.Keyword, input.PageNumber, input.PageSize, input.RequestType, input.IsReviewedIncluded);
+                return (IActionResult)await _reportService.GetAll(input.Keyword, input.PageNumber, input.PageSize, input.RequestType, input.IsReviewedIncluded);
             }
             catch (Exception)
             {
@@ -60,27 +61,11 @@ namespace MangaHomeService.Controllers
         [HttpPost]
         [Authorize]
         [Route("submit-group")]
-        public async Task<IActionResult> Submit([FromBody] GroupRequestData input)
+        public async Task<IActionResult> Submit([FromBody] GroupReportData input)
         {
             try
             {
-                var request = await _requestService.Add(input);
-                return Ok(request);
-            }
-            catch (Exception)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = _stringLocalizer["ERR_UNEXPECTED_ERROR"] });
-            }
-        }
-
-        [HttpPost]
-        [Authorize]
-        [Route("submit-member")]
-        public async Task<IActionResult> Submit([FromBody] MemberRequestData input)
-        {
-            try
-            {
-                var request = await _requestService.Add(input);
+                var request = await _reportService.Add(input);
                 return Ok(request);
             }
             catch (Exception)
@@ -92,11 +77,11 @@ namespace MangaHomeService.Controllers
         [HttpPost]
         [Authorize]
         [Route("submit-title")]
-        public async Task<IActionResult> Submit([FromBody] TitleRequestData input)
+        public async Task<IActionResult> Submit([FromBody] TitleReportData input)
         {
             try
             {
-                var request = await _requestService.Add(input);
+                var request = await _reportService.Add(input);
                 return Ok(request);
             }
             catch (Exception)
@@ -108,11 +93,11 @@ namespace MangaHomeService.Controllers
         [HttpPost]
         [Authorize]
         [Route("submit-chapter")]
-        public async Task<IActionResult> Submit([FromBody] ChapterRequestData input)
+        public async Task<IActionResult> Submit([FromBody] ChapterReportData input)
         {
             try
             {
-                var request = await _requestService.Add(input);
+                var request = await _reportService.Add(input);
                 return Ok(request);
             }
             catch (Exception)
@@ -123,28 +108,12 @@ namespace MangaHomeService.Controllers
 
         [HttpPost]
         [Authorize]
-        [Route("submit-author")]
-        public async Task<IActionResult> Submit([FromBody] AuthorRequestData input)
+        [Route("submit-user")]
+        public async Task<IActionResult> Submit([FromBody] UserReportData input)
         {
             try
             {
-                var request = await _requestService.Add(input);
-                return Ok(request);
-            }
-            catch (Exception)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = _stringLocalizer["ERR_UNEXPECTED_ERROR"] });
-            }
-        }
-
-        [HttpPost]
-        [Authorize]
-        [Route("submit-artist")]
-        public async Task<IActionResult> Submit([FromBody] ArtistRequestData input)
-        {
-            try
-            {
-                var request = await _requestService.Add(input);
+                var request = await _reportService.Add(input);
                 return Ok(request);
             }
             catch (Exception)
@@ -156,11 +125,11 @@ namespace MangaHomeService.Controllers
         [HttpPost]
         [Authorize]
         [Route("review")]
-        public async Task<IActionResult> Review([FromBody] ReviewRequest input)
+        public async Task<IActionResult> Review([FromBody] ReviewReport input)
         {
             try
             {
-                var request = await _requestService.Review(input.Id, input.ReviewNote, input.IsApproved);
+                var request = await _reportService.Review(input.Id);
                 return Ok(request);
             }
             catch (Exception)

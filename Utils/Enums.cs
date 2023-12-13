@@ -37,10 +37,9 @@
         public enum ReportType
         {
             Group = 0,
-            Member = 1,
-            Title = 2,
-            Chapter = 3,
-            User = 4
+            Title = 1,
+            Chapter = 2,
+            User = 3
         }
     }
 }
