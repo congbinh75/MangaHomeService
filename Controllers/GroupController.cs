@@ -21,19 +21,13 @@ namespace MangaHomeService.Controllers
 
         [HttpGet]
         [AllowAnonymous]
-        public async Task<IActionResult> Get([FromQuery] string id)
+        [Route("/{id}")]
+        public async Task<IActionResult> Get([FromQuery] GetGroup input)
         {
             try
             {
-                if (!string.IsNullOrEmpty(id))
-                {
-                    var group = await _groupService.Get(id);
-                    return Ok(group);
-                }
-                else
-                {
-                    return BadRequest(_stringLocalizer["ERR_INVALID_INPUT_DATA"]);
-                }
+                var group = await _groupService.Get(input.Id);
+                return Ok(group);
             }
             catch (Exception)
             {
@@ -92,19 +86,12 @@ namespace MangaHomeService.Controllers
         [HttpPost]
         [Authorize]
         [Route("remove")]
-        public async Task<IActionResult> Remove([FromBody] string id)
+        public async Task<IActionResult> Remove([FromBody] RemoveGroup input)
         {
             try
             {
-                if (!string.IsNullOrEmpty(id))
-                {
-                    var group = await _groupService.Remove(id);
-                    return Ok();
-                }
-                else
-                {
-                    return BadRequest(_stringLocalizer["ERR_INVALID_INPUT_DATA"]);
-                }
+                var group = await _groupService.Remove(input.GroupId);
+                return Ok();
             }
             catch (Exception)
             {

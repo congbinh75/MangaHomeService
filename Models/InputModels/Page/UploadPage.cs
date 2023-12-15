@@ -8,7 +8,7 @@ namespace MangaHomeService.Models.InputModels
         public required string ChapterId { get; set; }
 
         [Required]
-        [Range(0, int.MaxValue)]
+        [Range(1, int.MaxValue)]
         public int Number { get; set; }
 
         [Required]

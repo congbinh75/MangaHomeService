@@ -8,6 +8,7 @@ namespace MangaHomeService.Models.InputModels
         public required string Id { get; set; }
 
         [Required]
-        public required string Number { get; set; }
+        [Range(1, int.MaxValue)]
+        public required int Number { get; set; }
     }
 }
