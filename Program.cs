@@ -1,6 +1,8 @@
 using MangaHomeService.Models;
+using MangaHomeService.Models.Entities;
 using MangaHomeService.Policies;
 using MangaHomeService.Services;
+using MangaHomeService.Utils;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Localization;
@@ -16,10 +18,14 @@ builder.Services.AddScoped<ICommentService, CommentService>();
 builder.Services.AddScoped<IChapterService, ChapterService>();
 builder.Services.AddScoped<IGroupService, GroupService>();
 builder.Services.AddScoped<IPageService, PageService>();
+builder.Services.AddScoped<IPersonService, PersonService>();
 builder.Services.AddScoped<IReadingListService, ReadingListService>();
+builder.Services.AddScoped<IReportService, ReportService>();
+builder.Services.AddScoped<IRequestService, RequestService>();
 builder.Services.AddScoped<ITagService, TagService>();
 builder.Services.AddScoped<ITitleService, TitleService>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<ITokenInfoProvider, TokenInfoProvider>();
 
 builder.Services.AddSingleton<IAuthorizationRequirement, EmailConfirmedRequirement>();
 builder.Services.AddSingleton<IAuthorizationRequirement, NotBannedRequirement>();

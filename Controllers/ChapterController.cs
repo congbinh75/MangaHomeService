@@ -34,7 +34,7 @@ namespace MangaHomeService.Controllers
 
         [HttpGet]
         [AllowAnonymous]
-        [Route("/{id}")]
+        [Route("get")]
         public async Task<IActionResult> Get([FromQuery] GetChapter input)
         {
             try
@@ -54,6 +54,7 @@ namespace MangaHomeService.Controllers
 
         [HttpGet]
         [AllowAnonymous]
+        [Route("get-by-title")]
         public async Task<IActionResult> GetByTitle([FromQuery] GetChaptersByTitle input)
         {
             try

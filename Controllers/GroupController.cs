@@ -6,7 +6,7 @@ using Microsoft.Extensions.Localization;
 
 namespace MangaHomeService.Controllers
 {
-    [Route("api/group")]
+    [Route("group")]
     [ApiController]
     public class GroupController : ControllerBase
     {
@@ -21,7 +21,7 @@ namespace MangaHomeService.Controllers
 
         [HttpGet]
         [AllowAnonymous]
-        [Route("/{id}")]
+        [Route("get")]
         public async Task<IActionResult> Get([FromQuery] GetGroup input)
         {
             try
