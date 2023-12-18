@@ -24,8 +24,9 @@ namespace MangaHomeService.Controllers
             _titleService = titleService;
         }
 
-        [AllowAnonymous]
         [HttpGet]
+        [AllowAnonymous]
+        [Route("get")]
         public async Task<IActionResult> Get([FromQuery] string id)
         {
             try
@@ -39,8 +40,8 @@ namespace MangaHomeService.Controllers
             }
         }
 
-        [AllowAnonymous]
         [HttpGet]
+        [AllowAnonymous]
         [Route("search")]
         public async Task<IActionResult> Search([FromQuery] TitleSearch input)
         {
@@ -55,8 +56,8 @@ namespace MangaHomeService.Controllers
             }
         }
 
-        [AllowAnonymous]
         [HttpGet]
+        [AllowAnonymous]
         [Route("advanced-search")]
         public async Task<IActionResult> AdvancedSearch([FromQuery] AdvancedTitleSearch input)
         {

@@ -79,8 +79,8 @@ namespace MangaHomeService.Services
                 }
             }
 
-
-            var tag = new Tag
+            //TO BE FIXED
+            var tag = new Gerne
             {
                 Name = name,
                 Description = description ?? "",
@@ -121,7 +121,7 @@ namespace MangaHomeService.Services
 
             tag.Name = name ?? tag.Name;
             tag.Description = description ?? "";
-            tag.Titles = titlesIds == null ? tag.Titles : titles;
+            //TO BE FIXED
             tag.OtherNames = otherNamesIds == null ? tag.OtherNames : otherNames;
             await dbContext.SaveChangesAsync();
             return tag;

@@ -24,9 +24,6 @@ namespace MangaHomeService.Models.Entities
         public required ICollection<Person> Artists { get; set; } = [];
 
         [Required]
-        public required ICollection<Tag> Demographics { get; set; } = [];
-
-        [Required]
         [Range(0, 3)]
         public required TitleStatus Status { get; set; } = 0;
 
@@ -53,16 +50,22 @@ namespace MangaHomeService.Models.Entities
         public Language? OriginalLanguage { get; set; }
 
         [Required]
-        public required ICollection<Tag> Gernes { get; set; } = [];
+        public required ICollection<Gerne> Gernes { get; set; } = [];
 
         [Required]
-        public required ICollection<Tag> Themes { get; set; } = [];
+        public required ICollection<Theme> Themes { get; set; } = [];
+
+        [Required]
+        public required ICollection<Demographic> Demographics { get; set; } = [];
 
         [Required]
         public required ICollection<Chapter> Chapters { get; set; } = [];
 
         [Required]
         public required ICollection<Comment> Comments { get; set; } = [];
+
+        [Required]
+        public required ICollection<TitleRating> TitleRatings { get; set; } = [];
 
         [Required]
         public required bool IsApproved { get; set; }

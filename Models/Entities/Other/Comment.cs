@@ -9,6 +9,9 @@ namespace MangaHomeService.Models.Entities
 
         [Required]
         public required int Vote { get; set; } = 0;
+
+        [Required]
+        public required ICollection<CommentVote> CommentVotes { get; set; } = [];
     }
 
     public class ChapterComment : Comment

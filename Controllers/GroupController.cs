@@ -6,7 +6,7 @@ using Microsoft.Extensions.Localization;
 
 namespace MangaHomeService.Controllers
 {
-    [Route("group")]
+    [Route("api/group")]
     [ApiController]
     public class GroupController : ControllerBase
     {

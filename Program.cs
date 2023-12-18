@@ -1,11 +1,12 @@
+using MangaHomeService;
 using MangaHomeService.Models;
-using MangaHomeService.Models.Entities;
 using MangaHomeService.Policies;
 using MangaHomeService.Services;
 using MangaHomeService.Utils;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Localization;
+using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Globalization;
@@ -25,7 +26,8 @@ builder.Services.AddScoped<IRequestService, RequestService>();
 builder.Services.AddScoped<ITagService, TagService>();
 builder.Services.AddScoped<ITitleService, TitleService>();
 builder.Services.AddScoped<IUserService, UserService>();
-builder.Services.AddScoped<ITokenInfoProvider, TokenInfoProvider>();
+
+builder.Services.AddTransient<ITokenInfoProvider, TokenInfoProvider>();
 
 builder.Services.AddSingleton<IAuthorizationRequirement, EmailConfirmedRequirement>();
 builder.Services.AddSingleton<IAuthorizationRequirement, NotBannedRequirement>();
@@ -67,6 +69,12 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddHttpClient();
 builder.Services.AddSwaggerGen();
+builder.Services.AddMvc().AddViewLocalization(LanguageViewLocationExpanderFormat.Suffix)
+    .AddDataAnnotationsLocalization(options =>
+    {
+        options.DataAnnotationLocalizerProvider = (type, factory) =>
+            factory.Create(typeof(SharedResources));
+    });
 
 var app = builder.Build();
 

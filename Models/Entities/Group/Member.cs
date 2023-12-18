@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Microsoft.EntityFrameworkCore;
 using static MangaHomeService.Utils.Enums;
 
 namespace MangaHomeService.Models.Entities

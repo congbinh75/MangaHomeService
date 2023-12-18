@@ -20,7 +20,6 @@ namespace MangaHomeService.Models
         public DbSet<Comment> Comments { get; set; }
         public DbSet<Tag> Tags { get; set; }
         public DbSet<Person> People { get; set; }
-        public DbSet<ChapterTracking> ChapterTrackings { get; set; }
         public DbSet<TitleRating> TitleRatings { get; set; }
         public DbSet<Member> Members { get; set; }
         public DbSet<Request> Requests { get; set; }
@@ -36,6 +35,7 @@ namespace MangaHomeService.Models
             modelBuilder.HasDefaultSchema("MangaHome");
             base.OnModelCreating(modelBuilder);
 
+            //Title
             modelBuilder.Entity<Title>()
                 .HasMany(t => t.Authors)
                 .WithMany(p => p.AuthoredTitles)
@@ -45,6 +45,64 @@ namespace MangaHomeService.Models
                 .HasMany(t => t.Artists)
                 .WithMany(p => p.IllustratedTitles)
                 .UsingEntity(j => j.ToTable("TitlesArtists"));
+
+            modelBuilder.Entity<Title>()
+                .HasMany(t => t.Gernes)
+                .WithMany(g => g.Titles)
+                .UsingEntity(j => j.ToTable("GenresOfTitles"));
+            
+            modelBuilder.Entity<Title>()
+                .HasMany(t => t.Themes)
+                .WithMany(t => t.Titles)
+                .UsingEntity(j => j.ToTable("ThemesOfTitles"));
+
+            modelBuilder.Entity<Title>()
+                .HasMany(t => t.Demographics)
+                .WithMany(d => d.Titles)
+                .UsingEntity(j => j.ToTable("DemogrphicsOfTitles"));
+
+            //Tag
+            modelBuilder.Entity<Gerne>()
+                .HasMany(t => t.Titles);
+            
+            modelBuilder.Entity<Theme>()
+                .HasMany(t => t.Titles);
+            
+            modelBuilder.Entity<Demographic>()
+                .HasMany(t => t.Titles);
+
+            //User
+            modelBuilder.Entity<User>()
+                .HasMany(t => t.UpdateFeed);
+
+            //CommentVote
+            modelBuilder.Entity<CommentVote>()
+                .HasKey(cv => new { cv.UserId, cv.CommentId });
+            
+            modelBuilder.Entity<CommentVote>()
+                .HasOne(cv => cv.User)
+                .WithMany(u => u.CommentVotes)
+                .HasForeignKey(cv => cv.UserId);
+
+            modelBuilder.Entity<CommentVote>()
+                .HasOne(cv => cv.Comment)
+                .WithMany(c => c.CommentVotes)
+                .HasForeignKey(cv => cv.CommentId);
+
+            //TitleRating
+            modelBuilder.Entity<TitleRating>()
+                .HasKey(cv => new { cv.UserId, cv.TitleId });
+            
+            modelBuilder.Entity<TitleRating>()
+                .HasOne(cv => cv.User)
+                .WithMany(u => u.TitleRatings)
+                .HasForeignKey(cv => cv.UserId);
+
+            modelBuilder.Entity<TitleRating>()
+                .HasOne(cv => cv.Title)
+                .WithMany(c => c.TitleRatings)
+                .HasForeignKey(cv => cv.TitleId);
+
         }
 
         public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)

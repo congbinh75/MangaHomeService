@@ -67,7 +67,8 @@ namespace MangaHomeService.Services
                 {
                     Title = title,
                     Content = content,
-                    Vote = 0
+                    Vote = 0,
+                    CommentVotes = new List<CommentVote>()
                 };
                 await dbContext.Comments.AddAsync(comment);
                 await dbContext.SaveChangesAsync();
@@ -81,7 +82,8 @@ namespace MangaHomeService.Services
                 {
                     Chapter = chapter,
                     Content = content,
-                    Vote = 0
+                    Vote = 0,
+                    CommentVotes = new List<CommentVote>()
                 };
                 await dbContext.Comments.AddAsync(comment);
                 await dbContext.SaveChangesAsync();
@@ -95,7 +97,8 @@ namespace MangaHomeService.Services
                 {
                     Group = group,
                     Content = content,
-                    Vote = 0
+                    Vote = 0,
+                    CommentVotes = new List<CommentVote>()
                 };
                 await dbContext.Comments.AddAsync(comment);
                 await dbContext.SaveChangesAsync();
@@ -139,7 +142,9 @@ namespace MangaHomeService.Services
             {
                 Comment = comment,
                 IsUpvote = isUpvote,
-                User = user
+                User = user,
+                CommentId = comment.Id,
+                UserId = user.Id
             };
             await dbContext.CommentVotes.AddAsync(vote);
             await dbContext.SaveChangesAsync();

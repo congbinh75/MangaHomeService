@@ -22,6 +22,7 @@ namespace MangaHomeService.Controllers
 
         [HttpGet]
         [Authorize]
+        [Route("get")]
         public async Task<IActionResult> Get([FromQuery] string id)
         {
             try

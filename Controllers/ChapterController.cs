@@ -13,14 +13,14 @@ namespace MangaHomeService.Controllers
     public class ChapterController : ControllerBase
     {
         private IConfiguration _configuration;
-        private IStringLocalizer<ChapterController> _stringLocalizer;
+        private IStringLocalizer<SharedResources> _stringLocalizer;
         private ITitleService _titleService;
         private IChapterService _chapterService;
         private IPageService _pageService;
 
         public ChapterController(
             IConfiguration configuration,
-            IStringLocalizer<ChapterController> stringLocalizer,
+            IStringLocalizer<SharedResources> stringLocalizer,
             ITitleService titleService,
             IChapterService chapterService,
             IPageService pageService)

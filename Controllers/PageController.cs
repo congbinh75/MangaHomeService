@@ -13,12 +13,12 @@ namespace MangaHomeService.Controllers
     public class PageController : ControllerBase
     {
         private IConfiguration _configuration;
-        private IStringLocalizer<ChapterController> _stringLocalizer;
+        private IStringLocalizer<SharedResources> _stringLocalizer;
         private IPageService _pageService;
 
         public PageController(
             IConfiguration configuration,
-            IStringLocalizer<ChapterController> stringLocalizer,
+            IStringLocalizer<SharedResources> stringLocalizer,
             IPageService pageService)
         {
             _configuration = configuration;
@@ -28,12 +28,12 @@ namespace MangaHomeService.Controllers
 
         [HttpPost]
         [Authorize]
-        [Route("/{id}")]
-        public async Task<IActionResult> Get([FromBody] UploadPage input)
+        [Route("get")]
+        public async Task<IActionResult> Get([FromBody] GetPage input)
         {
             try
             {
-                var page = await _pageService.Add(chapterId: input.ChapterId.Trim(), number: input.Number, file: input.File);
+                var page = await _pageService.Get(input.Id);
                 return Ok(page);
             }
             catch (NotFoundException)

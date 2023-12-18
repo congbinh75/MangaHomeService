@@ -34,14 +34,23 @@ namespace MangaHomeService.Models.Entities
         public required byte[] Salt { get; set; } = [];
 
         [Required]
-        public List<Group> Groups { get; set; } = [];
+        public ICollection<Member> Members { get; set; } = [];
 
         [Required]
-        public List<Title> UpdateFeed { get; set; } = [];
+        public ICollection<Title> UpdateFeed { get; set; } = [];
 
         [Required]
         public required bool IsBanned { get; set; } = false;
 
         public string? EmailConfirmationToken { get; set; }
+
+        [Required]
+        public required ICollection<Chapter> ChapterTrackings { get; set; } = [];
+
+        [Required]
+        public required ICollection<CommentVote> CommentVotes { get; set; } = [];
+
+        [Required]
+        public required ICollection<TitleRating> TitleRatings { get; set; } = [];
     }
 }

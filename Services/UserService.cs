@@ -76,7 +76,10 @@ namespace MangaHomeService.Services
                 ProfilePicture = "",
                 Salt = passAndSalt.salt,
                 Role = role,
-                IsBanned = false
+                IsBanned = false,
+                ChapterTrackings = new List<Chapter>(),
+                CommentVotes = new List<CommentVote>(),
+                TitleRatings = new List<TitleRating>()
             };
             await dbContext.Users.AddAsync(user);
             await dbContext.SaveChangesAsync();
