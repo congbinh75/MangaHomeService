@@ -38,11 +38,11 @@ namespace MangaHomeService.Controllers
             }
             catch (NotFoundException)
             {
-                return BadRequest(_stringLocalizer["ERR_CHAPTER_NOT_FOUND"]);
+                return NotFound(_stringLocalizer["ERR_CHAPTER_NOT_FOUND"].Value);
             }
             catch (Exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = _stringLocalizer["ERR_UNEXPECTED_ERROR"] });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = _stringLocalizer["ERR_UNEXPECTED_ERROR"].Value });
             }
         }
 
@@ -63,7 +63,7 @@ namespace MangaHomeService.Controllers
             }
             catch (NotFoundException)
             {
-                return BadRequest(_stringLocalizer["ERR_CHAPTER_NOT_FOUND"]);
+                return NotFound(_stringLocalizer["ERR_CHAPTER_NOT_FOUND"].Value);
             }
             catch (ArgumentException)
             {
@@ -72,7 +72,7 @@ namespace MangaHomeService.Controllers
             }
             catch (Exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = _stringLocalizer["ERR_UNEXPECTED_ERROR"] });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = _stringLocalizer["ERR_UNEXPECTED_ERROR"].Value });
             }
         }
 
@@ -88,7 +88,7 @@ namespace MangaHomeService.Controllers
             }
             catch (NotFoundException)
             {
-                return BadRequest(_stringLocalizer["ERR_CHAPTER_NOT_FOUND"]);
+                return NotFound(_stringLocalizer["ERR_CHAPTER_NOT_FOUND"].Value);
             }
             catch (ArgumentException)
             {
@@ -97,7 +97,7 @@ namespace MangaHomeService.Controllers
             }
             catch (Exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = _stringLocalizer["ERR_UNEXPECTED_ERROR"] });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = _stringLocalizer["ERR_UNEXPECTED_ERROR"].Value });
             }
         }
 
@@ -124,7 +124,7 @@ namespace MangaHomeService.Controllers
             }
             catch (Exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = _stringLocalizer["ERR_UNEXPECTED_ERROR"] });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = _stringLocalizer["ERR_UNEXPECTED_ERROR"].Value });
             }
         }
     }

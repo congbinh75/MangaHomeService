@@ -48,7 +48,7 @@ namespace MangaHomeService.Controllers
             }
             catch (Exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = _stringLocalizer["ERR_UNEXPECTED_ERROR"] });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = _stringLocalizer["ERR_UNEXPECTED_ERROR"].Value });
             }
         }
 
@@ -64,11 +64,11 @@ namespace MangaHomeService.Controllers
             }
             catch (NotFoundException)
             {
-                return BadRequest(_stringLocalizer["ERR_TITLE_NOT_FOUND"]);
+                return NotFound(_stringLocalizer["ERR_TITLE_NOT_FOUND"].Value);
             }
             catch (Exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = _stringLocalizer["ERR_UNEXPECTED_ERROR"] });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = _stringLocalizer["ERR_UNEXPECTED_ERROR"].Value });
             }
         }
 
@@ -86,28 +86,28 @@ namespace MangaHomeService.Controllers
             {
                 if (ex.Message == nameof(Title))
                 {
-                    return BadRequest(_stringLocalizer["ERR_TITLE_NOT_FOUND"]);
+                    return NotFound(_stringLocalizer["ERR_TITLE_NOT_FOUND"].Value);
                 }
                 else if (ex.Message == nameof(Group))
                 {
-                    return BadRequest(_stringLocalizer["ERR_GROUP_NOT_FOUND"]);
+                    return NotFound(_stringLocalizer["ERR_GROUP_NOT_FOUND"].Value);
                 }
                 else if (ex.Message == nameof(Volume))
                 {
-                    return BadRequest(_stringLocalizer["ERR_VOLUME_NOT_FOUND"]);
+                    return NotFound(_stringLocalizer["ERR_VOLUME_NOT_FOUND"].Value);
                 }
                 else if (ex.Message == nameof(Language))
                 {
-                    return BadRequest(_stringLocalizer["ERR_LANGUAGE_NOT_FOUND"]);
+                    return NotFound(_stringLocalizer["ERR_LANGUAGE_NOT_FOUND"].Value);
                 }
                 else
                 {
-                    return StatusCode(StatusCodes.Status500InternalServerError, new { Message = _stringLocalizer["ERR_UNEXPECTED_ERROR"] });
+                    return StatusCode(StatusCodes.Status500InternalServerError, new { Message = _stringLocalizer["ERR_UNEXPECTED_ERROR"].Value });
                 }
             }
             catch (Exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = _stringLocalizer["ERR_UNEXPECTED_ERROR"] });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = _stringLocalizer["ERR_UNEXPECTED_ERROR"].Value });
             }
         }
 
@@ -123,7 +123,7 @@ namespace MangaHomeService.Controllers
             }
             catch
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = _stringLocalizer["ERR_UNEXPECTED_ERROR"] });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = _stringLocalizer["ERR_UNEXPECTED_ERROR"].Value });
             }
         }
 
@@ -139,7 +139,7 @@ namespace MangaHomeService.Controllers
             }
             catch (Exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = _stringLocalizer["ERR_UNEXPECTED_ERROR"] });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = _stringLocalizer["ERR_UNEXPECTED_ERROR"].Value });
             }
         }
 
@@ -155,7 +155,7 @@ namespace MangaHomeService.Controllers
             }
             catch (Exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = _stringLocalizer["ERR_UNEXPECTED_ERROR"] });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = _stringLocalizer["ERR_UNEXPECTED_ERROR"].Value });
             }
         }
     }

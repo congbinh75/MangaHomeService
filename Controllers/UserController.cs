@@ -16,13 +16,13 @@ namespace MangaHomeService.Controllers
     public class UserController : ControllerBase
     {
         private readonly IConfiguration _configuration;
-        private readonly IStringLocalizer<UserController> _stringLocalizer;
+        private readonly IStringLocalizer<SharedResources> _stringLocalizer;
         private readonly IUserService _userService;
         private readonly ITokenInfoProvider _tokenInfoProvider;
 
         public UserController(
             IConfiguration configuration,
-            IStringLocalizer<UserController> stringLocalizer,
+            IStringLocalizer<SharedResources> stringLocalizer,
             IUserService userService,
             ITokenInfoProvider tokenInfoProvider)
         {
@@ -44,7 +44,7 @@ namespace MangaHomeService.Controllers
             }
             catch (Exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = _stringLocalizer["ERR_UNEXPECTED_ERROR"] });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = _stringLocalizer["ERR_UNEXPECTED_ERROR"].Value });
             }
         }
 
@@ -87,7 +87,7 @@ namespace MangaHomeService.Controllers
             }
             catch (Exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = _stringLocalizer["ERR_UNEXPECTED_ERROR"] });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = _stringLocalizer["ERR_UNEXPECTED_ERROR"].Value });
             }
         }
 
@@ -110,13 +110,9 @@ namespace MangaHomeService.Controllers
                     return BadRequest();
                 }
             }
-            catch (ArgumentException)
-            {
-                return BadRequest(_configuration["ERR_INVALID_INPUT_DATA"]);
-            }
             catch (Exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = _stringLocalizer["ERR_UNEXPECTED_ERROR"] });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = _stringLocalizer["ERR_UNEXPECTED_ERROR"].Value });
             }
 
         }
@@ -144,7 +140,7 @@ namespace MangaHomeService.Controllers
             }
             catch (Exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = _stringLocalizer["ERR_UNEXPECTED_ERROR"] });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = _stringLocalizer["ERR_UNEXPECTED_ERROR"].Value });
             }
         }
 
@@ -160,30 +156,23 @@ namespace MangaHomeService.Controllers
             }
             catch (Exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = _stringLocalizer["ERR_UNEXPECTED_ERROR"] });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = _stringLocalizer["ERR_UNEXPECTED_ERROR"].Value });
             }
         }
 
         [HttpGet]
-        [Authorize]
+        [AllowAnonymous]
         [Route("confirm-email")]
         public async Task<IActionResult> ConfirmEmail([FromQuery] string userId, string token)
         {
             try
             {
-                if (!string.IsNullOrEmpty(userId) && !string.IsNullOrEmpty(token))
-                {
-                    await _userService.ConfirmEmail(userId, token);
-                    return Ok();
-                }
-                else
-                {
-                    return BadRequest(_stringLocalizer["ERR_INVALID_INPUT_DATA"]);
-                }
+                await _userService.ConfirmEmail(userId, token);
+                return Ok();
             }
             catch (Exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = _stringLocalizer["ERR_UNEXPECTED_ERROR"] });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = _stringLocalizer["ERR_UNEXPECTED_ERROR"].Value });
             }
         }
     }

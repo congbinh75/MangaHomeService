@@ -101,8 +101,8 @@ namespace MangaHomeService.Services
                 newSalt = passAndSalt.salt;
             }
 
-            user.Username = name == null ? user.Username : name;
-            user.Email = email == null ? user.Email : email;
+            user.Username = name ?? user.Username;
+            user.Email = email ?? user.Email;
             user.Role = role == null ? user.Role : (int)role;
             user.IsEmailConfirmed = isEmailConfirmed == null ? user.IsEmailConfirmed : (bool)isEmailConfirmed;
             user.ProfilePicture = profilePicture == null ? user.ProfilePicture :

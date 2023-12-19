@@ -11,12 +11,12 @@ namespace MangaHomeService.Controllers
     public class TitleController : ControllerBase
     {
         private readonly IConfiguration _configuration;
-        private readonly IStringLocalizer<TitleController> _stringLocalizer;
+        private readonly IStringLocalizer<SharedResources> _stringLocalizer;
         private readonly ITitleService _titleService;
 
         public TitleController(
             IConfiguration configuration,
-            IStringLocalizer<TitleController> stringLocalizer,
+            IStringLocalizer<SharedResources> stringLocalizer,
             ITitleService titleService)
         {
             _configuration = configuration;
@@ -36,7 +36,7 @@ namespace MangaHomeService.Controllers
             }
             catch (Exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = _stringLocalizer["ERR_UNEXPECTED_ERROR"] });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = _stringLocalizer["ERR_UNEXPECTED_ERROR"].Value });
             }
         }
 
@@ -52,7 +52,7 @@ namespace MangaHomeService.Controllers
             }
             catch (Exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = _stringLocalizer["ERR_UNEXPECTED_ERROR"] });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = _stringLocalizer["ERR_UNEXPECTED_ERROR"].Value });
             }
         }
 
@@ -92,7 +92,7 @@ namespace MangaHomeService.Controllers
             }
             catch (Exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = _stringLocalizer["ERR_UNEXPECTED_ERROR"] });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = _stringLocalizer["ERR_UNEXPECTED_ERROR"].Value });
             }
         }
     }
