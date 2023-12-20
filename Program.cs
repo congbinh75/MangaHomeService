@@ -50,7 +50,7 @@ builder.Services.AddAuthorization(options =>
 {
     options.DefaultPolicy = new AuthorizationPolicyBuilder()
         .RequireAuthenticatedUser()
-        .AddRequirements(new EmailConfirmedRequirement())
+        .AddRequirements(new NotBannedRequirement())
         .Build();
     options.AddPolicy("EmailConfirmedRequirement", policyBuilder =>
     {
