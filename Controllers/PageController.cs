@@ -1,9 +1,9 @@
-using MangaHomeService.Models.Entities;
 using MangaHomeService.Models.InputModels;
 using MangaHomeService.Services;
 using MangaHomeService.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.Localization;
 
 namespace MangaHomeService.Controllers
@@ -26,10 +26,10 @@ namespace MangaHomeService.Controllers
             _pageService = pageService;
         }
 
-        [HttpPost]
-        [Authorize]
+        [HttpGet]
+        [AllowAnonymous]
         [Route("get")]
-        public async Task<IActionResult> Get([FromBody] GetPage input)
+        public async Task<IActionResult> Get([FromQuery] GetPage input)
         {
             try
             {
@@ -38,7 +38,38 @@ namespace MangaHomeService.Controllers
             }
             catch (NotFoundException)
             {
-                return NotFound(_stringLocalizer["ERR_CHAPTER_NOT_FOUND"].Value);
+                return NotFound(_stringLocalizer["ERR_PAGE_NOT_FOUND"].Value);
+            }
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = _stringLocalizer["ERR_UNEXPECTED_ERROR"].Value });
+            }
+        }
+
+        [HttpGet]
+        [AllowAnonymous]
+        [Route("get-file")]
+        public async Task<IActionResult> GetFile([FromQuery] GetPage input)
+        {
+            try
+            {
+                var page = await _pageService.Get(input.Id);
+                if (!System.IO.File.Exists(page.FilePath))
+                {
+                    return StatusCode(StatusCodes.Status500InternalServerError, new { Message = _stringLocalizer["ERR_FILE_NOT_FOUND"].Value });
+                }
+                var file = System.IO.File.ReadAllBytes(page.FilePath);
+                var provider = new FileExtensionContentTypeProvider();
+                const string DefaultContentType = "application/octet-stream";
+                if (!provider.TryGetContentType(page.FilePath, out string? contentType))
+                {
+                    contentType = DefaultContentType;
+                }
+                return File(file, contentType);
+            }
+            catch (NotFoundException)
+            {
+                return NotFound(_stringLocalizer["ERR_PAGE_NOT_FOUND"].Value);
             }
             catch (Exception)
             {
@@ -88,7 +119,7 @@ namespace MangaHomeService.Controllers
             }
             catch (NotFoundException)
             {
-                return NotFound(_stringLocalizer["ERR_CHAPTER_NOT_FOUND"].Value);
+                return NotFound(_stringLocalizer["ERR_PAGE_NOT_FOUND"].Value);
             }
             catch (ArgumentException)
             {

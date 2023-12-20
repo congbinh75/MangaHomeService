@@ -56,7 +56,7 @@ namespace MangaHomeService.Services
                 {
                     Chapter = chapter,
                     Number = number,
-                    File = filePath
+                    FilePath = filePath
                 };
                 await dbContext.Pages.AddAsync(page);
                 await dbContext.SaveChangesAsync();
@@ -99,7 +99,7 @@ namespace MangaHomeService.Services
             if (file != null)
             {
                 filePath = await Functions.UploadFileAsync(file, _configuration["FilesStoragePath.PagesPath"]);
-                page.File = filePath;
+                page.FilePath = filePath;
             }
 
             await dbContext.SaveChangesAsync();

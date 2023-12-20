@@ -123,6 +123,9 @@
   <data name="ERR_EMAIL_ALREADY_REGISTERED" xml:space="preserve">
     <value>Email đã được đăng ký</value>
   </data>
+  <data name="ERR_FILE_NOT_FOUND" xml:space="preserve">
+    <value>Không tìm thấy trang. Vui lòng thử lại hoặc liên hệ hỗ trợ</value>
+  </data>
   <data name="ERR_GROUP_NOT_FOUND" xml:space="preserve">
     <value>Không tìm thấy nhóm</value>
   </data>

@@ -123,6 +123,9 @@
   <data name="ERR_EMAIL_ALREADY_REGISTERED" xml:space="preserve">
     <value>Email already registered</value>
   </data>
+  <data name="ERR_FILE_NOT_FOUND" xml:space="preserve">
+    <value>Page not found. Please try again or contact support</value>
+  </data>
   <data name="ERR_GROUP_NOT_FOUND" xml:space="preserve">
     <value>Group not found</value>
   </data>
