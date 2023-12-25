@@ -1,12 +1,14 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
 namespace MangaHomeService.Models.InputModels
 {
-    public class CreateTitle
+    public class UpdateTitle
     {
         [Required]
+        public required string Id { get; set; }
+
         [MaxLength(128)]
-        public required string Name { get; set; }
+        public string? Name { get; set; } = string.Empty;
 
         [Required]
         [MaxLength(512)]
@@ -26,6 +28,22 @@ namespace MangaHomeService.Models.InputModels
         public required int Status { get; set; } = 0;
 
         [Required]
+        [Range(0, 5)]
+        public required double Rating { get; set; } = 0;
+
+        [Required]
+        [Range(0, int.MaxValue)]
+        public required int RatingVotes { get; set; } = 0;
+
+        [Required]
+        [Range(0, int.MaxValue)]
+        public required int Views { get; set; } = 0;
+
+        [Required]
+        [Range(0, int.MaxValue)]
+        public required int Bookmarks { get; set; } = 0;
+
+        [Required]
         public required ICollection<string> OtherNamesIds { get; set; } = [];
 
         [Required]
@@ -39,5 +57,17 @@ namespace MangaHomeService.Models.InputModels
 
         [Required]
         public required ICollection<string> DemographicsIds { get; set; } = [];
+
+        [Required]
+        public required ICollection<string> ChaptersIds { get; set; } = [];
+
+        [Required]
+        public required ICollection<string> CommentsIds { get; set; } = [];
+
+        [Required]
+        public required ICollection<string> TitleRatingsUsersIds { get; set; } = [];
+
+        [Required]
+        public required bool IsApproved { get; set; }
     }
 }
