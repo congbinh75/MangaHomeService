@@ -20,7 +20,7 @@ namespace MangaHomeService.Services
             ICollection<string>? artistsIds = null, TitleStatus status = TitleStatus.NotYetReleased, ICollection<string>? otherNamesIds = null, 
             string? originalLanguageId = null, ICollection<string>? genresIds = null, ICollection<string>? themesIds = null, 
             ICollection<string>? demographicsIds = null);
-        public Task<Title> Update(string id, string name = "", string? description = null, IFormFile? artwork = null,
+        public Task<Title> Update(string id, string? name = "", string? description = null, IFormFile? artwork = null,
             ICollection<string>? authorsIds = null, ICollection<string>? artistsIds = null, TitleStatus? status = null,
             double rating = 0, int ratingVotes = 0, int views = 0, int bookmarks = 0, ICollection<string>? otherNamesIds = null,
             string? originalLanguageId = null, ICollection<string>? genresIds = null, ICollection<string>? themesIds = null,
@@ -222,7 +222,7 @@ namespace MangaHomeService.Services
             return title;
         }
 
-        public async Task<Title> Update(string id, string name = "", string? description = null, IFormFile? artwork = null,
+        public async Task<Title> Update(string id, string? name = "", string? description = null, IFormFile? artwork = null,
             ICollection<string>? authorsIds = null, ICollection<string>? artistsIds = null, TitleStatus? status = null,
             double rating = 0, int ratingVotes = 0, int views = 0, int bookmarks = 0, ICollection<string>? otherNamesIds = null,
             string? originalLanguageId = null, ICollection<string>? genresIds = null, ICollection<string>? themesIds = null,

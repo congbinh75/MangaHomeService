@@ -12,9 +12,9 @@ namespace MangaHomeService.Controllers
     [ApiController]
     public class PageController : ControllerBase
     {
-        private IConfiguration _configuration;
-        private IStringLocalizer<SharedResources> _stringLocalizer;
-        private IPageService _pageService;
+        private readonly IConfiguration _configuration;
+        private readonly IStringLocalizer<SharedResources> _stringLocalizer;
+        private readonly IPageService _pageService;
 
         public PageController(
             IConfiguration configuration,

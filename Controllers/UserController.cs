@@ -98,8 +98,7 @@ namespace MangaHomeService.Controllers
         {
             try
             {
-                var currentUserName = _tokenInfoProvider.Name;
-                var user = await _userService.Get(currentUserName, input.OldPassword);
+                var user = await _userService.Get(_tokenInfoProvider.Name, input.OldPassword);
                 if (user != null)
                 {
                     await _userService.Update(id: _tokenInfoProvider.Id, password: input.NewPassword);
@@ -134,8 +133,7 @@ namespace MangaHomeService.Controllers
                     }
                 }
 
-                string currentUserId = _tokenInfoProvider.Id;
-                await _userService.Update(id: currentUserId, email: input.Email, profilePicture: input.ProfilePicture);
+                await _userService.Update(id: _tokenInfoProvider.Id, email: input.Email, profilePicture: input.ProfilePicture);
                 return Ok();
             }
             catch (Exception)

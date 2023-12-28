@@ -12,11 +12,11 @@ namespace MangaHomeService.Controllers
     [ApiController]
     public class ChapterController : ControllerBase
     {
-        private IConfiguration _configuration;
-        private IStringLocalizer<SharedResources> _stringLocalizer;
-        private ITitleService _titleService;
-        private IChapterService _chapterService;
-        private IPageService _pageService;
+        private readonly IConfiguration _configuration;
+        private readonly IStringLocalizer<SharedResources> _stringLocalizer;
+        private readonly ITitleService _titleService;
+        private readonly IChapterService _chapterService;
+        private readonly IPageService _pageService;
 
         public ChapterController(
             IConfiguration configuration,
