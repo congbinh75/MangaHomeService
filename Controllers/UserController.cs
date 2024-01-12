@@ -13,25 +13,9 @@ namespace MangaHomeService.Controllers
 {
     [Route("api/user")]
     [ApiController]
-    public class UserController : ControllerBase
+    public class UserController(IConfiguration configuration, IStringLocalizer<SharedResources> stringLocalizer, IUserService userService, 
+        ITokenInfoProvider tokenInfoProvider) : ControllerBase
     {
-        private readonly IConfiguration _configuration;
-        private readonly IStringLocalizer<SharedResources> _stringLocalizer;
-        private readonly IUserService _userService;
-        private readonly ITokenInfoProvider _tokenInfoProvider;
-
-        public UserController(
-            IConfiguration configuration,
-            IStringLocalizer<SharedResources> stringLocalizer,
-            IUserService userService,
-            ITokenInfoProvider tokenInfoProvider)
-        {
-            _configuration = configuration;
-            _stringLocalizer = stringLocalizer;
-            _userService = userService;
-            _tokenInfoProvider = tokenInfoProvider;
-        }
-
         [HttpPost]
         [AllowAnonymous]
         [Route("register")]
@@ -39,12 +23,12 @@ namespace MangaHomeService.Controllers
         {
             try
             {
-                await _userService.Add(input.Name, input.Email, input.Password, 2);
+                await userService.Add(input.Name, input.Email, input.Password, 2);
                 return Ok();
             }
             catch (Exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = _stringLocalizer["ERR_UNEXPECTED_ERROR"].Value });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = stringLocalizer["ERR_UNEXPECTED_ERROR"].Value });
             }
         }
 
@@ -55,13 +39,13 @@ namespace MangaHomeService.Controllers
         {
             try
             {
-                var user = await _userService.Get(input.Username, input.Password);
+                var user = await userService.Get(input.Username, input.Password);
 
                 if (user != null)
                 {
                     var claims = new[]
                     {
-                        new Claim(JwtRegisteredClaimNames.Sub, _configuration["Jwt:Subject"] ?? ""),
+                        new Claim(JwtRegisteredClaimNames.Sub, configuration["Jwt:Subject"] ?? ""),
                         new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                         new Claim(JwtRegisteredClaimNames.Iat, DateTime.UtcNow.ToString()),
                         new Claim(ClaimTypes.NameIdentifier, user.Id),
@@ -69,11 +53,11 @@ namespace MangaHomeService.Controllers
                         new Claim(ClaimTypes.Role, ((Enums.Role)user.Role).ToString())
                     };
 
-                    var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"] ?? ""));
+                    var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Key"] ?? ""));
                     var signIn = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
                     var token = new JwtSecurityToken(
-                        _configuration["Jwt:Issuer"],
-                        _configuration["Jwt:Audience"],
+                        configuration["Jwt:Issuer"],
+                        configuration["Jwt:Audience"],
                         claims,
                         expires: DateTime.UtcNow.AddDays(7),
                         signingCredentials: signIn);
@@ -82,12 +66,12 @@ namespace MangaHomeService.Controllers
                 }
                 else
                 {
-                    return BadRequest(_stringLocalizer["ERR_INVALID_CREDENTIALS"]);
+                    return BadRequest(stringLocalizer["ERR_INVALID_CREDENTIALS"]);
                 }
             }
             catch (Exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = _stringLocalizer["ERR_UNEXPECTED_ERROR"].Value });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = stringLocalizer["ERR_UNEXPECTED_ERROR"].Value });
             }
         }
 
@@ -98,10 +82,10 @@ namespace MangaHomeService.Controllers
         {
             try
             {
-                var user = await _userService.Get(_tokenInfoProvider.Name, input.OldPassword);
+                var user = await userService.Get(tokenInfoProvider.Name, input.OldPassword);
                 if (user != null)
                 {
-                    await _userService.Update(id: _tokenInfoProvider.Id, password: input.NewPassword);
+                    await userService.Update(id: tokenInfoProvider.Id, password: input.NewPassword);
                     return Ok();
                 }
                 else
@@ -111,7 +95,7 @@ namespace MangaHomeService.Controllers
             }
             catch (Exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = _stringLocalizer["ERR_UNEXPECTED_ERROR"].Value });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = stringLocalizer["ERR_UNEXPECTED_ERROR"].Value });
             }
 
         }
@@ -133,12 +117,12 @@ namespace MangaHomeService.Controllers
                     }
                 }
 
-                await _userService.Update(id: _tokenInfoProvider.Id, email: input.Email, profilePicture: input.ProfilePicture);
+                await userService.Update(id: tokenInfoProvider.Id, email: input.Email, profilePicture: input.ProfilePicture);
                 return Ok();
             }
             catch (Exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = _stringLocalizer["ERR_UNEXPECTED_ERROR"].Value });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = stringLocalizer["ERR_UNEXPECTED_ERROR"].Value });
             }
         }
 
@@ -149,12 +133,12 @@ namespace MangaHomeService.Controllers
         {
             try
             {
-                await _userService.SendEmailConfirmation();
+                await userService.SendEmailConfirmation();
                 return Ok();
             }
             catch (Exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = _stringLocalizer["ERR_UNEXPECTED_ERROR"].Value });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = stringLocalizer["ERR_UNEXPECTED_ERROR"].Value });
             }
         }
 
@@ -165,12 +149,12 @@ namespace MangaHomeService.Controllers
         {
             try
             {
-                await _userService.ConfirmEmail(userId, token);
+                await userService.ConfirmEmail(userId, token);
                 return Ok();
             }
             catch (Exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = _stringLocalizer["ERR_UNEXPECTED_ERROR"].Value });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = stringLocalizer["ERR_UNEXPECTED_ERROR"].Value });
             }
         }
     }

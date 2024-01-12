@@ -14,33 +14,25 @@ namespace MangaHomeService.Services
         public Task<bool> Remove(string id);
     }
 
-    public class PageService : IPageService
+    public class PageService(IDbContextFactory<MangaHomeDbContext> contextFactory, IConfiguration configuration) : IPageService
     {
-        private readonly IDbContextFactory<MangaHomeDbContext> _contextFactory;
-        private readonly IConfiguration _configuration;
-        public PageService(IDbContextFactory<MangaHomeDbContext> contextFactory, IConfiguration configuration)
-        {
-            _contextFactory = contextFactory;
-            _configuration = configuration;
-        }
-
         public async Task<Page> Get(string id)
         {
-            using var dbContext = await _contextFactory.CreateDbContextAsync();
+            using var dbContext = await contextFactory.CreateDbContextAsync();
             var page = await dbContext.Pages.FirstOrDefaultAsync(c => c.Id == id) ?? throw new NotFoundException(nameof(Page));
             return page;
         }
 
         public async Task<ICollection<Page>> GetByChapter(string chapterId)
         {
-            using var dbContext = await _contextFactory.CreateDbContextAsync();
+            using var dbContext = await contextFactory.CreateDbContextAsync();
             var pages = await dbContext.Pages.Where(c => c.Chapter.Id == chapterId).ToListAsync();
             return pages;
         }
 
         public async Task<Page> Add(string chapterId, int number, IFormFile file)
         {
-            using (var dbContext = await _contextFactory.CreateDbContextAsync())
+            using (var dbContext = await contextFactory.CreateDbContextAsync())
             {
                 var chapter = await dbContext.Chapters.FirstOrDefaultAsync(c => c.Id == chapterId) ??
                     throw new NotFoundException(nameof(Chapter));
@@ -50,7 +42,7 @@ namespace MangaHomeService.Services
                     throw new ArgumentException();
                 }
 
-                string filePath = await Functions.UploadFileAsync(file, _configuration["FilesStoragePath.PagesPath"]);
+                string filePath = await Functions.UploadFileAsync(file, configuration["FilesStoragePath.PagesPath"]);
 
                 var page = new Page
                 {
@@ -66,7 +58,7 @@ namespace MangaHomeService.Services
 
         public async Task<Page> Update(string id, string chapterId = "", int number = 0, IFormFile? file = null)
         {
-            using var dbContext = await _contextFactory.CreateDbContextAsync();
+            using var dbContext = await contextFactory.CreateDbContextAsync();
             var page = await dbContext.Pages.FirstOrDefaultAsync(p => p.Id == id) ??
                 throw new NotFoundException(nameof(Page));
             if (chapterId != "")
@@ -98,7 +90,7 @@ namespace MangaHomeService.Services
             string filePath = "";
             if (file != null)
             {
-                filePath = await Functions.UploadFileAsync(file, _configuration["FilesStoragePath.PagesPath"]);
+                filePath = await Functions.UploadFileAsync(file, configuration["FilesStoragePath.PagesPath"]);
                 page.FilePath = filePath;
             }
 
@@ -108,7 +100,7 @@ namespace MangaHomeService.Services
 
         public async Task<bool> Remove(string id)
         {
-            using var dbContext = await _contextFactory.CreateDbContextAsync();
+            using var dbContext = await contextFactory.CreateDbContextAsync();
             var page = await dbContext.Pages.FirstOrDefaultAsync(c => c.Id == id) ??
                 throw new NotFoundException(nameof(Page));
             dbContext.Pages.Remove(page);

@@ -8,17 +8,8 @@ namespace MangaHomeService.Controllers
 {
     [Route("api/group")]
     [ApiController]
-    public class GroupController : ControllerBase
+    public class GroupController(IGroupService groupService, IStringLocalizer<SharedResources> stringLocalizer) : ControllerBase
     {
-        private readonly IGroupService _groupService;
-        private readonly IStringLocalizer<SharedResources> _stringLocalizer;
-
-        public GroupController(IGroupService groupService, IStringLocalizer<SharedResources> stringLocalizer)
-        {
-            _groupService = groupService;
-            _stringLocalizer = stringLocalizer;
-        }
-
         [HttpGet]
         [AllowAnonymous]
         [Route("get")]
@@ -26,12 +17,12 @@ namespace MangaHomeService.Controllers
         {
             try
             {
-                var group = await _groupService.Get(input.Id);
+                var group = await groupService.Get(input.Id);
                 return Ok(group);
             }
             catch (Exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = _stringLocalizer["ERR_UNEXPECTED_ERROR"].Value });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = stringLocalizer["ERR_UNEXPECTED_ERROR"].Value });
             }
         }
 
@@ -42,12 +33,12 @@ namespace MangaHomeService.Controllers
         {
             try
             {
-                var group = await _groupService.GetAll(pageSize, pageNumber);
+                var group = await groupService.GetAll(pageSize, pageNumber);
                 return Ok(group);
             }
             catch (Exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = _stringLocalizer["ERR_UNEXPECTED_ERROR"].Value });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = stringLocalizer["ERR_UNEXPECTED_ERROR"].Value });
             }
         }
 
@@ -58,12 +49,12 @@ namespace MangaHomeService.Controllers
         {
             try
             {
-                var group = await _groupService.Add(input.Name, input.Description, input.ProfilePicture, input.MembersIds);
+                var group = await groupService.Add(input.Name, input.Description, input.ProfilePicture, input.MembersIds);
                 return Ok(group);
             }
             catch (Exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = _stringLocalizer["ERR_UNEXPECTED_ERROR"].Value });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = stringLocalizer["ERR_UNEXPECTED_ERROR"].Value });
             }
         }
 
@@ -74,12 +65,12 @@ namespace MangaHomeService.Controllers
         {
             try
             {
-                var group = await _groupService.Update(input.Id, input.Name, input.Description, input.ProfilePicture, input.MembersIds);
+                var group = await groupService.Update(input.Id, input.Name, input.Description, input.ProfilePicture, input.MembersIds);
                 return Ok(group);
             }
             catch (Exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = _stringLocalizer["ERR_UNEXPECTED_ERROR"].Value });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = stringLocalizer["ERR_UNEXPECTED_ERROR"].Value });
             }
         }
 
@@ -90,12 +81,12 @@ namespace MangaHomeService.Controllers
         {
             try
             {
-                var group = await _groupService.Remove(input.GroupId);
+                var group = await groupService.Remove(input.GroupId);
                 return Ok();
             }
             catch (Exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = _stringLocalizer["ERR_UNEXPECTED_ERROR"].Value });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = stringLocalizer["ERR_UNEXPECTED_ERROR"].Value });
             }
         }
     }

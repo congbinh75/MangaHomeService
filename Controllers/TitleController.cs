@@ -9,22 +9,8 @@ namespace MangaHomeService.Controllers
 {
     [Route("api/title")]
     [ApiController]
-    public class TitleController : ControllerBase
+    public class TitleController(IStringLocalizer<SharedResources> stringLocalizer, ITitleService titleService) : ControllerBase
     {
-        private readonly IConfiguration _configuration;
-        private readonly IStringLocalizer<SharedResources> _stringLocalizer;
-        private readonly ITitleService _titleService;
-
-        public TitleController(
-            IConfiguration configuration,
-            IStringLocalizer<SharedResources> stringLocalizer,
-            ITitleService titleService)
-        {
-            _configuration = configuration;
-            _stringLocalizer = stringLocalizer;
-            _titleService = titleService;
-        }
-
         [HttpGet]
         [AllowAnonymous]
         [Route("get")]
@@ -32,12 +18,12 @@ namespace MangaHomeService.Controllers
         {
             try
             {
-                var title = await _titleService.Get(id);
+                var title = await titleService.Get(id);
                 return Ok(title);
             }
             catch (Exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = _stringLocalizer["ERR_UNEXPECTED_ERROR"].Value });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = stringLocalizer["ERR_UNEXPECTED_ERROR"].Value });
             }
         }
 
@@ -48,12 +34,12 @@ namespace MangaHomeService.Controllers
         {
             try
             {
-                var titles = await _titleService.Search(keyword: input.Keyword, pageNumber: input.PageNumber, pageSize: input.PageSize);
+                var titles = await titleService.Search(keyword: input.Keyword, pageNumber: input.PageNumber, pageSize: input.PageSize);
                 return Ok(titles);
             }
             catch (Exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = _stringLocalizer["ERR_UNEXPECTED_ERROR"].Value });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = stringLocalizer["ERR_UNEXPECTED_ERROR"].Value });
             }
         }
 
@@ -78,7 +64,7 @@ namespace MangaHomeService.Controllers
                     }
                 }
 
-                var titles = await _titleService.AdvancedSearch(name: input.Name,
+                var titles = await titleService.AdvancedSearch(name: input.Name,
                     author: input.Author,
                     artist: input.Artist,
                     genreIds: input.GenreIds?.Select(x => x.Trim()).ToList(),
@@ -93,7 +79,7 @@ namespace MangaHomeService.Controllers
             }
             catch (Exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = _stringLocalizer["ERR_UNEXPECTED_ERROR"].Value });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = stringLocalizer["ERR_UNEXPECTED_ERROR"].Value });
             }
         }
 
@@ -104,7 +90,7 @@ namespace MangaHomeService.Controllers
         {
             try
             {
-                var title = await _titleService.Add(name: input.Name, description: input.Description, artwork: input.Artwork, 
+                var title = await titleService.Add(name: input.Name, description: input.Description, artwork: input.Artwork, 
                     authorsIds: input.AuthorsIds, artistsIds: input.ArtistsIds, status: (Enums.TitleStatus)input.Status, 
                     otherNamesIds: input.OtherNamesIds, originalLanguageId: input.OriginalLanguageId, genresIds: input.GernesIds, 
                     themesIds: input.ThemesIds, demographicsIds: input.DemographicsIds);
@@ -112,7 +98,7 @@ namespace MangaHomeService.Controllers
             }
             catch (Exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = _stringLocalizer["ERR_UNEXPECTED_ERROR"].Value });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = stringLocalizer["ERR_UNEXPECTED_ERROR"].Value });
             }
         }
 
@@ -123,7 +109,7 @@ namespace MangaHomeService.Controllers
         {
             try
             {
-                var title = await _titleService.Update(id: input.Id, name: input.Name, description: input.Description, 
+                var title = await titleService.Update(id: input.Id, name: input.Name, description: input.Description, 
                     artwork: input.Artwork, authorsIds: input.AuthorsIds, artistsIds: input.ArtistsIds, 
                     status: (Enums.TitleStatus)input.Status, otherNamesIds: input.OtherNamesIds, 
                     originalLanguageId: input.OriginalLanguageId, genresIds: input.GernesIds, themesIds: input.ThemesIds, 
@@ -132,7 +118,7 @@ namespace MangaHomeService.Controllers
             }
             catch (Exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = _stringLocalizer["ERR_UNEXPECTED_ERROR"].Value });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = stringLocalizer["ERR_UNEXPECTED_ERROR"].Value });
             }
         }
 
@@ -143,12 +129,12 @@ namespace MangaHomeService.Controllers
         {
             try
             {
-                var title = await _titleService.Remove(input.Id);
+                var title = await titleService.Remove(input.Id);
                 return Ok(title);
             }
             catch (Exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = _stringLocalizer["ERR_UNEXPECTED_ERROR"].Value });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = stringLocalizer["ERR_UNEXPECTED_ERROR"].Value });
             }
         }
 
@@ -159,12 +145,12 @@ namespace MangaHomeService.Controllers
         {
             try
             {
-                var title = await _titleService.AddRating(input.Id, input.Rating, input.UserId);
+                var title = await titleService.AddRating(input.Id, input.Rating, input.UserId);
                 return Ok(title);
             }
             catch (Exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = _stringLocalizer["ERR_UNEXPECTED_ERROR"].Value });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = stringLocalizer["ERR_UNEXPECTED_ERROR"].Value });
             }
         }
 
@@ -175,12 +161,12 @@ namespace MangaHomeService.Controllers
         {
             try
             {
-                var title = await _titleService.UpdateRating(input.Id, input.Rating, input.UserId);
+                var title = await titleService.UpdateRating(input.Id, input.Rating, input.UserId);
                 return Ok(title);
             }
             catch (Exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = _stringLocalizer["ERR_UNEXPECTED_ERROR"].Value });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = stringLocalizer["ERR_UNEXPECTED_ERROR"].Value });
             }
         }
 
@@ -191,12 +177,12 @@ namespace MangaHomeService.Controllers
         {
             try
             {
-                var title = await _titleService.RemoveRating(input.Id, input.UserId);
+                var title = await titleService.RemoveRating(input.Id, input.UserId);
                 return Ok(title);
             }
             catch (Exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = _stringLocalizer["ERR_UNEXPECTED_ERROR"].Value });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = stringLocalizer["ERR_UNEXPECTED_ERROR"].Value });
             }
         }
     }

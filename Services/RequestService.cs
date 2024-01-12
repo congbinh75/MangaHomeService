@@ -17,20 +17,11 @@ namespace MangaHomeService.Services
         public Task<bool> Remove(string id);
     }
 
-    public class RequestService : IRequestService
+    public class RequestService(IDbContextFactory<MangaHomeDbContext> contextFactory) : IRequestService
     {
-        private readonly IDbContextFactory<MangaHomeDbContext> _contextFactory;
-        private readonly ITokenInfoProvider _tokenInfoProvider;
-
-        public RequestService(IDbContextFactory<MangaHomeDbContext> contextFactory, ITokenInfoProvider tokenInfoProvider)
-        {
-            _contextFactory = contextFactory;
-            _tokenInfoProvider = tokenInfoProvider;
-        }
-
         public async Task<Request> Get(string id)
         {
-            using var dbContext = await _contextFactory.CreateDbContextAsync();
+            using var dbContext = await contextFactory.CreateDbContextAsync();
             var request = await dbContext.Requests.Where(r => r.Id == id).FirstOrDefaultAsync()
                 ?? throw new NotFoundException();
             if (request is GroupRequest groupRequest)
@@ -71,7 +62,7 @@ namespace MangaHomeService.Services
 
         public async Task<ICollection<object>> GetAll(string keyword = "", int pageNumber = 1, int pageSize = Constants.RequestsPerPage, int? requestType = null, bool isReviewedIncluded = true)
         {
-            using var dbContext = await _contextFactory.CreateDbContextAsync();
+            using var dbContext = await contextFactory.CreateDbContextAsync();
             if (isReviewedIncluded)
             {
                 if (requestType == (int)Enums.RequestType.Group)
@@ -251,7 +242,7 @@ namespace MangaHomeService.Services
 
         public async Task<Request> Add(SubmitRequest data)
         {
-            using var dbContext = await _contextFactory.CreateDbContextAsync();
+            using var dbContext = await contextFactory.CreateDbContextAsync();
             if (data is GroupRequestData groupRequestData)
             {
                 var group = await dbContext.Groups.FirstOrDefaultAsync(g => g.Id == groupRequestData.GroupId) ??
@@ -377,7 +368,7 @@ namespace MangaHomeService.Services
 
         public async Task<Request> Update(string id, string note)
         {
-            using var dbContext = await _contextFactory.CreateDbContextAsync();
+            using var dbContext = await contextFactory.CreateDbContextAsync();
             var request = await dbContext.Requests.FirstOrDefaultAsync(r => r.Id == id)
                 ?? throw new NotFoundException(typeof(Request).Name);
             request.SubmitNote = note;
@@ -387,7 +378,7 @@ namespace MangaHomeService.Services
 
         public async Task<Request> Review(string id, string note, bool isApproved)
         {
-            using var dbContext = await _contextFactory.CreateDbContextAsync();
+            using var dbContext = await contextFactory.CreateDbContextAsync();
             var request = await dbContext.Requests.Where(r => r.Id == id).FirstOrDefaultAsync()
                 ?? throw new NotFoundException();
             if (request is GroupRequest groupRequest)
@@ -474,7 +465,7 @@ namespace MangaHomeService.Services
 
         public async Task<bool> Remove(string id)
         {
-            using var dbContext = await _contextFactory.CreateDbContextAsync();
+            using var dbContext = await contextFactory.CreateDbContextAsync();
             var request = await dbContext.Requests.Where(r => r.Id == id).FirstOrDefaultAsync() ??
                 throw new NotFoundException(nameof(Request));
             dbContext.Requests.Remove(request);

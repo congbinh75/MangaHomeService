@@ -18,25 +18,16 @@ namespace MangaHomeService.Services
         public Task<ReadingList> RemoveTitle(string id, string titleId);
     }
 
-    public class ReadingListService : IReadingListService
+    public class ReadingListService(IDbContextFactory<MangaHomeDbContext> contextFactory, ITokenInfoProvider tokenInfoProvider) : IReadingListService
     {
-        private readonly IDbContextFactory<MangaHomeDbContext> _contextFactory;
-        private readonly ITokenInfoProvider _tokenInfoProvider;
-
-        public ReadingListService(IDbContextFactory<MangaHomeDbContext> contextFactory, ITokenInfoProvider tokenInfoProvider)
-        {
-            _contextFactory = contextFactory;
-            _tokenInfoProvider = tokenInfoProvider;
-        }
-
         public async Task<ReadingList> Get(string id)
         {
-            using var dbContext = await _contextFactory.CreateDbContextAsync();
+            using var dbContext = await contextFactory.CreateDbContextAsync();
             var list = await dbContext.ReadingLists.FirstOrDefaultAsync(r => r.Id == id) ??
                 throw new NotFoundException(nameof(ReadingList));
             if (!list.IsPublic)
             {
-                var currentUser = _tokenInfoProvider.Id;
+                var currentUser = tokenInfoProvider.Id;
                 if (list?.User?.Id != currentUser)
                 {
                     throw new Exception();
@@ -46,8 +37,8 @@ namespace MangaHomeService.Services
         }
         public async Task<ICollection<ReadingList>> GetAll(string? userId = null)
         {
-            using var dbContext = await _contextFactory.CreateDbContextAsync();
-            var currentUser = _tokenInfoProvider.Id;
+            using var dbContext = await contextFactory.CreateDbContextAsync();
+            var currentUser = tokenInfoProvider.Id;
             if (userId == null)
             {
                 return await dbContext.ReadingLists.Where(r => r.User.Id == currentUser).ToListAsync();
@@ -70,8 +61,8 @@ namespace MangaHomeService.Services
         public async Task<ReadingList> Add(string name, string? userId = null, string description = "", bool isPublic = false,
             ICollection<string>? titlesIds = null)
         {
-            using var dbContext = await _contextFactory.CreateDbContextAsync();
-            string ownerId = userId ?? _tokenInfoProvider.Id;
+            using var dbContext = await contextFactory.CreateDbContextAsync();
+            string ownerId = userId ?? tokenInfoProvider.Id;
             var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == ownerId) ?? throw new NotFoundException(nameof(User));
             var titles = new List<Title>();
             if (titlesIds != null)
@@ -100,7 +91,7 @@ namespace MangaHomeService.Services
         public async Task<ReadingList> Update(string id, string? userId = null, string? name = null, string? description = null,
             bool? isPublic = null, ICollection<string>? titlesIds = null)
         {
-            using var dbContext = await _contextFactory.CreateDbContextAsync();
+            using var dbContext = await contextFactory.CreateDbContextAsync();
             var list = await dbContext.ReadingLists.FirstOrDefaultAsync(r => r.Id == id) ??
                 throw new NotFoundException(nameof(ReadingList));
             var newUser = list.User;
@@ -132,7 +123,7 @@ namespace MangaHomeService.Services
 
         public async Task<bool> Remove(string id)
         {
-            using var dbContext = await _contextFactory.CreateDbContextAsync();
+            using var dbContext = await contextFactory.CreateDbContextAsync();
             var list = await dbContext.ReadingLists.FirstOrDefaultAsync(r => r.Id == id) ??
                 throw new NotFoundException(nameof(ReadingList));
             dbContext.ReadingLists.Remove(list);
@@ -142,7 +133,7 @@ namespace MangaHomeService.Services
 
         public async Task<ReadingList> AddTitle(string id, string titleId)
         {
-            using var dbContext = await _contextFactory.CreateDbContextAsync();
+            using var dbContext = await contextFactory.CreateDbContextAsync();
             var list = await dbContext.ReadingLists.Where(r => r.Id == id && r.Titles != null).Include(r => r.Titles).FirstOrDefaultAsync() ??
                 throw new NotFoundException(nameof(ReadingList));
             if (list.Titles.FirstOrDefault(t => t.Id == titleId) != null)
@@ -160,7 +151,7 @@ namespace MangaHomeService.Services
 
         public async Task<ReadingList> RemoveTitle(string id, string titleId)
         {
-            using var dbContext = await _contextFactory.CreateDbContextAsync();
+            using var dbContext = await contextFactory.CreateDbContextAsync();
             var list = await dbContext.ReadingLists.Where(r => r.Id == id && r.Titles != null).Include(r => r.Titles).FirstOrDefaultAsync() ??
                 throw new NotFoundException(nameof(ReadingList));
             //TO BE FIXED

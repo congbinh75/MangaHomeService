@@ -17,20 +17,11 @@ namespace MangaHomeService.Services
         public Task<bool> Remove(string id);
     }
 
-    public class GroupService : IGroupService
+    public class GroupService(IDbContextFactory<MangaHomeDbContext> contextFactory, IConfiguration configuration) : IGroupService
     {
-        private readonly IDbContextFactory<MangaHomeDbContext> _contextFactory;
-        private readonly IConfiguration _configuration;
-
-        public GroupService(IDbContextFactory<MangaHomeDbContext> contextFactory, IConfiguration configuration)
-        {
-            _contextFactory = contextFactory;
-            _configuration = configuration;
-        }
-
         public async Task<Group> Get(string id)
         {
-            using var dbContext = await _contextFactory.CreateDbContextAsync();
+            using var dbContext = await contextFactory.CreateDbContextAsync();
             var group = await dbContext.Groups.FirstOrDefaultAsync(g => g.Id == id) ??
                 throw new NotFoundException(nameof(Group));
             return group;
@@ -38,7 +29,7 @@ namespace MangaHomeService.Services
 
         public async Task<ICollection<Group>> GetAll(int pageSize = Constants.GroupsPerPage, int pageNumber = 1)
         {
-            using var dbContext = await _contextFactory.CreateDbContextAsync();
+            using var dbContext = await contextFactory.CreateDbContextAsync();
             var groups = await dbContext.Groups.Where(x => x.IsApproved == true).Skip(pageSize * (pageNumber - 1)).Take(pageSize).ToListAsync();
             return groups;
         }
@@ -46,7 +37,7 @@ namespace MangaHomeService.Services
         public async Task<Group> Add(string name, string? description = null, IFormFile? profilePicture = null, 
             ICollection<string>? membersIds = null)
         {
-            using var dbContext = await _contextFactory.CreateDbContextAsync();
+            using var dbContext = await contextFactory.CreateDbContextAsync();
             var members = new List<Member>();
             if (membersIds != null) 
             {
@@ -63,7 +54,7 @@ namespace MangaHomeService.Services
                 Name = name,
                 Description = description ?? "",
                 ProfilePicture = profilePicture != null ? 
-                (await Functions.UploadFileAsync(profilePicture, _configuration["FilesStoragePath.GroupsImagesPath"]
+                (await Functions.UploadFileAsync(profilePicture, configuration["FilesStoragePath.GroupsImagesPath"]
                 ?? throw new ConfigurationNotFoundException("FilesStoragePath.GroupsImagesPath"))) : "",
                 Members = members
             };
@@ -75,7 +66,7 @@ namespace MangaHomeService.Services
         public async Task<Group> Update(string id, string? name = null, string? description = null, IFormFile? profilePicture = null,
             ICollection<string>? membersIds = null)
         {
-            using var dbContext = await _contextFactory.CreateDbContextAsync();
+            using var dbContext = await contextFactory.CreateDbContextAsync();
             var group = await dbContext.Groups.FirstOrDefaultAsync(g => g.Id == id) ??
                 throw new NotFoundException(nameof(Group));
 
@@ -97,7 +88,7 @@ namespace MangaHomeService.Services
             group.Name = name ?? group.Name;
             group.Description = description ?? group.Description;
             group.ProfilePicture = profilePicture == null ? group.ProfilePicture :
-                await Functions.UploadFileAsync(profilePicture, _configuration["FilesStoragePath.GroupsImagesPath"]
+                await Functions.UploadFileAsync(profilePicture, configuration["FilesStoragePath.GroupsImagesPath"]
                 ?? throw new ConfigurationNotFoundException("FilesStoragePath.GroupsImagesPath"));
             group.Members = newMembers;
             await dbContext.SaveChangesAsync();
@@ -106,7 +97,7 @@ namespace MangaHomeService.Services
 
         public async Task<bool> Remove(string id)
         {
-            using var dbContext = await _contextFactory.CreateDbContextAsync();
+            using var dbContext = await contextFactory.CreateDbContextAsync();
             var group = await dbContext.Groups.FirstOrDefaultAsync(g => g.Id == id) ??
                 throw new NotFoundException(nameof(Group));
             dbContext.Groups.Remove(group);

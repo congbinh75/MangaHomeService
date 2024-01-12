@@ -19,20 +19,11 @@ namespace MangaHomeService.Services
         public Task<bool> RemoveTracking(string id, string? userId = null);
     }
 
-    public class ChapterService : IChapterService
+    public class ChapterService(IDbContextFactory<MangaHomeDbContext> contextFactory, ITokenInfoProvider tokenInfoProvider) : IChapterService
     {
-        private readonly IDbContextFactory<MangaHomeDbContext> _contextFactory;
-        private readonly ITokenInfoProvider _tokenInfoProvider;
-
-        public ChapterService(IDbContextFactory<MangaHomeDbContext> contextFactory, ITokenInfoProvider tokenInfoProvider)
-        {
-            _contextFactory = contextFactory;
-            _tokenInfoProvider = tokenInfoProvider;
-        }
-
         public async Task<Chapter> Get(string id)
         {
-            using var dbContext = await _contextFactory.CreateDbContextAsync();
+            using var dbContext = await contextFactory.CreateDbContextAsync();
             var chapter = await dbContext.Chapters.Where(c => c.Id == id).Include(c => c.Pages).FirstOrDefaultAsync() ??
                 throw new NotFoundException(nameof(Chapter));
             return chapter;
@@ -40,7 +31,7 @@ namespace MangaHomeService.Services
 
         public async Task<ICollection<Chapter>> GetByTitle(string titleId, int pageNumber = 1, int pageSize = Constants.ChaptersPerPage)
         {
-            using var dbContext = await _contextFactory.CreateDbContextAsync();
+            using var dbContext = await contextFactory.CreateDbContextAsync();
             var title = await dbContext.Titles.FirstOrDefaultAsync(t => t.Id == titleId) ??
                 throw new NotFoundException(nameof(Title));
             return await dbContext.Chapters.Where(c => c.Title.Id == titleId && c.IsApproved).OrderByDescending(c => c.Number).
@@ -50,7 +41,7 @@ namespace MangaHomeService.Services
         public async Task<Chapter> Add(double number, string titleId, string groupId, string? volumeId = null, string? languageId = null,
             ICollection<string>? pagesIds = null, ICollection<string>? commentsIds = null, bool isApproved = false)
         {
-            using var dbContext = await _contextFactory.CreateDbContextAsync();
+            using var dbContext = await contextFactory.CreateDbContextAsync();
 
             var title = await dbContext.Titles.FirstOrDefaultAsync(t => t.Id == titleId) ?? throw new NotFoundException(nameof(Title));
             title.CheckUploadConditions();
@@ -106,7 +97,7 @@ namespace MangaHomeService.Services
             string? volumeId = null, string? languageId = null, ICollection<string>? pagesIds = null, ICollection<string>? commentsIds = null,
             bool? isApproved = null)
         {
-            using var dbContext = await _contextFactory.CreateDbContextAsync();
+            using var dbContext = await contextFactory.CreateDbContextAsync();
             var chapter = await dbContext.Chapters.FirstOrDefaultAsync(c => c.Id == id) ??
                 throw new NotFoundException(nameof(Chapter));
 
@@ -167,7 +158,7 @@ namespace MangaHomeService.Services
 
         public async Task<bool> Remove(string id)
         {
-            using var dbContext = await _contextFactory.CreateDbContextAsync();
+            using var dbContext = await contextFactory.CreateDbContextAsync();
             var chapter = await dbContext.Chapters.Where(c => c.Id == id).Include(c => c.Pages).Include(c => c.Comments).
                 FirstOrDefaultAsync() ?? throw new NotFoundException(nameof(Chapter));
             dbContext.Chapters.Remove(chapter);
@@ -177,7 +168,7 @@ namespace MangaHomeService.Services
 
         public async Task<ChapterRequest> GetRequest(string requestId)
         {
-            using var dbContext = await _contextFactory.CreateDbContextAsync();
+            using var dbContext = await contextFactory.CreateDbContextAsync();
             var request = await dbContext.Requests.OfType<ChapterRequest>().Where(r => r.Id == requestId)
                 .Include(r => r.Chapter).FirstOrDefaultAsync() ??
                 throw new NotFoundException(nameof(ChapterRequest));
@@ -186,7 +177,7 @@ namespace MangaHomeService.Services
 
         public async Task<ChapterRequest> ReviewRequest(string requestId, string note, bool isApproved)
         {
-            using var dbContext = await _contextFactory.CreateDbContextAsync();
+            using var dbContext = await contextFactory.CreateDbContextAsync();
             var request = await dbContext.Requests.OfType<ChapterRequest>().FirstOrDefaultAsync(r => r.Id == requestId) ??
                 throw new NotFoundException(nameof(ChapterRequest));
             if (request.IsReviewed)
@@ -205,8 +196,8 @@ namespace MangaHomeService.Services
 
         public async Task<bool> AddTracking(string id, string? userId = null)
         {
-            using var dbContext = await _contextFactory.CreateDbContextAsync();
-            var trackingUserId = userId ?? _tokenInfoProvider.Id;
+            using var dbContext = await contextFactory.CreateDbContextAsync();
+            var trackingUserId = userId ?? tokenInfoProvider.Id;
             var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == trackingUserId) ?? throw new NotFoundException(nameof(User));
             var chapter = await dbContext.Chapters.FirstOrDefaultAsync(c => c.Id == id) ?? throw new NotFoundException(nameof(Chapter));
             user.ChapterTrackings.Add(chapter);
@@ -216,8 +207,8 @@ namespace MangaHomeService.Services
 
         public async Task<bool> RemoveTracking(string id, string? userId = null)
         {
-            using var dbContext = await _contextFactory.CreateDbContextAsync();
-            var trackingUserId = userId ?? _tokenInfoProvider.Id;
+            using var dbContext = await contextFactory.CreateDbContextAsync();
+            var trackingUserId = userId ?? tokenInfoProvider.Id;
             var user = await dbContext.Users.Where(u => u.Id == trackingUserId).Include(u => u.ChapterTrackings).FirstOrDefaultAsync()
                 ?? throw new NotFoundException(nameof(User));
             var tracking = user.ChapterTrackings.FirstOrDefault(c => c.Id == id)  ?? throw new NotFoundException(nameof(Chapter));

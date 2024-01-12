@@ -10,22 +10,8 @@ namespace MangaHomeService.Controllers
 {
     [Route("api/page")]
     [ApiController]
-    public class PageController : ControllerBase
+    public class PageController(IStringLocalizer<SharedResources> stringLocalizer, IPageService pageService) : ControllerBase
     {
-        private readonly IConfiguration _configuration;
-        private readonly IStringLocalizer<SharedResources> _stringLocalizer;
-        private readonly IPageService _pageService;
-
-        public PageController(
-            IConfiguration configuration,
-            IStringLocalizer<SharedResources> stringLocalizer,
-            IPageService pageService)
-        {
-            _configuration = configuration;
-            _stringLocalizer = stringLocalizer;
-            _pageService = pageService;
-        }
-
         [HttpGet]
         [AllowAnonymous]
         [Route("get")]
@@ -33,16 +19,16 @@ namespace MangaHomeService.Controllers
         {
             try
             {
-                var page = await _pageService.Get(input.Id);
+                var page = await pageService.Get(input.Id);
                 return Ok(page);
             }
             catch (NotFoundException)
             {
-                return NotFound(_stringLocalizer["ERR_PAGE_NOT_FOUND"].Value);
+                return NotFound(stringLocalizer["ERR_PAGE_NOT_FOUND"].Value);
             }
             catch (Exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = _stringLocalizer["ERR_UNEXPECTED_ERROR"].Value });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = stringLocalizer["ERR_UNEXPECTED_ERROR"].Value });
             }
         }
 
@@ -53,10 +39,10 @@ namespace MangaHomeService.Controllers
         {
             try
             {
-                var page = await _pageService.Get(input.Id);
+                var page = await pageService.Get(input.Id);
                 if (!System.IO.File.Exists(page.FilePath))
                 {
-                    return StatusCode(StatusCodes.Status500InternalServerError, new { Message = _stringLocalizer["ERR_FILE_NOT_FOUND"].Value });
+                    return StatusCode(StatusCodes.Status500InternalServerError, new { Message = stringLocalizer["ERR_FILE_NOT_FOUND"].Value });
                 }
                 var file = System.IO.File.ReadAllBytes(page.FilePath);
                 var provider = new FileExtensionContentTypeProvider();
@@ -69,11 +55,11 @@ namespace MangaHomeService.Controllers
             }
             catch (NotFoundException)
             {
-                return NotFound(_stringLocalizer["ERR_PAGE_NOT_FOUND"].Value);
+                return NotFound(stringLocalizer["ERR_PAGE_NOT_FOUND"].Value);
             }
             catch (Exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = _stringLocalizer["ERR_UNEXPECTED_ERROR"].Value });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = stringLocalizer["ERR_UNEXPECTED_ERROR"].Value });
             }
         }
 
@@ -89,21 +75,21 @@ namespace MangaHomeService.Controllers
                     // TO BE FIXED
                     return BadRequest("File size exceeded 10MB limit");
                 }
-                var page = await _pageService.Add(chapterId: input.ChapterId.Trim(), number: input.Number, file: input.File);
+                var page = await pageService.Add(chapterId: input.ChapterId.Trim(), number: input.Number, file: input.File);
                 return Ok(page);
             }
             catch (NotFoundException)
             {
-                return NotFound(_stringLocalizer["ERR_CHAPTER_NOT_FOUND"].Value);
+                return NotFound(stringLocalizer["ERR_CHAPTER_NOT_FOUND"].Value);
             }
             catch (ArgumentException)
             {
                 //TO BE FIXED
-                return BadRequest(_stringLocalizer[""]);
+                return BadRequest(stringLocalizer[""]);
             }
             catch (Exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = _stringLocalizer["ERR_UNEXPECTED_ERROR"].Value });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = stringLocalizer["ERR_UNEXPECTED_ERROR"].Value });
             }
         }
 
@@ -114,21 +100,21 @@ namespace MangaHomeService.Controllers
         {
             try
             {
-                var page = await _pageService.Update(id: input.Id.Trim(), number: input.Number);
+                var page = await pageService.Update(id: input.Id.Trim(), number: input.Number);
                 return Ok(page);
             }
             catch (NotFoundException)
             {
-                return NotFound(_stringLocalizer["ERR_PAGE_NOT_FOUND"].Value);
+                return NotFound(stringLocalizer["ERR_PAGE_NOT_FOUND"].Value);
             }
             catch (ArgumentException)
             {
                 //TO BE FIXED
-                return BadRequest(_stringLocalizer[""]);
+                return BadRequest(stringLocalizer[""]);
             }
             catch (Exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = _stringLocalizer["ERR_UNEXPECTED_ERROR"].Value });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = stringLocalizer["ERR_UNEXPECTED_ERROR"].Value });
             }
         }
 
@@ -141,21 +127,21 @@ namespace MangaHomeService.Controllers
             {
                 if (!string.IsNullOrEmpty(id.Trim()))
                 {
-                    await _pageService.Remove(id.Trim());
+                    await pageService.Remove(id.Trim());
                     return Ok();
                 }
                 else
                 {
-                    return BadRequest(_stringLocalizer["ERR_INVALID_INPUT_DATA"]);
+                    return BadRequest(stringLocalizer["ERR_INVALID_INPUT_DATA"]);
                 }
             }
             catch (NotFoundException)
             {
-                return BadRequest(_stringLocalizer["ERR_PAGE_NOT_FOUND"]);
+                return BadRequest(stringLocalizer["ERR_PAGE_NOT_FOUND"]);
             }
             catch (Exception)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = _stringLocalizer["ERR_UNEXPECTED_ERROR"].Value });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = stringLocalizer["ERR_UNEXPECTED_ERROR"].Value });
             }
         }
     }

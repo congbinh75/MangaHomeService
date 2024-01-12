@@ -21,31 +21,19 @@ namespace MangaHomeService.Services
         public Task<bool> ConfirmEmail(string userId, string token);
     }
 
-    public class UserService : IUserService
+    public class UserService(IDbContextFactory<MangaHomeDbContext> contextFactory, 
+        IConfiguration configuration, ITokenInfoProvider tokenInfoProvider, IHttpClientFactory httpClientFactory) : IUserService
     {
-        private readonly IDbContextFactory<MangaHomeDbContext> _contextFactory;
-        private readonly IConfiguration _configuration;
-        private readonly ITokenInfoProvider _tokenInfoProvider;
-        private readonly IHttpClientFactory _httpClientFactory;
-
-        public UserService(IDbContextFactory<MangaHomeDbContext> contextFactory, IConfiguration configuration, ITokenInfoProvider tokenInfoProvider, IHttpClientFactory httpClientFactory)
-        {
-            _contextFactory = contextFactory;
-            _configuration = configuration;
-            _tokenInfoProvider = tokenInfoProvider;
-            _httpClientFactory = httpClientFactory;
-        }
-
         public async Task<User> Get(string id)
         {
-            using var dbContext = await _contextFactory.CreateDbContextAsync();
+            using var dbContext = await contextFactory.CreateDbContextAsync();
             var user = await dbContext.Users.Where(u => u.Id == id).FirstOrDefaultAsync() ?? throw new NotFoundException(nameof(User));
             return user;
         }
 
         public async Task<User?> Get(string email, string password)
         {
-            using var dbContext = await _contextFactory.CreateDbContextAsync();
+            using var dbContext = await contextFactory.CreateDbContextAsync();
             var user = await dbContext.Users.Where(u => u.Email == email).FirstOrDefaultAsync();
             if (user != null && HashPassword(password, user.Salt).hashedPassword.Equals(user.Password))
             {
@@ -59,7 +47,7 @@ namespace MangaHomeService.Services
 
         public async Task<User> Add(string name, string email, string password, int role)
         {
-            using var dbContext = await _contextFactory.CreateDbContextAsync();
+            using var dbContext = await contextFactory.CreateDbContextAsync();
             var existingUser = await dbContext.Users.FirstOrDefaultAsync(u => u.Email == email);
             if (existingUser != null)
             {
@@ -77,9 +65,9 @@ namespace MangaHomeService.Services
                 Salt = passAndSalt.salt,
                 Role = role,
                 IsBanned = false,
-                ChapterTrackings = new List<Chapter>(),
-                CommentVotes = new List<CommentVote>(),
-                TitleRatings = new List<TitleRating>()
+                ChapterTrackings = [],
+                CommentVotes = [],
+                TitleRatings = []
             };
             await dbContext.Users.AddAsync(user);
             await dbContext.SaveChangesAsync();
@@ -89,7 +77,7 @@ namespace MangaHomeService.Services
         public async Task<User> Update(string userId, string? name = null, string? email = null, string? password = null, int? role = null,
             bool? isEmailConfirmed = null, IFormFile? profilePicture = null, bool? isBanned = null)
         {
-            using var dbContext = await _contextFactory.CreateDbContextAsync();
+            using var dbContext = await contextFactory.CreateDbContextAsync();
             var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == userId) ??
                 throw new NotFoundException(nameof(User));
             var newPassword = user.Password;
@@ -106,7 +94,7 @@ namespace MangaHomeService.Services
             user.Role = role == null ? user.Role : (int)role;
             user.IsEmailConfirmed = isEmailConfirmed == null ? user.IsEmailConfirmed : (bool)isEmailConfirmed;
             user.ProfilePicture = profilePicture == null ? user.ProfilePicture :
-                await Functions.UploadFileAsync(profilePicture, _configuration["FilesStoragePath.ProfilePicturesPath"]);
+                await Functions.UploadFileAsync(profilePicture, configuration["FilesStoragePath.ProfilePicturesPath"]);
             user.Password = newPassword;
             user.Salt = newSalt;
             user.IsBanned = isBanned == null ? user.IsBanned : (bool)isBanned;
@@ -117,7 +105,7 @@ namespace MangaHomeService.Services
 
         public async Task<bool> Remove(string id)
         {
-            using var dbContext = await _contextFactory.CreateDbContextAsync();
+            using var dbContext = await contextFactory.CreateDbContextAsync();
             var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == id) ?? throw new NotFoundException(nameof(User));
             dbContext.Users.Remove(user);
             await dbContext.SaveChangesAsync();
@@ -126,8 +114,8 @@ namespace MangaHomeService.Services
 
         public async Task<bool> SendEmailConfirmation(string? userId = null)
         {
-            using var dbContext = await _contextFactory.CreateDbContextAsync();
-            var id = userId ?? _tokenInfoProvider.Id;
+            using var dbContext = await contextFactory.CreateDbContextAsync();
+            var id = userId ?? tokenInfoProvider.Id;
             var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == id) ?? throw new NotFoundException(nameof(User));
             if (user.IsEmailConfirmed)
             {
@@ -137,9 +125,9 @@ namespace MangaHomeService.Services
             user.EmailConfirmationToken = token;
             await dbContext.SaveChangesAsync();
 
-            using var httpClient =  _httpClientFactory.CreateClient();
-            using var request = new HttpRequestMessage(new HttpMethod("POST"), _configuration["SMTP.Url"]);
-            request.Headers.TryAddWithoutValidation("api-key", _configuration["SMTP.APIKey"]);
+            using var httpClient =  httpClientFactory.CreateClient();
+            using var request = new HttpRequestMessage(new HttpMethod("POST"), configuration["SMTP.Url"]);
+            request.Headers.TryAddWithoutValidation("api-key", configuration["SMTP.APIKey"]);
 
             //TO BE FIXED
             request.Content = new StringContent("");
@@ -151,7 +139,7 @@ namespace MangaHomeService.Services
 
         public async Task<bool> ConfirmEmail(string userId, string token)
         {
-            using var dbContext = await _contextFactory.CreateDbContextAsync();
+            using var dbContext = await contextFactory.CreateDbContextAsync();
             var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == userId) ?? throw new NotFoundException(nameof(User));
             if (user.IsEmailConfirmed)
             {

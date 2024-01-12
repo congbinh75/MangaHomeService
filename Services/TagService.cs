@@ -16,25 +16,18 @@ namespace MangaHomeService.Services
         public Task<bool> Remove(string id);
     }
 
-    public class TagService : ITagService
+    public class TagService(IDbContextFactory<MangaHomeDbContext> contextFactory) : ITagService
     {
-        private readonly IDbContextFactory<MangaHomeDbContext> _contextFactory;
-
-        public TagService(IDbContextFactory<MangaHomeDbContext> contextFactory)
-        {
-            _contextFactory = contextFactory;
-        }
-
         public async Task<Tag> Get(string id)
         {
-            using var dbContext = await _contextFactory.CreateDbContextAsync();
+            using var dbContext = await contextFactory.CreateDbContextAsync();
             var tag = await dbContext.Tags.FirstOrDefaultAsync(x => x.Id == id) ?? throw new NotFoundException(nameof(Tag));
             return tag;
         }
 
         public async Task<ICollection<Tag>> GetByType(Type type)
         {
-            using var dbContext = await _contextFactory.CreateDbContextAsync();
+            using var dbContext = await contextFactory.CreateDbContextAsync();
             if (type == typeof(Gerne))
             {
                 return (ICollection<Tag>)await dbContext.Tags.OfType<Gerne>().ToListAsync();
@@ -56,7 +49,7 @@ namespace MangaHomeService.Services
         public async Task<Tag> Add(string name, Type type, string? description = null,
             ICollection<string>? titlesIds = null, ICollection<string>? otherNamesIds = null)
         {
-            using var dbContext = await _contextFactory.CreateDbContextAsync();
+            using var dbContext = await contextFactory.CreateDbContextAsync();
             var titles = new List<Title>();
             if (titlesIds != null)
             {
@@ -95,7 +88,7 @@ namespace MangaHomeService.Services
         public async Task<Tag> Update(string id, string? name = null, string? description = null, ICollection<string>? titlesIds = null, 
             ICollection<string>? otherNamesIds = null)
         {
-            using var dbContext = await _contextFactory.CreateDbContextAsync();
+            using var dbContext = await contextFactory.CreateDbContextAsync();
             var tag = await dbContext.Tags.FirstOrDefaultAsync(t => t.Id == id) ?? throw new NotFoundException(nameof(Tag));
             var titles = new List<Title>();
             if (titlesIds != null)
@@ -129,7 +122,7 @@ namespace MangaHomeService.Services
 
         public async Task<bool> Remove(string id)
         {
-            using var dbContext = await _contextFactory.CreateDbContextAsync();
+            using var dbContext = await contextFactory.CreateDbContextAsync();
             var tag = await dbContext.Tags.FirstOrDefaultAsync(x => x.Id == id) ?? throw new NotFoundException(nameof(Tag));
             dbContext.Tags.Remove(tag);
             await dbContext.SaveChangesAsync();

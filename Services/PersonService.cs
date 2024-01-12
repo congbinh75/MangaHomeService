@@ -15,20 +15,11 @@ namespace MangaHomeService.Services
         public Task<bool> Remove(string id);
     }
 
-    public class PersonService : IPersonService
+    public class PersonService(IDbContextFactory<MangaHomeDbContext> contextFactory, IConfiguration configuration) : IPersonService
     {
-        private readonly IDbContextFactory<MangaHomeDbContext> _contextFactory;
-        private readonly IConfiguration _configuration;
-
-        public PersonService(IDbContextFactory<MangaHomeDbContext> contextFactory, IConfiguration configuration)
-        {
-            _contextFactory = contextFactory;
-            _configuration = configuration;
-        }
-
         public async Task<Person> Get(string id)
         {
-            using var dbContext = await _contextFactory.CreateDbContextAsync();
+            using var dbContext = await contextFactory.CreateDbContextAsync();
             var person = await dbContext.People.FirstOrDefaultAsync(x => x.Id == id) ?? throw new NotFoundException(nameof(Person));
             return person;
         }
@@ -36,7 +27,7 @@ namespace MangaHomeService.Services
         public async Task<Person> Add(string name, IFormFile? image = null, string? description = null,
             ICollection<string>? authoredTitlesIds = null, ICollection<string>? illustratedTitlesIds = null)
         {
-            using var dbContext = await _contextFactory.CreateDbContextAsync();
+            using var dbContext = await contextFactory.CreateDbContextAsync();
             var authoredTitles = new List<Title>();
             if (authoredTitlesIds != null)
             {
@@ -62,7 +53,7 @@ namespace MangaHomeService.Services
             var person = new Person
             {
                 Name = name,
-                Image = image == null ? "" : await Functions.UploadFileAsync(image, _configuration["FilesStoragePath.PeopleImagesPath"]),
+                Image = image == null ? "" : await Functions.UploadFileAsync(image, configuration["FilesStoragePath.PeopleImagesPath"]),
                 Description = description ?? "",
                 AuthoredTitles = authoredTitles,
                 IllustratedTitles = illustratedTitles
@@ -75,7 +66,7 @@ namespace MangaHomeService.Services
         public async Task<Person> Update(string id, string? name = null, IFormFile? image = null, string? description = null,
             ICollection<string>? authoredTitlesIds = null, ICollection<string>? illustratedTitlesIds = null)
         {
-            using var dbContext = await _contextFactory.CreateDbContextAsync();
+            using var dbContext = await contextFactory.CreateDbContextAsync();
             var person = await dbContext.People.FirstOrDefaultAsync(p => p.Id == id) ?? throw new NotFoundException(nameof(Person));
 
             var authoredTitles = new List<Title>();
@@ -102,7 +93,7 @@ namespace MangaHomeService.Services
 
             person.Name = name ?? person.Name;
             person.Image = image == null ? person.Image :
-                await Functions.UploadFileAsync(image, _configuration["FilesStoragePath.PeopleImagesPath"]);
+                await Functions.UploadFileAsync(image, configuration["FilesStoragePath.PeopleImagesPath"]);
             person.Description = description ?? person.Description;
             person.AuthoredTitles = authoredTitles;
             person.IllustratedTitles = illustratedTitles;
@@ -112,7 +103,7 @@ namespace MangaHomeService.Services
 
         public async Task<bool> Remove(string id)
         {
-            using var dbContext = await _contextFactory.CreateDbContextAsync();
+            using var dbContext = await contextFactory.CreateDbContextAsync();
             var person = await dbContext.People.FirstOrDefaultAsync(p => p.Id == id) ??
                 throw new NotFoundException(nameof(Person));
             dbContext.Remove(person);
