@@ -147,6 +147,9 @@
   <data name="ERR_TITLE_NOT_FOUND" xml:space="preserve">
     <value>Title not found</value>
   </data>
+    <data name="ERR_PAGE_NOT_FOUND" xml:space="preserve">
+    <value>Page not found</value>
+  </data>
   <data name="ERR_UNEXPECTED_ERROR" xml:space="preserve">
     <value>An unexpected error happened. Please try again later or contact our support team</value>
   </data>
