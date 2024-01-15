@@ -26,10 +26,6 @@ namespace MangaHomeService.Controllers
             {
                 return NotFound(stringLocalizer["ERR_PAGE_NOT_FOUND"].Value);
             }
-            catch (Exception)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = stringLocalizer["ERR_UNEXPECTED_ERROR"].Value });
-            }
         }
 
         [HttpGet]
@@ -57,10 +53,6 @@ namespace MangaHomeService.Controllers
             {
                 return NotFound(stringLocalizer[Constants.ERR_PAGE_NOT_FOUND].Value);
             }
-            catch (Exception)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = stringLocalizer[Constants.ERR_UNEXPECTED_ERROR].Value });
-            }
         }
 
         [HttpPost]
@@ -87,10 +79,6 @@ namespace MangaHomeService.Controllers
                 //TO BE FIXED
                 return BadRequest(stringLocalizer[""]);
             }
-            catch (Exception)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = stringLocalizer[Constants.ERR_UNEXPECTED_ERROR].Value });
-            }
         }
 
         [HttpPost]
@@ -111,10 +99,6 @@ namespace MangaHomeService.Controllers
             {
                 //TO BE FIXED
                 return BadRequest(stringLocalizer[""]);
-            }
-            catch (Exception)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = stringLocalizer[Constants.ERR_UNEXPECTED_ERROR].Value });
             }
         }
 
@@ -138,10 +122,6 @@ namespace MangaHomeService.Controllers
             catch (NotFoundException)
             {
                 return BadRequest(stringLocalizer[Constants.ERR_PAGE_NOT_FOUND].Value);
-            }
-            catch (Exception)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = stringLocalizer[Constants.ERR_UNEXPECTED_ERROR].Value });
             }
         }
     }

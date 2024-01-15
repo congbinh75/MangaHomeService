@@ -17,19 +17,8 @@ namespace MangaHomeService.Controllers
         [Route("get")]
         public async Task<IActionResult> Get([FromQuery] GetChapter input)
         {
-            try
-            {
-                var chapter = await chapterService.Get(input.Id);
-                return Ok(chapter);
-            }
-            catch (NotFoundException)
-            {
-                return NotFound();
-            }
-            catch (Exception)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = stringLocalizer[Constants.ERR_UNEXPECTED_ERROR].Value });
-            }
+            var chapter = await chapterService.Get(input.Id);
+            return Ok(chapter);
         }
 
         [HttpGet]
@@ -45,10 +34,6 @@ namespace MangaHomeService.Controllers
             catch (NotFoundException)
             {
                 return NotFound(stringLocalizer[Constants.ERR_TITLE_NOT_FOUND].Value);
-            }
-            catch (Exception)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = stringLocalizer[Constants.ERR_UNEXPECTED_ERROR].Value });
             }
         }
 
@@ -85,10 +70,6 @@ namespace MangaHomeService.Controllers
                     return StatusCode(StatusCodes.Status500InternalServerError, new { Message = stringLocalizer[Constants.ERR_UNEXPECTED_ERROR].Value });
                 }
             }
-            catch (Exception)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = stringLocalizer[Constants.ERR_UNEXPECTED_ERROR].Value });
-            }
         }
 
         [HttpPost]
@@ -96,15 +77,8 @@ namespace MangaHomeService.Controllers
         [Route("update")]
         public async Task<IActionResult> Update([FromBody] UpdateChapter input)
         {
-            try
-            {
-                var chapter = await chapterService.Update(input.Id, input.Number, input.TitleId, input.GroupId, input.VolumeId, input.LanguageId);
-                return Ok(chapter);
-            }
-            catch
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = stringLocalizer[Constants.ERR_UNEXPECTED_ERROR].Value });
-            }
+            var chapter = await chapterService.Update(input.Id, input.Number, input.TitleId, input.GroupId, input.VolumeId, input.LanguageId);
+            return Ok(chapter);
         }
 
         [HttpPost]
@@ -112,15 +86,8 @@ namespace MangaHomeService.Controllers
         [Route("remove")]
         public async Task<IActionResult> Remove([FromBody] RemoveChapter input)
         {
-            try
-            {
-                await chapterService.Remove(input.Id);
-                return Ok();
-            }
-            catch (Exception)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = stringLocalizer[Constants.ERR_UNEXPECTED_ERROR].Value });
-            }
+            await chapterService.Remove(input.Id);
+            return Ok();
         }
 
         [HttpPost]
@@ -128,15 +95,8 @@ namespace MangaHomeService.Controllers
         [Route("set-approval")]
         public async Task<IActionResult> SetApproval([FromBody] SetApprovalChapter input)
         {
-            try
-            {
-                var chapter = await chapterService.Update(id: input.ChapterId, isApproved: input.IsApproved);
-                return Ok(chapter);
-            }
-            catch (Exception)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, new { Message = stringLocalizer[Constants.ERR_UNEXPECTED_ERROR].Value });
-            }
+            var chapter = await chapterService.Update(id: input.ChapterId, isApproved: input.IsApproved);
+            return Ok(chapter);
         }
     }
 }

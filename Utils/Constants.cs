@@ -11,6 +11,8 @@
         public const int GroupsPerPage = 10;
         public const int RequestsPerPage = 15;
 
+        public const string DefaultErrorMessage = "An unexpected error happened. Please try again later or contact our support team hehe";
+
         public const string ERR_CHAPTER_NOT_FOUND = "ERR_CHAPTER_NOT_FOUND";
         public const string ERR_EMAIL_ALREADY_REGISTERED = "ERR_EMAIL_ALREADY_REGISTERED";
         public const string ERR_FILE_NOT_FOUND = "ERR_FILE_NOT_FOUND";
