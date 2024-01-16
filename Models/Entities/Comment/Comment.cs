@@ -13,22 +13,4 @@ namespace MangaHomeService.Models.Entities
         [Required]
         public required ICollection<CommentVote> CommentVotes { get; set; } = [];
     }
-
-    public class ChapterComment : Comment
-    {
-        [Required]
-        public required Chapter Chapter { get; set; }
-    }
-
-    public class TitleComment : Comment
-    {
-        [Required]
-        public required Title Title { get; set; }
-    }
-
-    public class GroupComment : Comment
-    {
-        [Required]
-        public required Group Group { get; set; }
-    }
 }

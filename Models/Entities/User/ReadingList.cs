@@ -5,9 +5,6 @@ namespace MangaHomeService.Models.Entities
     public class ReadingList : BaseEntity
     {
         [Required]
-        public required User User { get; set; }
-
-        [Required]
         public required string Name { get; set; }
 
         [MaxLength(512)]

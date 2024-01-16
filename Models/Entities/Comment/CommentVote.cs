@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using Microsoft.EntityFrameworkCore;
 
 namespace MangaHomeService.Models.Entities
 {
@@ -16,7 +15,7 @@ namespace MangaHomeService.Models.Entities
 
         [Required]
         public required string CommentId { get; set; }
-        
+
         [Required]
         public bool IsUpvote { get; set; }
     }
