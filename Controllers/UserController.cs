@@ -13,7 +13,7 @@ namespace MangaHomeService.Controllers
 {
     [Route("api/user")]
     [ApiController]
-    public class UserController(IConfiguration configuration, IStringLocalizer<SharedResources> stringLocalizer, IUserService userService, 
+    public class UserController(IConfiguration configuration, IStringLocalizer<SharedResources> stringLocalizer, IUserService userService,
         ITokenInfoProvider tokenInfoProvider) : ControllerBase
     {
         [HttpPost]

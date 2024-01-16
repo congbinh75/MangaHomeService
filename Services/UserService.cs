@@ -21,7 +21,7 @@ namespace MangaHomeService.Services
         public Task<bool> ConfirmEmail(string userId, string token);
     }
 
-    public class UserService(IDbContextFactory<MangaHomeDbContext> contextFactory, 
+    public class UserService(IDbContextFactory<MangaHomeDbContext> contextFactory,
         IConfiguration configuration, ITokenInfoProvider tokenInfoProvider, IHttpClientFactory httpClientFactory) : IUserService
     {
         public async Task<User> Get(string id)
@@ -125,7 +125,7 @@ namespace MangaHomeService.Services
             user.EmailConfirmationToken = token;
             await dbContext.SaveChangesAsync();
 
-            using var httpClient =  httpClientFactory.CreateClient();
+            using var httpClient = httpClientFactory.CreateClient();
             using var request = new HttpRequestMessage(new HttpMethod("POST"), configuration["SMTP.Url"]);
             request.Headers.TryAddWithoutValidation("api-key", configuration["SMTP.APIKey"]);
 
@@ -146,7 +146,7 @@ namespace MangaHomeService.Services
                 throw new EmailAlreadyConfirmedException();
             }
 
-            if (user.EmailConfirmationToken == token) 
+            if (user.EmailConfirmationToken == token)
             {
                 user.IsEmailConfirmed = true;
                 await dbContext.SaveChangesAsync();

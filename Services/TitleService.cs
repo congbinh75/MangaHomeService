@@ -2,9 +2,7 @@
 using MangaHomeService.Models.Entities;
 using MangaHomeService.Utils;
 using Microsoft.EntityFrameworkCore;
-using System.Linq;
 using static MangaHomeService.Utils.Enums;
-using Group = MangaHomeService.Models.Entities.Group;
 
 namespace MangaHomeService.Services
 {
@@ -17,8 +15,8 @@ namespace MangaHomeService.Services
             string? originalLanguageId = null, ICollection<string>? languageIds = null, ICollection<int>? statuses = null,
             bool sortByLastest = false, bool sortByHottest = false, int pageNumber = 1, int pageSize = Constants.TitlesPerPage);
         public Task<Title> Add(string name, string? description = null, IFormFile? artwork = null, ICollection<string>? authorsIds = null,
-            ICollection<string>? artistsIds = null, TitleStatus status = TitleStatus.NotYetReleased, ICollection<string>? otherNamesIds = null, 
-            string? originalLanguageId = null, ICollection<string>? genresIds = null, ICollection<string>? themesIds = null, 
+            ICollection<string>? artistsIds = null, TitleStatus status = TitleStatus.NotYetReleased, ICollection<string>? otherNamesIds = null,
+            string? originalLanguageId = null, ICollection<string>? genresIds = null, ICollection<string>? themesIds = null,
             ICollection<string>? demographicsIds = null);
         public Task<Title> Update(string id, string? name = "", string? description = null, IFormFile? artwork = null,
             ICollection<string>? authorsIds = null, ICollection<string>? artistsIds = null, TitleStatus? status = null,
@@ -115,7 +113,7 @@ namespace MangaHomeService.Services
         }
 
         public async Task<Title> Add(string name, string? description = null, IFormFile? artwork = null, ICollection<string>? authorsIds = null,
-            ICollection<string>? artistsIds = null, TitleStatus status = TitleStatus.NotYetReleased, ICollection<string>? otherNamesIds = null, 
+            ICollection<string>? artistsIds = null, TitleStatus status = TitleStatus.NotYetReleased, ICollection<string>? otherNamesIds = null,
             string? originalLanguageId = null, ICollection<string>? genresIds = null, ICollection<string>? themesIds = null, ICollection<string>? demographicsIds = null)
         {
             using var dbContext = await contextFactory.CreateDbContextAsync();
@@ -372,7 +370,7 @@ namespace MangaHomeService.Services
             using var dbContext = await contextFactory.CreateDbContextAsync();
 
             var ratingUserId = userId ?? tokenInfoProvider.Id;
-            var existingRating = await dbContext.TitleRatings.FirstOrDefaultAsync(t => t.Title.Id == id && t.User.Id == ratingUserId) 
+            var existingRating = await dbContext.TitleRatings.FirstOrDefaultAsync(t => t.Title.Id == id && t.User.Id == ratingUserId)
                 ?? throw new NotFoundException(nameof(TitleRating));
             var title = await dbContext.Titles.FirstOrDefaultAsync(t => t.Id == id) ??
                 throw new NotFoundException(nameof(Title));

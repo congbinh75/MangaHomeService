@@ -67,9 +67,9 @@ namespace MangaHomeService.Controllers
         [Route("create")]
         public async Task<IActionResult> Create([FromBody] CreateTitle input)
         {
-            var title = await titleService.Add(name: input.Name, description: input.Description, artwork: input.Artwork, 
-                authorsIds: input.AuthorsIds, artistsIds: input.ArtistsIds, status: (Enums.TitleStatus)input.Status, 
-                otherNamesIds: input.OtherNamesIds, originalLanguageId: input.OriginalLanguageId, genresIds: input.GernesIds, 
+            var title = await titleService.Add(name: input.Name, description: input.Description, artwork: input.Artwork,
+                authorsIds: input.AuthorsIds, artistsIds: input.ArtistsIds, status: (Enums.TitleStatus)input.Status,
+                otherNamesIds: input.OtherNamesIds, originalLanguageId: input.OriginalLanguageId, genresIds: input.GernesIds,
                 themesIds: input.ThemesIds, demographicsIds: input.DemographicsIds);
             return Ok(title);
         }
@@ -79,16 +79,16 @@ namespace MangaHomeService.Controllers
         [Route("update")]
         public async Task<IActionResult> Update([FromBody] UpdateTitle input)
         {
-            var title = await titleService.Update(id: input.Id, name: input.Name, description: input.Description, 
-                artwork: input.Artwork, authorsIds: input.AuthorsIds, artistsIds: input.ArtistsIds, 
-                status: (Enums.TitleStatus)input.Status, otherNamesIds: input.OtherNamesIds, 
-                originalLanguageId: input.OriginalLanguageId, genresIds: input.GernesIds, themesIds: input.ThemesIds, 
+            var title = await titleService.Update(id: input.Id, name: input.Name, description: input.Description,
+                artwork: input.Artwork, authorsIds: input.AuthorsIds, artistsIds: input.ArtistsIds,
+                status: (Enums.TitleStatus)input.Status, otherNamesIds: input.OtherNamesIds,
+                originalLanguageId: input.OriginalLanguageId, genresIds: input.GernesIds, themesIds: input.ThemesIds,
                 demographicsIds: input.DemographicsIds);
             return Ok(title);
         }
 
         [HttpPost]
-        [Authorize(Roles="Admin")]
+        [Authorize(Roles = "Admin")]
         [Route("remove")]
         public async Task<IActionResult> Remove([FromBody] RemoveTitle input)
         {

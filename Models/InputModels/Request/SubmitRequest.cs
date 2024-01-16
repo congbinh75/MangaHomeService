@@ -14,11 +14,11 @@ namespace MangaHomeService.Models.InputModels
 
     public class ChapterRequestData : SubmitRequest
     {
-        [Required]  
+        [Required]
         public required string ChapterId { get; set; }
 
         [Required]
-        public required string GroupId { get; set;}
+        public required string GroupId { get; set; }
     }
 
     public class GroupRequestData : SubmitRequest
@@ -39,10 +39,10 @@ namespace MangaHomeService.Models.InputModels
     public class MemberRequestData : SubmitRequest
     {
         [Required]
-        public required string MemberId { get; set;}
+        public required string MemberId { get; set; }
 
         [Required]
-        public required string GroupId { get; set;}
+        public required string GroupId { get; set; }
     }
 
     public class ArtistRequestData : SubmitRequest

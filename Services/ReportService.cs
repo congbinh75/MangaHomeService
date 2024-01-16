@@ -254,7 +254,7 @@ namespace MangaHomeService.Services
         {
             using var dbContext = await contextFactory.CreateDbContextAsync();
             var report = await dbContext.Reports.FirstOrDefaultAsync(r => r.Id == id) ?? throw new NotFoundException(nameof(Report));
-            
+
             if (report is GroupReport groupReport)
             {
                 await dbContext.Entry(groupReport).Reference(r => r.Group).LoadAsync();

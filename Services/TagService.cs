@@ -11,7 +11,7 @@ namespace MangaHomeService.Services
         public Task<ICollection<Tag>> GetByType(Type type);
         public Task<Tag> Add(string name, Type type, string? description = null, ICollection<string>? titlesIds = null,
             ICollection<string>? otherNamesIds = null);
-        public Task<Tag> Update(string id, string? name = null, string? description = null, ICollection<string>? titlesIds = null, 
+        public Task<Tag> Update(string id, string? name = null, string? description = null, ICollection<string>? titlesIds = null,
             ICollection<string>? otherNamesIds = null);
         public Task<bool> Remove(string id);
     }
@@ -85,7 +85,7 @@ namespace MangaHomeService.Services
             return tag;
         }
 
-        public async Task<Tag> Update(string id, string? name = null, string? description = null, ICollection<string>? titlesIds = null, 
+        public async Task<Tag> Update(string id, string? name = null, string? description = null, ICollection<string>? titlesIds = null,
             ICollection<string>? otherNamesIds = null)
         {
             using var dbContext = await contextFactory.CreateDbContextAsync();

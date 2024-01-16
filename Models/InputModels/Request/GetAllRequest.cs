@@ -1,7 +1,7 @@
 using MangaHomeService.Utils;
 using System.ComponentModel.DataAnnotations;
 
-namespace MangaHomeService.Models.InputModels 
+namespace MangaHomeService.Models.InputModels
 {
     public class GetAllRequest
     {

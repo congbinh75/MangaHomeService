@@ -211,7 +211,7 @@ namespace MangaHomeService.Services
             var trackingUserId = userId ?? tokenInfoProvider.Id;
             var user = await dbContext.Users.Where(u => u.Id == trackingUserId).Include(u => u.ChapterTrackings).FirstOrDefaultAsync()
                 ?? throw new NotFoundException(nameof(User));
-            var tracking = user.ChapterTrackings.FirstOrDefault(c => c.Id == id)  ?? throw new NotFoundException(nameof(Chapter));
+            var tracking = user.ChapterTrackings.FirstOrDefault(c => c.Id == id) ?? throw new NotFoundException(nameof(Chapter));
             user.ChapterTrackings.Remove(tracking);
             await dbContext.SaveChangesAsync();
             return true;

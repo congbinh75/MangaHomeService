@@ -10,7 +10,7 @@ namespace MangaHomeService.Services
     {
         public Task<Group> Get(string id);
         public Task<ICollection<Group>> GetAll(int pageSize = Constants.GroupsPerPage, int pageNumber = 1);
-        public Task<Group> Add(string name, string? description = null, IFormFile? profilePicture = null, 
+        public Task<Group> Add(string name, string? description = null, IFormFile? profilePicture = null,
             ICollection<string>? membersIds = null);
         public Task<Group> Update(string id, string? name = null, string? description = null, IFormFile? profilePicture = null,
             ICollection<string>? membersIds = null);
@@ -34,12 +34,12 @@ namespace MangaHomeService.Services
             return groups;
         }
 
-        public async Task<Group> Add(string name, string? description = null, IFormFile? profilePicture = null, 
+        public async Task<Group> Add(string name, string? description = null, IFormFile? profilePicture = null,
             ICollection<string>? membersIds = null)
         {
             using var dbContext = await contextFactory.CreateDbContextAsync();
             var members = new List<Member>();
-            if (membersIds != null) 
+            if (membersIds != null)
             {
                 foreach (string memberId in membersIds)
                 {
@@ -53,7 +53,7 @@ namespace MangaHomeService.Services
             {
                 Name = name,
                 Description = description ?? "",
-                ProfilePicture = profilePicture != null ? 
+                ProfilePicture = profilePicture != null ?
                 (await Functions.UploadFileAsync(profilePicture, configuration["FilesStoragePath.GroupsImagesPath"]
                 ?? throw new ConfigurationNotFoundException("FilesStoragePath.GroupsImagesPath"))) : "",
                 Members = members

@@ -12,7 +12,7 @@ namespace MangaHomeService.Models.InputModels
         [Required]
         [DataType(DataType.EmailAddress)]
         public required string Email { get; set; }
-        
+
         [Required]
         [MinLength(8)]
         [MaxLength(16)]

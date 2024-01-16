@@ -1,6 +1,5 @@
 using MangaHomeService.Models.InputModels;
 using MangaHomeService.Services;
-using MangaHomeService.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
