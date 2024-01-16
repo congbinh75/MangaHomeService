@@ -2,9 +2,9 @@ using System.ComponentModel.DataAnnotations;
 
 namespace MangaHomeService.Models.Entities
 { 
-    public class ArtistRequest : Request
+    public class AuthorRequest : Request
     {
         [Required]
-        public required Person Artist { get; set; }
+        public required Person Author { get; set; }
     }
 }

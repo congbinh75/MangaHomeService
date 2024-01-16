@@ -9,7 +9,7 @@ namespace MangaHomeService.Controllers
 {
     [Route("api/title")]
     [ApiController]
-    public class TitleController(IStringLocalizer<SharedResources> stringLocalizer, ITitleService titleService) : ControllerBase
+    public class TitleController(ITitleService titleService) : ControllerBase
     {
         [HttpGet]
         [AllowAnonymous]

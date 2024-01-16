@@ -8,7 +8,7 @@ namespace MangaHomeService.Controllers
 {
     [Route("api/group")]
     [ApiController]
-    public class GroupController(IGroupService groupService, IStringLocalizer<SharedResources> stringLocalizer) : ControllerBase
+    public class GroupController(IGroupService groupService) : ControllerBase
     {
         [HttpGet]
         [AllowAnonymous]

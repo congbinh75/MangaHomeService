@@ -1,5 +1,6 @@
-﻿using MangaHomeService.Utils;
+﻿using MangaHomeService.Models.Configurations;
 using MangaHomeService.Models.Entities;
+using MangaHomeService.Utils;
 using Microsoft.EntityFrameworkCore;
 
 namespace MangaHomeService.Models
@@ -35,80 +36,18 @@ namespace MangaHomeService.Models
             modelBuilder.HasDefaultSchema("MangaHome");
             base.OnModelCreating(modelBuilder);
 
-            //Title
-            modelBuilder.Entity<Title>()
-                .HasMany(t => t.Authors)
-                .WithMany(p => p.AuthoredTitles)
-                .UsingEntity(j => j.ToTable("TitlesAuthors"));
-
-            modelBuilder.Entity<Title>()
-                .HasMany(t => t.Artists)
-                .WithMany(p => p.IllustratedTitles)
-                .UsingEntity(j => j.ToTable("TitlesArtists"));
-
-            modelBuilder.Entity<Title>()
-                .HasMany(t => t.Gernes)
-                .WithMany(g => g.Titles)
-                .UsingEntity(j => j.ToTable("GenresOfTitles"));
-            
-            modelBuilder.Entity<Title>()
-                .HasMany(t => t.Themes)
-                .WithMany(t => t.Titles)
-                .UsingEntity(j => j.ToTable("ThemesOfTitles"));
-
-            modelBuilder.Entity<Title>()
-                .HasMany(t => t.Demographics)
-                .WithMany(d => d.Titles)
-                .UsingEntity(j => j.ToTable("DemogrphicsOfTitles"));
-
-            //Tag
-            modelBuilder.Entity<Gerne>()
-                .HasMany(t => t.Titles);
-            
-            modelBuilder.Entity<Theme>()
-                .HasMany(t => t.Titles);
-            
-            modelBuilder.Entity<Demographic>()
-                .HasMany(t => t.Titles);
-
-            //User
-            modelBuilder.Entity<User>()
-                .HasMany(t => t.UpdateFeed);
-
-            //CommentVote
-            modelBuilder.Entity<CommentVote>()
-                .HasKey(cv => new { cv.UserId, cv.CommentId });
-            
-            modelBuilder.Entity<CommentVote>()
-                .HasOne(cv => cv.User)
-                .WithMany(u => u.CommentVotes)
-                .HasForeignKey(cv => cv.UserId);
-
-            modelBuilder.Entity<CommentVote>()
-                .HasOne(cv => cv.Comment)
-                .WithMany(c => c.CommentVotes)
-                .HasForeignKey(cv => cv.CommentId);
-
-            //TitleRating
-            modelBuilder.Entity<TitleRating>()
-                .HasKey(cv => new { cv.UserId, cv.TitleId });
-            
-            modelBuilder.Entity<TitleRating>()
-                .HasOne(cv => cv.User)
-                .WithMany(u => u.TitleRatings)
-                .HasForeignKey(cv => cv.UserId);
-
-            modelBuilder.Entity<TitleRating>()
-                .HasOne(cv => cv.Title)
-                .WithMany(c => c.TitleRatings)
-                .HasForeignKey(cv => cv.TitleId);
-
+            modelBuilder.ApplyConfiguration(new ChapterConfiguration());
+            modelBuilder.ApplyConfiguration(new CommentVoteConfiguration());
+            modelBuilder.ApplyConfiguration(new TagConfiguration());
+            modelBuilder.ApplyConfiguration(new TitleConfiguration());
+            modelBuilder.ApplyConfiguration(new TitleRatingConfiguration());
+            modelBuilder.ApplyConfiguration(new UserConfiguration());
         }
 
         public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
             var now = DateTime.UtcNow;
-            var currentUser = await Users.FirstOrDefaultAsync(u => u.Id == _tokenInfoProvider.Id);
+            var currentUser = await Users.FirstOrDefaultAsync(u => u.Id == _tokenInfoProvider.Id, cancellationToken: cancellationToken);
 
             var changedEntities = ChangeTracker.Entries();
             foreach (var changedEntity in changedEntities)

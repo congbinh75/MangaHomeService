@@ -8,7 +8,7 @@ namespace MangaHomeService.Controllers
 {
     [Route("api/report")]
     [ApiController]
-    public class ReportController(IReportService reportService, IStringLocalizer<SharedResources> stringLocalizer) : ControllerBase
+    public class ReportController(IReportService reportService) : ControllerBase
     {
         [HttpGet]
         [Authorize]

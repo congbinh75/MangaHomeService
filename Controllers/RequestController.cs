@@ -8,7 +8,7 @@ namespace MangaHomeService.Controllers
 {
     [Route("api/request")]
     [ApiController]
-    public class RequestController(IRequestService requestService, IStringLocalizer<SharedResources> stringLocalizer) : ControllerBase
+    public class RequestController(IRequestService requestService) : ControllerBase
     {
         [HttpGet]
         [Authorize]

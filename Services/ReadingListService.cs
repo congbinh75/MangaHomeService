@@ -28,7 +28,7 @@ namespace MangaHomeService.Services
             if (!list.IsPublic)
             {
                 var currentUser = tokenInfoProvider.Id;
-                if (list?.User?.Id != currentUser)
+                if (list?.Owner?.Id != currentUser)
                 {
                     throw new Exception();
                 }
@@ -41,7 +41,7 @@ namespace MangaHomeService.Services
             var currentUser = tokenInfoProvider.Id;
             if (userId == null)
             {
-                return await dbContext.ReadingLists.Where(r => r.User.Id == currentUser).ToListAsync();
+                return await dbContext.ReadingLists.Where(r => r.Owner.Id == currentUser).ToListAsync();
             }
             else
             {
@@ -49,11 +49,11 @@ namespace MangaHomeService.Services
                     throw new NotFoundException(nameof(User));
                 if (user.Id == currentUser)
                 {
-                    return await dbContext.ReadingLists.Where(r => r.User.Id == currentUser).ToListAsync();
+                    return await dbContext.ReadingLists.Where(r => r.Owner.Id == currentUser).ToListAsync();
                 }
                 else
                 {
-                    return await dbContext.ReadingLists.Where(r => r.User.Id == currentUser && r.IsPublic == true).ToListAsync();
+                    return await dbContext.ReadingLists.Where(r => r.Owner.Id == currentUser && r.IsPublic == true).ToListAsync();
                 }
             }
         }
@@ -78,7 +78,7 @@ namespace MangaHomeService.Services
             var list = new ReadingList
             {
                 Name = name,
-                User = user,
+                Owner = user,
                 Description = description,
                 IsPublic = isPublic,
                 Titles = titles
@@ -94,7 +94,7 @@ namespace MangaHomeService.Services
             using var dbContext = await contextFactory.CreateDbContextAsync();
             var list = await dbContext.ReadingLists.FirstOrDefaultAsync(r => r.Id == id) ??
                 throw new NotFoundException(nameof(ReadingList));
-            var newUser = list.User;
+            var newUser = list.Owner;
             if (userId != null)
             {
                 newUser = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == userId) ?? throw new NotFoundException(nameof(User));
@@ -112,7 +112,7 @@ namespace MangaHomeService.Services
             }
 
             list.Name = name ?? list.Name;
-            list.User = userId == null ? list.User : newUser;
+            list.Owner = userId == null ? list.Owner : newUser;
             list.Description = description ?? list.Description;
             list.IsPublic = isPublic == null ? list.IsPublic : (bool)isPublic;
             list.Titles = titlesIds == null ? list.Titles : newTitles;
