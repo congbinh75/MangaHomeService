@@ -1,5 +1,5 @@
-﻿using MangaHomeService.Models.FormData;
-using MangaHomeService.Services.Interfaces;
+﻿using MangaHomeService.Models.InputModels;
+using MangaHomeService.Services;
 using MangaHomeService.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -11,343 +11,107 @@ using System.Text;
 
 namespace MangaHomeService.Controllers
 {
-    [Route("api/[controller]/[action]")]
+    [Route("api/user")]
     [ApiController]
-    public class UserController : ControllerBase
+    public class UserController(IConfiguration configuration, IStringLocalizer<SharedResources> stringLocalizer, IUserService userService,
+        ITokenInfoProvider tokenInfoProvider) : ControllerBase
     {
-        private IConfiguration _configuration;
-        private IStringLocalizer<UserController> _stringLocalizer;
-        private IUserService _userService;
-        private IRoleService _roleService;
-        private IPermissionService _permissionService;
-
-        public UserController(
-            IConfiguration configuration, 
-            IStringLocalizer<UserController> stringLocalizer, 
-            IUserService userService,
-            IRoleService roleService,
-            IPermissionService permissionService) 
-        {
-            _configuration = configuration;
-            _stringLocalizer = stringLocalizer;
-            _userService = userService;
-            _roleService = roleService;
-            _permissionService = permissionService;
-        }
-
         [HttpPost]
-        public async Task<IActionResult> Register(UserRegisterData inputUser)
-        {
-            try
-            {
-                if (!string.IsNullOrEmpty(inputUser.Email) && !string.IsNullOrEmpty(inputUser.Password) 
-                    && !string.IsNullOrEmpty(inputUser.Name))
-                {
-                    await _userService.Add(inputUser.Name, inputUser.Email, inputUser.Password, "");
-                    return Ok();
-                }
-                else
-                {
-                    return BadRequest(_stringLocalizer["ERR_MISSING_INPUT_DATA"]);
-                }
-            }
-            catch(Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> Login(UserLoginData inputUser)
-        {
-            try
-            {
-                if (!string.IsNullOrEmpty(inputUser.Email) && !string.IsNullOrEmpty(inputUser.Password))
-                {
-                    var user = await _userService.Get(inputUser.Email, inputUser.Password);
-
-                    if (user != null)
-                    {
-                        var permissions = await _userService.GetPermissionsOfUser(user.Id);
-
-                        var claims = new[]
-                        {
-                        new Claim(JwtRegisteredClaimNames.Sub, _configuration["Jwt:Subject"]),
-                        new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                        new Claim(JwtRegisteredClaimNames.Iat, DateTime.UtcNow.ToString()),
-                        new Claim("UserId", user.Id),
-                        new Claim("DisplayName", user.Name),
-                        new Claim("Email", user.Email),
-                        new Claim(ClaimTypes.Role, permissions.Select(x => x.Name).ToArray().ToString())
-                    };
-
-                        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
-                        var signIn = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-                        var token = new JwtSecurityToken(
-                            _configuration["Jwt:Issuer"],
-                            _configuration["Jwt:Audience"],
-                            claims,
-                            expires: DateTime.UtcNow.AddSeconds(10),
-                            signingCredentials: signIn);
-
-                        return Ok(new JwtSecurityTokenHandler().WriteToken(token));
-                    }
-                    else
-                    {
-                        return BadRequest("Invalid credentials");
-                    }
-                }
-                else
-                {
-                    return BadRequest(_stringLocalizer["ERR_MISSING_INPUT_DATA"]);
-                }
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
-
-        [Authorize]
-        [HttpPost]
-        public async Task<IActionResult> ChangePassword(UserChangePasswordData inputData)
-        {
-            try
-            {
-                if (inputData != null)
-                {
-                    if (string.IsNullOrEmpty(inputData.oldPassword) || string.IsNullOrEmpty(inputData.newPassword)
-                        || string.IsNullOrEmpty(inputData.repeatNewPassword))
-                    {
-                        return BadRequest("Missing required fields");
-                    }
-
-                    if (inputData.newPassword != inputData.repeatNewPassword)
-                    {
-                        return BadRequest("Password and confirmation are not matched");
-                    }
-
-                    string currentUserId = Functions.GetCurrentUserId();
-                    var user = _userService.Get(currentUserId);
-                    if (user != null)
-                    {
-                        await _userService.Update(id: currentUserId, password: inputData.newPassword);
-                    }
-                    else
-                    {
-                        return NotFound();
-                    }
-                    return Ok();
-                }
-                else
-                {
-                    return BadRequest(_stringLocalizer["ERR_MISSING_INPUT_DATA"]);
-                }
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-
-        }
-
-        [Authorize]
-        [HttpPost]
-        public async Task<IActionResult> UpdateProfilePicture(string profilePicture)
-        {
-            try
-            {
-                if (!string.IsNullOrEmpty(profilePicture))
-                {
-                    if (4 * (profilePicture.Length / 3) > Constants.ProfilePictureBytesLimit)
-                    {
-                        return BadRequest("File size exceeded 2MB limit");
-                    }
-                    string currentUser = Functions.GetCurrentUserId();
-                    await _userService.Update(id: currentUser, profilePicture: profilePicture);
-                    return Ok();
-                }
-                else
-                {
-                    return BadRequest(_stringLocalizer["ERR_MISSING_INPUT_DATA"]);
-                }
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
-
-        [Authorize]
-        [HttpPost]
-        public async Task<IActionResult> UpdateName(string name)
-        {
-            try
-            {
-                if (!string.IsNullOrEmpty(name))
-                {
-                    string currentUserId = Functions.GetCurrentUserId();
-                    var user = _userService.Get(currentUserId);
-                    if (user != null)
-                    {
-                        await _userService.Update(id: currentUserId, name: name);
-                    }
-                    else
-                    {
-                        return BadRequest();
-                    }
-                    return Ok();
-                }
-                else
-                {
-                    return BadRequest(_stringLocalizer[ "ERR_MISSING_INPUT_DATA"]);
-                }
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
-
-        [Authorize]
-        [HttpPost]
-        public async Task<IActionResult> UpdateEmail(string email)
-        {
-            try
-            {
-                if (!string.IsNullOrEmpty(email))
-                {
-                    string currentUserId = Functions.GetCurrentUserId();
-                    var user = _userService.Get(currentUserId);
-                    if (user != null)
-                    {
-                        await _userService.Update(id: currentUserId, email: email, emailConfirmed: false);
-                    }
-                    else
-                    {
-                        return BadRequest();
-                    }
-                    return Ok();
-                }
-                else
-                {
-                    return BadRequest(_stringLocalizer["ERR_MISSING_INPUT_DATA"]);
-                }
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
-
         [AllowAnonymous]
-        [HttpPost]
-        public async Task<IActionResult> ConfirmEmail(string id)
+        [Route("register")]
+        public async Task<IActionResult> Register([FromBody] RegisterUser input)
         {
-            try
-            {
-                if (!string.IsNullOrEmpty(id))
-                {
-                    try
-                    {
-                        var user = _userService.Get(id);
-                        if (user != null)
-                        {
-                            await _userService.Update(id: id, emailConfirmed: true);
-                        }
-                        else
-                        {
-                            return BadRequest();
-                        }
-                        return Ok();
-                    }
-                    catch (Exception ex)
-                    {
-                        return BadRequest(ex.Message);
-                    }
-                }
-                else
-                {
-                    return BadRequest(_stringLocalizer["ERR_MISSING_INPUT_DATA"]);
-                }
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            await userService.Add(input.Name, input.Email, input.Password, 2);
+            return Ok();
         }
 
+        [HttpPost]
         [AllowAnonymous]
-        [HttpPost]
-        public async Task<IActionResult> SendConfirmationEmail(string id)
+        [Route("login")]
+        public async Task<IActionResult> Login([FromBody] LoginUser input)
         {
-            throw new NotImplementedException();
+            var user = await userService.Get(input.Username, input.Password);
+
+            if (user != null)
+            {
+                var claims = new[]
+                {
+                    new Claim(JwtRegisteredClaimNames.Sub, configuration["Jwt:Subject"] ?? ""),
+                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                    new Claim(JwtRegisteredClaimNames.Iat, DateTime.UtcNow.ToString()),
+                    new Claim(ClaimTypes.NameIdentifier, user.Id),
+                    new Claim(ClaimTypes.Name, user.Username ?? ""),
+                    new Claim(ClaimTypes.Role, ((Enums.Role)user.Role).ToString())
+                };
+
+                var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Key"] ?? ""));
+                var signIn = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+                var token = new JwtSecurityToken(
+                    configuration["Jwt:Issuer"],
+                    configuration["Jwt:Audience"],
+                    claims,
+                    expires: DateTime.UtcNow.AddDays(7),
+                    signingCredentials: signIn);
+
+                return Ok(new JwtSecurityTokenHandler().WriteToken(token));
+            }
+            else
+            {
+                return BadRequest(stringLocalizer[Constants.ERR_INVALID_CREDENTIALS].Value);
+            }
         }
 
+        [HttpPost]
+        [Authorize]
+        [Route("change-password")]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordUser input)
+        {
+            var user = await userService.Get(tokenInfoProvider.Name, input.OldPassword);
+            if (user != null)
+            {
+                await userService.Update(id: tokenInfoProvider.Id, password: input.NewPassword);
+                return Ok();
+            }
+            else
+            {
+                return BadRequest();
+            }
+        }
+
+        [HttpPost]
+        [Authorize]
+        [Route("update")]
+        public async Task<IActionResult> Update(UpdateUser input)
+        {
+            if (input.ProfilePicture != null)
+            {
+                if (4 * (input.ProfilePicture.Length / 3) > Constants.ProfilePictureBytesLimit)
+                {
+                    // TO BE FIXED
+                    return BadRequest("File size exceeded 2MB limit");
+                }
+            }
+
+            await userService.Update(id: tokenInfoProvider.Id, email: input.Email, profilePicture: input.ProfilePicture);
+            return Ok();
+        }
+
+        [HttpGet]
+        [Authorize]
+        [Route("send-confirmation-email")]
+        public async Task<IActionResult> SendConfirmationEmail()
+        {
+            await userService.SendEmailConfirmation();
+            return Ok();
+        }
+
+        [HttpGet]
         [AllowAnonymous]
-        [HttpPost]
-        public async Task<IActionResult> AddRole(AddRoleData data)
+        [Route("confirm-email")]
+        public async Task<IActionResult> ConfirmEmail([FromQuery] string userId, string token)
         {
-            try
-            {
-                if (data != null)
-                {
-                    await _roleService.Add(data.Name, data.Description);
-                    return Ok();
-                }
-                else
-                {
-                    return BadRequest(_stringLocalizer["ERR_MISSING_INPUT_DATA"]);
-                }
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
-
-        [AllowAnonymous]
-        [HttpPost]
-        public async Task<IActionResult> UpdateRole(UpdateRoleData data)
-        {
-            try
-            {
-                if (data != null)
-                {
-                    await _roleService.Update(data.Id, data.Name, data.Description);
-                    return Ok();
-                }
-                else
-                {
-                    return BadRequest(_stringLocalizer["ERR_MISSING_INPUT_DATA"]);
-                }
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> UpdatePermissionsOfRole(UpdateUserRoleData data)
-        {
-            try
-            {
-                if (data != null)
-                {
-                    await _roleService.UpdatePermissionsOfRole(data.UserId, data.RoleIds);
-                    return Ok();
-                }
-                else
-                {
-                    return BadRequest(_stringLocalizer["ERR_MISSING_INPUT_DATA"]);
-                }
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            await userService.ConfirmEmail(userId, token);
+            return Ok();
         }
     }
 }

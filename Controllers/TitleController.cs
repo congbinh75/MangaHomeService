@@ -1,156 +1,126 @@
-﻿using MangaHomeService.Models;
-using MangaHomeService.Services.Interfaces;
+﻿using MangaHomeService.Models.InputModels;
+using MangaHomeService.Services;
+using MangaHomeService.Utils;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
-using MangaHomeService.Utils;
-using MangaHomeService.Models.FormData;
 
 namespace MangaHomeService.Controllers
 {
-    [Route("api/[controller]/[action]")]
+    [Route("api/title")]
     [ApiController]
-    public class TitleController : ControllerBase
+    public class TitleController(ITitleService titleService) : ControllerBase
     {
-        private IConfiguration _configuration;
-        private IStringLocalizer<UserController> _stringLocalizer;
-        private ITitleService _titleService;
-
-        public TitleController(
-            IConfiguration configuration,
-            IStringLocalizer<UserController> stringLocalizer,
-            ITitleService titleService)
+        [HttpGet]
+        [AllowAnonymous]
+        [Route("get")]
+        public async Task<IActionResult> Get([FromQuery] string id)
         {
-            _configuration = configuration;
-            _stringLocalizer = stringLocalizer;
-            _titleService = titleService;
+            var title = await titleService.Get(id);
+            return Ok(title);
         }
 
-        [AllowAnonymous]
         [HttpGet]
-        public async Task<IActionResult> Get(string id) 
+        [AllowAnonymous]
+        [Route("search")]
+        public async Task<IActionResult> Search([FromQuery] TitleSearch input)
         {
-            try
-            {
-                if (!string.IsNullOrEmpty(id.Trim()))
-                {
-                    var title = await _titleService.Get(id);
-                    return Ok(title);
-                }
-                else
-                {
-                    return BadRequest(_stringLocalizer["ERR_MISSING_INPUT_DATA"]);
-                }
-            }
-            catch (Exception ex)
-            {
-                return BadRequest();
-            }
+            var titles = await titleService.Search(keyword: input.Keyword, pageNumber: input.PageNumber, pageSize: input.PageSize);
+            return Ok(titles);
         }
 
-        [AllowAnonymous]
         [HttpGet]
-        public async Task<IActionResult> Index()
-        {
-            try
-            {
-                var hottestTitles = _titleService.AdvancedSearch(sortByHottest: true);
-                var lastestTitles = _titleService.AdvancedSearch(sortByLastest: true);
-
-                return Ok(new { hottestTitles, lastestTitles });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest();
-            }
-        }
-
         [AllowAnonymous]
-        [HttpGet]
-        public async Task<IActionResult> GetTitlesByGenre(GetTitlesByGenreFormData getTitlesByGenreFormData)
+        [Route("advanced-search")]
+        public async Task<IActionResult> AdvancedSearch([FromQuery] AdvancedTitleSearch input)
         {
-            try
+            int status = 0;
+            List<int> statuses = [];
+            if (input.Statuses != null)
             {
-                if (!string.IsNullOrEmpty(getTitlesByGenreFormData.GenreId.Trim()))
+                foreach (string num in input.Statuses)
                 {
-                    var titles = _titleService.AdvancedSearch(genreIds: new List<string>() { getTitlesByGenreFormData.GenreId.Trim() }, 
-                        pageNumber: getTitlesByGenreFormData.PageNumber, pageSize: getTitlesByGenreFormData.PageSize);
-                    return Ok(titles);
-                }
-                else
-                {
-                    return BadRequest(_stringLocalizer["ERR_MISSING_INPUT_DATA"]);
+                    if (!int.TryParse(num, out status))
+                    {
+                        return BadRequest();
+                    }
+                    statuses.Add(status);
                 }
             }
-            catch (Exception ex)
-            {
-                return BadRequest();
-            }
+
+            var titles = await titleService.AdvancedSearch(name: input.Name,
+                author: input.Author,
+                artist: input.Artist,
+                genreIds: input.GenreIds?.Select(x => x.Trim()).ToList(),
+                themeIds: input.ThemeIds?.Select(x => x.Trim()).ToList(),
+                languageIds: input.LanguageIds?.Select(x => x.Trim()).ToList(),
+                statuses: statuses,
+                sortByLastest: input.SortByLastest,
+                sortByHottest: input.SortByHottest,
+                pageNumber: input.PageNumber,
+                pageSize: input.PageSize);
+            return Ok(titles);
         }
 
-        [AllowAnonymous]
-        [HttpGet]
-        public async Task<IActionResult> GetTitlesByTheme(GetTitlesByThemeFormData getTitlesByThemeFormData)
+        [HttpPost]
+        [Authorize]
+        [Route("create")]
+        public async Task<IActionResult> Create([FromBody] CreateTitle input)
         {
-            try
-            {
-                if (!string.IsNullOrEmpty(getTitlesByThemeFormData.ThemeId.Trim()))
-                {
-                    var titles = _titleService.AdvancedSearch(themeIds: new List<string>() { getTitlesByThemeFormData.ThemeId.Trim() }, 
-                        pageNumber: getTitlesByThemeFormData.PageNumber, pageSize: getTitlesByThemeFormData.PageSize);
-                    return Ok(titles);
-                }
-                else
-                {
-                    return BadRequest(_stringLocalizer["ERR_MISSING_INPUT_DATA"]);
-                }
-            }
-            catch (Exception ex)
-            {
-                return BadRequest();
-            }
+            var title = await titleService.Add(name: input.Name, description: input.Description, artwork: input.Artwork,
+                authorsIds: input.AuthorsIds, artistsIds: input.ArtistsIds, status: (Enums.TitleStatus)input.Status,
+                otherNamesIds: input.OtherNamesIds, originalLanguageId: input.OriginalLanguageId, genresIds: input.GernesIds,
+                themesIds: input.ThemesIds, demographicsIds: input.DemographicsIds);
+            return Ok(title);
         }
 
-        [AllowAnonymous]
-        [HttpGet]
-        public async Task<IActionResult> Search(SearchFormData searchFormData)
+        [HttpPost]
+        [Authorize]
+        [Route("update")]
+        public async Task<IActionResult> Update([FromBody] UpdateTitle input)
         {
-            try
-            {
-                var titles = await _titleService.Search(keyword: searchFormData.Keyword.Trim(), 
-                    pageNumber: searchFormData.PageNumber, pageSize: searchFormData.PageSize);
-                return Ok(titles);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest();
-            }
+            var title = await titleService.Update(id: input.Id, name: input.Name, description: input.Description,
+                artwork: input.Artwork, authorsIds: input.AuthorsIds, artistsIds: input.ArtistsIds,
+                status: (Enums.TitleStatus)input.Status, otherNamesIds: input.OtherNamesIds,
+                originalLanguageId: input.OriginalLanguageId, genresIds: input.GernesIds, themesIds: input.ThemesIds,
+                demographicsIds: input.DemographicsIds);
+            return Ok(title);
         }
 
-        [AllowAnonymous]
-        [HttpGet]
-        public async Task<IActionResult> AdvancedSearch(AdvancedSearchFormData advancedSearchFormData)
+        [HttpPost]
+        [Authorize(Roles = "Admin")]
+        [Route("remove")]
+        public async Task<IActionResult> Remove([FromBody] RemoveTitle input)
         {
-            try
-            {
-                var titles = await _titleService.AdvancedSearch(name: advancedSearchFormData.Name.Trim(), 
-                    author: advancedSearchFormData.Author.Trim(), 
-                    artist: advancedSearchFormData.Artist.Trim(), 
-                    genreIds: advancedSearchFormData.GenreIds?.Select(x => x.Trim()).ToList(), 
-                    themeIds: advancedSearchFormData.ThemeIds?.Select(x => x.Trim()).ToList(), 
-                    languageIds: advancedSearchFormData.LanguageIds?.Select(x => x.Trim()).ToList(), 
-                    statuses: advancedSearchFormData.Statuses, 
-                    sortByLastest: advancedSearchFormData.SortByLastest, 
-                    sortByHottest: advancedSearchFormData.SortByHottest, 
-                    pageNumber: advancedSearchFormData.PageNumber, 
-                    pageSize: advancedSearchFormData.PageSize);
-                return Ok(titles);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest();
-            }
+            var title = await titleService.Remove(input.Id);
+            return Ok(title);
+        }
+
+        [HttpPost]
+        [Authorize]
+        [Route("add-rating")]
+        public async Task<IActionResult> AddRating([FromBody] AddRatingTitle input)
+        {
+            var title = await titleService.AddRating(input.Id, input.Rating, input.UserId);
+            return Ok(title);
+        }
+
+        [HttpPost]
+        [Authorize]
+        [Route("update-rating")]
+        public async Task<IActionResult> UpdateRating([FromBody] AddRatingTitle input)
+        {
+            var title = await titleService.UpdateRating(input.Id, input.Rating, input.UserId);
+            return Ok(title);
+        }
+
+        [HttpPost]
+        [Authorize]
+        [Route("remove-rating")]
+        public async Task<IActionResult> RemoveRating([FromBody] RemoveRatingTitle input)
+        {
+            var title = await titleService.RemoveRating(input.Id, input.UserId);
+            return Ok(title);
         }
     }
 }

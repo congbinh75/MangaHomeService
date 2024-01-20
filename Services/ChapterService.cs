@@ -1,100 +1,220 @@
 ﻿using MangaHomeService.Models;
-using MangaHomeService.Services.Interfaces;
+using MangaHomeService.Models.Entities;
+using MangaHomeService.Utils;
 using Microsoft.EntityFrameworkCore;
 
 namespace MangaHomeService.Services
 {
-    public class ChapterService : IChapterService
+    public interface IChapterService
     {
-        private readonly IDbContextFactory<MangaHomeDbContext> _contextFactory;
+        public Task<Chapter> Get(string id);
+        public Task<ICollection<Chapter>> GetByTitle(string titleId, int pageNumber = 1, int pageSize = Constants.ChaptersPerPage);
+        public Task<Chapter> Add(double number, string titleId, string groupId, string? volumeId = null, string? languageId = null,
+            ICollection<string>? pagesIds = null, ICollection<string>? commentsIds = null, bool isApproved = false);
+        public Task<Chapter> Update(string id, double? number = null, string? titleId = null, string? groupId = null,
+            string? volumeId = null, string? languageId = null, ICollection<string>? pagesIds = null, ICollection<string>? commentsIds = null,
+            bool? isApproved = null);
+        public Task<bool> Remove(string id);
+        public Task<bool> AddTracking(string id, string? userId = null);
+        public Task<bool> RemoveTracking(string id, string? userId = null);
+    }
 
-        public ChapterService(IDbContextFactory<MangaHomeDbContext> contextFactory)
+    public class ChapterService(IDbContextFactory<MangaHomeDbContext> contextFactory, ITokenInfoProvider tokenInfoProvider) : IChapterService
+    {
+        public async Task<Chapter> Get(string id)
         {
-            _contextFactory = contextFactory;
+            using var dbContext = await contextFactory.CreateDbContextAsync();
+            var chapter = await dbContext.Chapters.Where(c => c.Id == id).Include(c => c.Pages).FirstOrDefaultAsync() ??
+                throw new NotFoundException(nameof(Chapter));
+            return chapter;
         }
 
-        public async Task<Chapter> Add(double number, Title title, Group group, Volume? volume = null, Language? language = null, 
-            List<Page>? pages = null, List<Comment>? comments = null)
+        public async Task<ICollection<Chapter>> GetByTitle(string titleId, int pageNumber = 1, int pageSize = Constants.ChaptersPerPage)
         {
-            using (var dbContext = _contextFactory.CreateDbContext())
+            using var dbContext = await contextFactory.CreateDbContextAsync();
+            var title = await dbContext.Titles.FirstOrDefaultAsync(t => t.Id == titleId) ??
+                throw new NotFoundException(nameof(Title));
+            return await dbContext.Chapters.Where(c => c.Title.Id == titleId && c.IsApproved).OrderByDescending(c => c.Number).
+                GroupBy(c => c.Number).SelectMany(c => c).Distinct().Skip(pageSize * (pageNumber - 1)).Take(pageSize).ToListAsync();
+        }
+
+        public async Task<Chapter> Add(double number, string titleId, string groupId, string? volumeId = null, string? languageId = null,
+            ICollection<string>? pagesIds = null, ICollection<string>? commentsIds = null, bool isApproved = false)
+        {
+            using var dbContext = await contextFactory.CreateDbContextAsync();
+
+            var title = await dbContext.Titles.FirstOrDefaultAsync(t => t.Id == titleId) ?? throw new NotFoundException(nameof(Title));
+            title.CheckUploadConditions();
+
+            var group = await dbContext.Groups.FirstOrDefaultAsync(g => g.Id == groupId) ?? throw new NotFoundException(nameof(Group));
+            group.CheckUploadContions();
+
+            var volume = (volumeId == null ? null : await dbContext.Volumes.FirstOrDefaultAsync(v => v.Id == volumeId)) ??
+                throw new NotFoundException(nameof(Volume));
+            var language = (languageId == null ? null : await dbContext.Languages.FirstOrDefaultAsync(l => l.Id == languageId)) ??
+                throw new NotFoundException(nameof(Language));
+
+            var pages = new List<Page>();
+            if (pagesIds != null)
             {
-                Chapter chapter = new Chapter();
-                chapter.Number = number;
+                foreach (var pageId in pagesIds)
+                {
+                    var page = await dbContext.Pages.FirstOrDefaultAsync(p => p.Id == pageId) ??
+                        throw new NotFoundException(nameof(Page));
+                    pages.Add(page);
+                }
+            }
+
+            var comments = new List<Comment>();
+            if (commentsIds != null)
+            {
+                foreach (var commentId in commentsIds)
+                {
+                    var comment = await dbContext.Comments.FirstOrDefaultAsync(c => c.Id == commentId) ??
+                        throw new NotFoundException(nameof(Comment));
+                    comments.Add(comment);
+                }
+            }
+
+            var chapter = new Chapter
+            {
+                Number = number,
+                Title = title,
+                Group = group,
+                Volume = volume,
+                Language = language,
+                Pages = pages,
+                Comments = comments,
+                IsApproved = isApproved
+            };
+
+            await dbContext.Chapters.AddAsync(chapter);
+            await dbContext.SaveChangesAsync();
+            return chapter;
+        }
+
+        public async Task<Chapter> Update(string id, double? number = null, string? titleId = null, string? groupId = null,
+            string? volumeId = null, string? languageId = null, ICollection<string>? pagesIds = null, ICollection<string>? commentsIds = null,
+            bool? isApproved = null)
+        {
+            using var dbContext = await contextFactory.CreateDbContextAsync();
+            var chapter = await dbContext.Chapters.FirstOrDefaultAsync(c => c.Id == id) ??
+                throw new NotFoundException(nameof(Chapter));
+
+            var pages = new List<Page>();
+            if (pagesIds != null)
+            {
+                foreach (var pageId in pagesIds)
+                {
+                    var page = await dbContext.Pages.FirstOrDefaultAsync(p => p.Id == pageId) ??
+                        throw new NotFoundException(nameof(Page));
+                    pages.Add(page);
+                }
+            }
+
+            var comments = new List<Comment>();
+            if (commentsIds != null)
+            {
+                foreach (var commentId in commentsIds)
+                {
+                    var comment = await dbContext.Comments.FirstOrDefaultAsync(c => c.Id == commentId) ??
+                        throw new NotFoundException(nameof(Comment));
+                    comments.Add(comment);
+                }
+            }
+
+            if (titleId != null)
+            {
+                var title = await dbContext.Titles.FirstOrDefaultAsync(t => t.Id == titleId) ??
+                    throw new NotFoundException(nameof(Title));
+                title.CheckUploadConditions();
                 chapter.Title = title;
+            }
+
+            if (groupId != null)
+            {
+                var group = await dbContext.Groups.FirstOrDefaultAsync(g => g.Id == groupId) ??
+                    throw new NotFoundException(nameof(Group));
+                group.CheckUploadContions();
                 chapter.Group = group;
-                chapter.Volume = volume;
-                chapter.Language = language;
-                chapter.Pages = pages;
-                chapter.Comments = comments;
-
-                await dbContext.Chapters.AddAsync(chapter);
-                await dbContext.SaveChangesAsync();
-                return chapter;
             }
+
+            chapter.Number = number == null ? chapter.Number : (double)number;
+            chapter.Volume = volumeId != null ?
+                await dbContext.Volumes.FirstOrDefaultAsync(v => v.Id == volumeId) ??
+                throw new NotFoundException(nameof(Volume)) :
+                chapter.Volume;
+            chapter.Language = languageId != null ?
+                await dbContext.Languages.FirstOrDefaultAsync(l => l.Id == languageId) ??
+                throw new NotFoundException(nameof(Language)) :
+                chapter.Language;
+            chapter.Pages = pagesIds == null ? chapter.Pages : pages;
+            chapter.Comments = commentsIds == null ? chapter.Comments : comments;
+            chapter.IsApproved = isApproved == null ? chapter.IsApproved : (bool)isApproved;
+
+            await dbContext.SaveChangesAsync();
+            return chapter;
         }
 
-        public async Task<bool> Delete(string id)
-        {   
-            using (var dbContext = _contextFactory.CreateDbContext()) 
-            {
-                var chapter = await dbContext.Chapters.Where(c => c.Id == id).Include(c => c.Pages).Include(c => c.Comments).
-                    FirstOrDefaultAsync();
-                if (chapter == null) 
-                {
-                    throw new NullReferenceException(nameof(chapter));
-                }
-                dbContext.Chapters.Remove(chapter);
-                await dbContext.SaveChangesAsync();
-                return true;
-            }
-        }
-
-        public async Task<Chapter?> Get(string id)
+        public async Task<bool> Remove(string id)
         {
-            using (var dbContext = _contextFactory.CreateDbContext())
-            {
-                return await dbContext.Chapters.FirstOrDefaultAsync(c => c.Id == id);
-            }
+            using var dbContext = await contextFactory.CreateDbContextAsync();
+            var chapter = await dbContext.Chapters.Where(c => c.Id == id).Include(c => c.Pages).Include(c => c.Comments).
+                FirstOrDefaultAsync() ?? throw new NotFoundException(nameof(Chapter));
+            dbContext.Chapters.Remove(chapter);
+            await dbContext.SaveChangesAsync();
+            return true;
         }
 
-        public async Task<List<Chapter>> GetByTitle(string titleId)
+        public async Task<ChapterRequest> GetRequest(string requestId)
         {
-            using (var dbContext = _contextFactory.CreateDbContext())
-            {
-                return await dbContext.Chapters.Where(c => c.Title.Id == titleId).OrderByDescending(c => c.Number).ToListAsync();
-            }
+            using var dbContext = await contextFactory.CreateDbContextAsync();
+            var request = await dbContext.Requests.OfType<ChapterRequest>().Where(r => r.Id == requestId)
+                .Include(r => r.Chapter).FirstOrDefaultAsync() ??
+                throw new NotFoundException(nameof(ChapterRequest));
+            return request;
         }
 
-        public async Task<Chapter> Update(string id, double number = -1, Title? title = null, Group? group = null, Volume? volume = null, 
-            Language? language = null, List<Page>? pages = null, List<Comment>? comments = null)
+        public async Task<ChapterRequest> ReviewRequest(string requestId, string note, bool isApproved)
         {
-            using (var dbContext = _contextFactory.CreateDbContext())
+            using var dbContext = await contextFactory.CreateDbContextAsync();
+            var request = await dbContext.Requests.OfType<ChapterRequest>().FirstOrDefaultAsync(r => r.Id == requestId) ??
+                throw new NotFoundException(nameof(ChapterRequest));
+            if (request.IsReviewed)
             {
-                var chapter = await dbContext.Chapters.FirstOrDefaultAsync(c => c.Id == id);
-                if (chapter == null)
-                {
-                    throw new NullReferenceException(nameof(chapter));
-                }
-
-                var newNumber = number > 0 ? number : chapter.Number;
-                var newTitle = title != null ? title : chapter.Title;
-                var newGroup = group != null ? group : chapter.Group;
-                var newVolume = volume != null ? volume : chapter.Volume;
-                var newLanguage = language != null ? language : chapter.Language;
-                var newPages = pages != null ? pages : chapter.Pages;
-                var newComments = comments != null ? comments : chapter.Comments;
-
-                chapter.Number = newNumber;
-                chapter.Title = newTitle;
-                chapter.Group = newGroup;
-                chapter.Volume = newVolume;
-                chapter.Language = newLanguage;
-                chapter.Pages = newPages;
-                chapter.Comments = newComments;
-
-                await dbContext.SaveChangesAsync();
-                return chapter;
+                throw new AlreadyReviewedException();
             }
+
+            request.ReviewNote = note;
+            request.IsApproved = isApproved;
+            request.Chapter.IsApproved = isApproved;
+            request.IsReviewed = true;
+
+            await dbContext.SaveChangesAsync();
+            return request;
+        }
+
+        public async Task<bool> AddTracking(string id, string? userId = null)
+        {
+            using var dbContext = await contextFactory.CreateDbContextAsync();
+            var trackingUserId = userId ?? tokenInfoProvider.Id;
+            var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == trackingUserId) ?? throw new NotFoundException(nameof(User));
+            var chapter = await dbContext.Chapters.FirstOrDefaultAsync(c => c.Id == id) ?? throw new NotFoundException(nameof(Chapter));
+            user.ChapterTrackings.Add(chapter);
+            await dbContext.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<bool> RemoveTracking(string id, string? userId = null)
+        {
+            using var dbContext = await contextFactory.CreateDbContextAsync();
+            var trackingUserId = userId ?? tokenInfoProvider.Id;
+            var user = await dbContext.Users.Where(u => u.Id == trackingUserId).Include(u => u.ChapterTrackings).FirstOrDefaultAsync()
+                ?? throw new NotFoundException(nameof(User));
+            var tracking = user.ChapterTrackings.FirstOrDefault(c => c.Id == id) ?? throw new NotFoundException(nameof(Chapter));
+            user.ChapterTrackings.Remove(tracking);
+            await dbContext.SaveChangesAsync();
+            return true;
         }
     }
 }

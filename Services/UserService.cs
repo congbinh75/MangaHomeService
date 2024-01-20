@@ -1,133 +1,166 @@
 ﻿using MangaHomeService.Models;
-using MangaHomeService.Services.Interfaces;
+using MangaHomeService.Models.Entities;
+using MangaHomeService.Utils;
 using Microsoft.AspNetCore.Cryptography.KeyDerivation;
-using System.Security.Cryptography;
 using Microsoft.EntityFrameworkCore;
 using System.Data;
+using System.Net.Http.Headers;
+using System.Security.Cryptography;
 
 namespace MangaHomeService.Services
 {
-    public class UserService : IUserService
+    public interface IUserService
     {
-        private readonly IDbContextFactory<MangaHomeDbContext> _contextFactory;
+        public Task<User> Add(string name, string email, string password, int role);
+        public Task<User> Get(string id);
+        public Task<User?> Get(string email, string password);
+        public Task<User> Update(string id, string? name = null, string? email = null, string? password = null, int? role = null,
+            bool? isEmailConfirmed = null, IFormFile? profilePicture = null, bool? isBanned = null);
+        public Task<bool> Remove(string id);
+        public Task<bool> SendEmailConfirmation(string? userId = null);
+        public Task<bool> ConfirmEmail(string userId, string token);
+    }
 
-        public UserService(IDbContextFactory<MangaHomeDbContext> contextFactory)
-        {
-            _contextFactory = contextFactory;
-        }
-
-        public async Task<User> Add(string name, string email, string password, string roleId)
-        {
-            using (var dbContext = _contextFactory.CreateDbContext())
-            {
-                var existingUser = await dbContext.Users.FirstOrDefaultAsync(u => u.Email == email);
-                if (existingUser != null)
-                {
-                    throw new ArgumentException();
-                }
-
-                var role = await dbContext.Roles.Where(r => r.Id == roleId).FirstOrDefaultAsync();
-                if (role == null)
-                {
-                    throw new NullReferenceException(nameof(role));
-                }
-
-                (string hashed, byte[] salt) passAndSalt = HashPassword(password);
-                User newUser = new User(
-                    name, email, passAndSalt.hashed, emailConfirmed: false, profilePicture: "", passAndSalt.salt, role);
-                await dbContext.Users.AddAsync(newUser);
-                await dbContext.SaveChangesAsync();
-                return newUser;
-            }
-        }
-
+    public class UserService(IDbContextFactory<MangaHomeDbContext> contextFactory,
+        IConfiguration configuration, ITokenInfoProvider tokenInfoProvider, IHttpClientFactory httpClientFactory) : IUserService
+    {
         public async Task<User> Get(string id)
         {
-            using (var dbContext = _contextFactory.CreateDbContext())
-            {
-                User? user = await dbContext.Users.Where(u => u.Id == id).FirstOrDefaultAsync();
-                if (user == null)
-                {
-                    throw new ArgumentException(nameof(id));
-                }
-                return user;
-            }
+            using var dbContext = await contextFactory.CreateDbContextAsync();
+            var user = await dbContext.Users.Where(u => u.Id == id).FirstOrDefaultAsync() ?? throw new NotFoundException(nameof(User));
+            return user;
         }
 
         public async Task<User?> Get(string email, string password)
         {
-            using (var dbContext = _contextFactory.CreateDbContext())
+            using var dbContext = await contextFactory.CreateDbContextAsync();
+            var user = await dbContext.Users.Where(u => u.Email == email).FirstOrDefaultAsync();
+            if (user != null && HashPassword(password, user.Salt).hashedPassword.Equals(user.Password))
             {
-                User? user = await dbContext.Users.Where(u => u.Email == email).FirstOrDefaultAsync();
-                if (user != null && HashPassword(password, user.Salt).hashedPassword.Equals(user.Password))
-                {
-                    return user;
-                }
+                return user;
+            }
+            else
+            {
                 return null;
             }
         }
 
-        public async Task<User> Update(string userId, string? name = null, string? email = null, string? password = null,
-            bool? emailConfirmed = null, string? profilePicture = null, string? roleName = null)
+        public async Task<User> Add(string name, string email, string password, int role)
         {
-            using (var dbContext = _contextFactory.CreateDbContext())
+            using var dbContext = await contextFactory.CreateDbContextAsync();
+            var existingUser = await dbContext.Users.FirstOrDefaultAsync(u => u.Email == email);
+            if (existingUser != null)
             {
-                var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == userId);
-                var role = await dbContext.Roles.Where(r => r.Name == roleName).FirstOrDefaultAsync();
-                if (user == null)
-                {
-                    throw new Exception();
-                }
-
-                var newName = name == null ? user.Name : name;
-                var newEmail = email == null ? user.Email : email;
-                var newRole = roleName == null ? user.Role : role;
-                var newEmailConfirmed = emailConfirmed == null ? user.EmailConfirmed : emailConfirmed;
-                var newProfilePicture = profilePicture == null ? user.ProfilePicture : profilePicture;
-
-                var newPassword = user.Password;
-                var newSalt = user.Salt;
-                if (password != null)
-                {
-                    (string hassed, byte[] salt) passAndSalt = HashPassword(password);
-                    newPassword = passAndSalt.hassed;
-                    newSalt = passAndSalt.salt;
-                }
-
-                user.Name = newName;
-                user.Email = email;
-                user.Role = newRole;
-                user.EmailConfirmed = (bool)newEmailConfirmed;
-                user.ProfilePicture = newProfilePicture;
-                user.Password = newPassword;
-                user.Salt = newSalt;
-
-                await dbContext.SaveChangesAsync();
-                return user;
+                throw new EmailAlreadyRegisteredException();
             }
+
+            (string hashed, byte[] salt) passAndSalt = HashPassword(password);
+            var user = new User
+            {
+                Username = name,
+                Email = email,
+                Password = passAndSalt.hashed,
+                IsEmailConfirmed = false,
+                ProfilePicture = "",
+                Salt = passAndSalt.salt,
+                Role = role,
+                IsBanned = false,
+                ChapterTrackings = [],
+                CommentVotes = [],
+                TitleRatings = []
+            };
+            await dbContext.Users.AddAsync(user);
+            await dbContext.SaveChangesAsync();
+            return user;
         }
 
-        public async Task<bool> Delete(string id)
+        public async Task<User> Update(string userId, string? name = null, string? email = null, string? password = null, int? role = null,
+            bool? isEmailConfirmed = null, IFormFile? profilePicture = null, bool? isBanned = null)
         {
-            using (var dbContext = _contextFactory.CreateDbContext())
+            using var dbContext = await contextFactory.CreateDbContextAsync();
+            var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == userId) ??
+                throw new NotFoundException(nameof(User));
+            var newPassword = user.Password;
+            var newSalt = user.Salt;
+            if (password != null)
             {
-                var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == id);
-                if (user == null)
-                {
-                    throw new NullReferenceException(nameof(user));
-                }
-                dbContext.Users.Remove(user);
+                (string hassed, byte[] salt) passAndSalt = HashPassword(password);
+                newPassword = passAndSalt.hassed;
+                newSalt = passAndSalt.salt;
+            }
+
+            user.Username = name ?? user.Username;
+            user.Email = email ?? user.Email;
+            user.Role = role == null ? user.Role : (int)role;
+            user.IsEmailConfirmed = isEmailConfirmed == null ? user.IsEmailConfirmed : (bool)isEmailConfirmed;
+            user.ProfilePicture = profilePicture == null ? user.ProfilePicture :
+                await Functions.UploadFileAsync(profilePicture, configuration["FilesStoragePath.ProfilePicturesPath"]);
+            user.Password = newPassword;
+            user.Salt = newSalt;
+            user.IsBanned = isBanned == null ? user.IsBanned : (bool)isBanned;
+
+            await dbContext.SaveChangesAsync();
+            return user;
+        }
+
+        public async Task<bool> Remove(string id)
+        {
+            using var dbContext = await contextFactory.CreateDbContextAsync();
+            var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == id) ?? throw new NotFoundException(nameof(User));
+            dbContext.Users.Remove(user);
+            await dbContext.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<bool> SendEmailConfirmation(string? userId = null)
+        {
+            using var dbContext = await contextFactory.CreateDbContextAsync();
+            var id = userId ?? tokenInfoProvider.Id;
+            var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == id) ?? throw new NotFoundException(nameof(User));
+            if (user.IsEmailConfirmed)
+            {
+                throw new EmailAlreadyConfirmedException();
+            }
+            string token = Guid.NewGuid().ToString();
+            user.EmailConfirmationToken = token;
+            await dbContext.SaveChangesAsync();
+
+            using var httpClient = httpClientFactory.CreateClient();
+            using var request = new HttpRequestMessage(new HttpMethod("POST"), configuration["SMTP.Url"]);
+            request.Headers.TryAddWithoutValidation("api-key", configuration["SMTP.APIKey"]);
+
+            //TO BE FIXED
+            request.Content = new StringContent("");
+            request.Content.Headers.ContentType = MediaTypeHeaderValue.Parse("application/x-www-form-urlencoded");
+
+            var response = await httpClient.SendAsync(request);
+            return response.IsSuccessStatusCode;
+        }
+
+        public async Task<bool> ConfirmEmail(string userId, string token)
+        {
+            using var dbContext = await contextFactory.CreateDbContextAsync();
+            var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == userId) ?? throw new NotFoundException(nameof(User));
+            if (user.IsEmailConfirmed)
+            {
+                throw new EmailAlreadyConfirmedException();
+            }
+
+            if (user.EmailConfirmationToken == token)
+            {
+                user.IsEmailConfirmed = true;
                 await dbContext.SaveChangesAsync();
                 return true;
             }
+            else
+            {
+                throw new Exception();
+            }
         }
 
-        private (string hashedPassword, byte[] salt) HashPassword(string password, byte[]? salt = null)
+        private static (string hashedPassword, byte[] salt) HashPassword(string password, byte[]? salt = null)
         {
-            if (salt == null)
-            {
-                salt = RandomNumberGenerator.GetBytes(128 / 8);
-            }
+            salt ??= RandomNumberGenerator.GetBytes(128 / 8);
             string hassed = Convert.ToBase64String(KeyDerivation.Pbkdf2(
                     password: password,
                     salt: salt,
@@ -135,23 +168,6 @@ namespace MangaHomeService.Services
                     iterationCount: 100000,
                     numBytesRequested: 256 / 8));
             return (hassed, salt);
-        }
-
-        public async Task<List<Permission>> GetPermissionsOfUser(string userId)
-        {
-            using (var dbContext = _contextFactory.CreateDbContext())
-            {
-                if (string.IsNullOrEmpty(userId))
-                {
-                    throw new Exception();
-                }
-                else
-                {
-                    var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == userId);
-                    var role = await dbContext.Roles.Where(r => r.Id == user.Role.Id).Include(r => r.Permissions).FirstOrDefaultAsync();
-                    return role.Permissions;
-                }
-            }
         }
     }
 }

@@ -1,24 +1,16 @@
-﻿using MangaHomeService.Models;
-using System.Security.Claims;
-
-namespace MangaHomeService.Utils
+﻿namespace MangaHomeService.Utils
 {
     public static class Functions
     {
-        public static string GetCurrentUserId()
+        public static async Task<string> UploadFileAsync(IFormFile file, string? path)
         {
-            string currentUser = "";
-            var identity = User.Identity as ClaimsIdentity;
-            if (identity != null)
-            {
-                IEnumerable<Claim> claims = identity.Claims;
-                currentUser = claims.FirstOrDefault(c => c.Type == "UserId")?.Value ?? "";
-            }
-            else
-            {
-                throw new Exception();
-            }
-            return currentUser;
+            ArgumentNullException.ThrowIfNull(file);
+            ArgumentNullException.ThrowIfNull(path);
+
+            var filePath = Path.Combine(path, Path.GetRandomFileName());
+            using var stream = File.OpenRead(filePath);
+            await file.CopyToAsync(stream);
+            return filePath;
         }
     }
 }
