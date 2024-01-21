@@ -27,6 +27,9 @@ namespace MangaHomeService.Models.Entities
         public required ICollection<Comment> Comments { get; set; } = [];
 
         [Required]
-        public required bool IsApproved { get; set; }
+        public required bool IsApproved { get; set; } = false;
+
+        [Required]
+        public required bool IsRemoved { get; set; } = false;
     }
 }

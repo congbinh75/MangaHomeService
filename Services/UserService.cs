@@ -67,7 +67,8 @@ namespace MangaHomeService.Services
                 IsBanned = false,
                 ChapterTrackings = [],
                 CommentVotes = [],
-                TitleRatings = []
+                TitleRatings = [],
+                Comments = []
             };
             await dbContext.Users.AddAsync(user);
             await dbContext.SaveChangesAsync();

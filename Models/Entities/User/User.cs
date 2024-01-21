@@ -48,6 +48,9 @@ namespace MangaHomeService.Models.Entities
         public required ICollection<Chapter> ChapterTrackings { get; set; } = [];
 
         [Required]
+        public required ICollection<Comment> Comments { get; set; } = [];
+
+        [Required]
         public required ICollection<CommentVote> CommentVotes { get; set; } = [];
 
         [Required]

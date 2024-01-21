@@ -8,6 +8,8 @@ namespace MangaHomeService.Models.Configurations
     {
         public void Configure(EntityTypeBuilder<Chapter> builder)
         {
+            builder.HasQueryFilter(e => !e.IsRemoved);
+
             builder.HasMany(c => c.Pages)
                 .WithOne(c => c.Chapter)
                 .OnDelete(DeleteBehavior.Cascade);

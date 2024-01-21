@@ -50,6 +50,7 @@ namespace MangaHomeService.Services
         public async Task<Comment> Add(string id, Type type, string content)
         {
             using var dbContext = await contextFactory.CreateDbContextAsync();
+            var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == tokenInfoProvider.Id) ?? throw new NotFoundException(nameof(User));
             if (type == typeof(Title))
             {
                 var title = await dbContext.Titles.Where(t => t.Id == id).FirstOrDefaultAsync() ??
@@ -57,9 +58,10 @@ namespace MangaHomeService.Services
                 var comment = new TitleComment
                 {
                     Title = title,
+                    User = user,
                     Content = content,
                     Vote = 0,
-                    CommentVotes = []
+                    CommentVotes = [],
                 };
                 await dbContext.Comments.AddAsync(comment);
                 await dbContext.SaveChangesAsync();
@@ -72,6 +74,7 @@ namespace MangaHomeService.Services
                 var comment = new ChapterComment
                 {
                     Chapter = chapter,
+                    User = user,
                     Content = content,
                     Vote = 0,
                     CommentVotes = []
@@ -87,6 +90,7 @@ namespace MangaHomeService.Services
                 var comment = new GroupComment
                 {
                     Group = group,
+                    User = user,
                     Content = content,
                     Vote = 0,
                     CommentVotes = []

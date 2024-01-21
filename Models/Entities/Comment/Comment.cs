@@ -5,6 +5,9 @@ namespace MangaHomeService.Models.Entities
     public class Comment : BaseEntity
     {
         [Required]
+        public required User User { get; set; }
+
+        [Required]
         public required string Content { get; set; } = string.Empty;
 
         [Required]
