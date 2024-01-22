@@ -5,14 +5,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace MangaHomeService.Models
 {
-    public class MangaHomeDbContext : DbContext
+    public class MangaHomeDbContext(DbContextOptions<MangaHomeDbContext> options, ITokenInfoProvider tokenInfoProvider) : DbContext(options)
     {
-        private readonly ITokenInfoProvider _tokenInfoProvider;
-        public MangaHomeDbContext(DbContextOptions<MangaHomeDbContext> options, ITokenInfoProvider tokenInfoProvider) : base(options)
-        {
-            _tokenInfoProvider = tokenInfoProvider;
-        }
-
         public DbSet<User> Users { get; set; }
         public DbSet<Group> Groups { get; set; }
         public DbSet<Title> Titles { get; set; }
@@ -30,6 +24,7 @@ namespace MangaHomeService.Models
         public DbSet<ReadingList> ReadingLists { get; set; }
         public DbSet<CommentVote> CommentVotes { get; set; }
         public DbSet<Report> Reports { get; set; }
+        public DbSet<FeaturedTitle> FeaturedTitles { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -47,7 +42,7 @@ namespace MangaHomeService.Models
         public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
             var now = DateTime.UtcNow;
-            var currentUser = await Users.FirstOrDefaultAsync(u => u.Id == _tokenInfoProvider.Id, cancellationToken: cancellationToken);
+            var currentUser = await Users.FirstOrDefaultAsync(u => u.Id == tokenInfoProvider.Id, cancellationToken: cancellationToken);
 
             var changedEntities = ChangeTracker.Entries();
             foreach (var changedEntity in changedEntities)

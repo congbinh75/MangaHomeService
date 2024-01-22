@@ -7,26 +7,15 @@ namespace MangaHomeService.Policies
 {
     public class NotBannedRequirement : IAuthorizationRequirement { }
 
-    public class NotBannedRequirementHandler : AuthorizationHandler<NotBannedRequirement>
+    public class NotBannedRequirementHandler(IDbContextFactory<MangaHomeDbContext> contextFactory, ITokenInfoProvider tokenInfoProvider) : AuthorizationHandler<NotBannedRequirement>
     {
-        private readonly IDbContextFactory<MangaHomeDbContext> _contextFactory;
-        private readonly ITokenInfoProvider _tokenInfoProvider;
-
-        public NotBannedRequirementHandler(IDbContextFactory<MangaHomeDbContext> contextFactory, ITokenInfoProvider tokenInfoProvider)
-        {
-            _contextFactory = contextFactory;
-            _tokenInfoProvider = tokenInfoProvider;
-        }
-
         protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context, NotBannedRequirement requirement)
         {
-            using (var dbContext = await _contextFactory.CreateDbContextAsync())
+            using var dbContext = await contextFactory.CreateDbContextAsync();
+            var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == tokenInfoProvider.Id);
+            if (user != null && !user.IsBanned)
             {
-                var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == _tokenInfoProvider.Id);
-                if (user != null && !user.IsBanned)
-                {
-                    context.Succeed(requirement);
-                }
+                context.Succeed(requirement);
             }
         }
     }
