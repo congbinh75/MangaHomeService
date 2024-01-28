@@ -2,12 +2,15 @@ using System.ComponentModel.DataAnnotations;
 
 namespace MangaHomeService.Models.Entities
 {
-    public class FeaturedTitle
+    public class ViewsCount
     {
         [Required]
         public required Title Title { get; set; }
 
         [Required]
-        public required int FeaturedCategory { get; set; }
+        public required int Views { get; set; }
+
+        [Required]
+        public required DateTime Date { get; set; }
     }
 }

@@ -11,6 +11,8 @@
         public const int GroupsPerPage = 10;
         public const int RequestsPerPage = 15;
 
+        public const int FeaturedTitlesCount = 10;
+
         public const string DefaultErrorMessage = "An unexpected error happened. Please try again later or contact our support team hehe";
 
         public const string ERR_CHAPTER_NOT_FOUND = "ERR_CHAPTER_NOT_FOUND";

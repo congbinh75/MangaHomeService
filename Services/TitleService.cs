@@ -28,6 +28,7 @@ namespace MangaHomeService.Services
         public Task<Title> AddRating(string id, int rating, string? userId = null);
         public Task<Title> UpdateRating(string id, int rating, string? userId = null);
         public Task<Title> RemoveRating(string id, string? userId = null);
+        public Task<bool> RegisterView(string id);
     }
 
     public class TitleService(IDbContextFactory<MangaHomeDbContext> contextFactory,
@@ -402,6 +403,32 @@ namespace MangaHomeService.Services
             title.RatingVotes = ratingCount;
             await dbContext.SaveChangesAsync();
             return title;
+        }
+
+        public async Task<bool> RegisterView(string id)
+        {
+            using var dbContext = await contextFactory.CreateDbContextAsync();
+            var title = await dbContext.Titles.FirstOrDefaultAsync(t => t.Id == id) ?? throw new NotFoundException(nameof(Title));
+            var currentTime = DateTime.UtcNow;
+
+            var titlesViewCountsWeek = await dbContext.ViewsCounts.FirstOrDefaultAsync(v => v.Title.Id == id && v.Date == currentTime.Date);
+            if (titlesViewCountsWeek != null)
+            {
+                titlesViewCountsWeek.Views += 1;
+            }
+            else
+            {
+                var viewsCount = new ViewsCount
+                {
+                    Title = title,
+                    Views = 1,
+                    Date = currentTime.Date,
+                };
+                await dbContext.ViewsCounts.AddAsync(viewsCount);
+            }
+            await dbContext.SaveChangesAsync();
+
+            return true;
         }
     }
 }

@@ -25,6 +25,7 @@ namespace MangaHomeService.Models
         public DbSet<CommentVote> CommentVotes { get; set; }
         public DbSet<Report> Reports { get; set; }
         public DbSet<FeaturedTitle> FeaturedTitles { get; set; }
+        public DbSet<ViewsCount> ViewsCounts { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

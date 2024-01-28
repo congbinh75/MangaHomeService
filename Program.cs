@@ -1,3 +1,4 @@
+using Hangfire;
 using MangaHomeService;
 using MangaHomeService.Models;
 using MangaHomeService.Policies;
@@ -86,6 +87,18 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+}
+
+using (var serviceScope = app.Services.CreateScope())
+{
+    var services = serviceScope.ServiceProvider;
+
+    var jobService = services.GetRequiredService<IBackgroundJobsService>();
+
+    RecurringJob.AddOrUpdate("Fetch popular titles in week", () => jobService.FetchPopularTitlesInWeek(), Cron.Daily);
+    RecurringJob.AddOrUpdate("Fetch popular titles in month", () => jobService.FetchPopularTitlesInWeek(), Cron.Daily);
+    RecurringJob.AddOrUpdate("Fetch popular titles in year", () => jobService.FetchPopularTitlesInWeek(), Cron.Daily);
+    RecurringJob.AddOrUpdate("Fetch popular titles of all time", () => jobService.FetchPopularTitlesInWeek(), Cron.Daily);
 }
 
 var supportedCultures = new[] { new CultureInfo("en-US"), new CultureInfo("vi-VN") };

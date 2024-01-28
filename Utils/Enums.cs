@@ -41,5 +41,15 @@
             Chapter = 2,
             User = 3
         }
+
+        public enum FeaturedTitlesCategory
+        {
+            PopularInWeek,
+            PopularInMonth,
+            PopularInYear,
+            PopularOfAllTime,
+            StaffPick,
+            NewlyUpdated
+        }
     }
 }
