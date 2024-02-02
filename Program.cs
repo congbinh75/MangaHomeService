@@ -1,4 +1,5 @@
 using Hangfire;
+using Hangfire.PostgreSql;
 using MangaHomeService;
 using MangaHomeService.Models;
 using MangaHomeService.Policies;
@@ -19,6 +20,7 @@ using System.Text.Json;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Services.AddScoped<IBackgroundJobsService, BackgroundJobsService>();
 builder.Services.AddScoped<ICommentService, CommentService>();
 builder.Services.AddScoped<IChapterService, ChapterService>();
 builder.Services.AddScoped<IGroupService, GroupService>();
@@ -79,6 +81,12 @@ builder.Services.AddMvc().AddViewLocalization(LanguageViewLocationExpanderFormat
         options.DataAnnotationLocalizerProvider = (type, factory) =>
             factory.Create(typeof(SharedResources));
     });
+builder.Services.AddHangfire(configuration => configuration
+            .SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
+            .UseSimpleAssemblyNameTypeSerializer()
+            .UseRecommendedSerializerSettings()
+            .UsePostgreSqlStorage(c => c.UseNpgsqlConnection(builder.Configuration.GetConnectionString("MangaHome"))));
+builder.Services.AddHangfireServer();
 
 var app = builder.Build();
 
@@ -88,6 +96,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseHangfireDashboard();
 
 using (var serviceScope = app.Services.CreateScope())
 {
