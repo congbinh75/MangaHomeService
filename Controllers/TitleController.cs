@@ -21,6 +21,15 @@ namespace MangaHomeService.Controllers
 
         [HttpGet]
         [AllowAnonymous]
+        [Route("get-featured")]
+        public async Task<IActionResult> GetFeatured([FromQuery] GetFeaturedTitle getFeaturedTitle)
+        {
+            var titles = await titleService.GetFeatured(getFeaturedTitle.Category);
+            return Ok(titles);
+        }
+
+        [HttpGet]
+        [AllowAnonymous]
         [Route("search")]
         public async Task<IActionResult> Search([FromQuery] TitleSearch input)
         {

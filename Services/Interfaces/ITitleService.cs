@@ -7,6 +7,7 @@ namespace MangaHomeService.Services
     public interface ITitleService
     {
         public Task<Title> Get(string id);
+        public Task<ICollection<Title>> GetFeatured(int category);
         public Task<ICollection<Title>> Search(string keyword, int pageNumber = 1, int pageSize = Constants.TitlesPerPage);
         public Task<ICollection<Title>> AdvancedSearch(string? name = null, string? author = null, string? artist = null,
             ICollection<string>? genreIds = null, ICollection<string>? themeIds = null, ICollection<string>? demographicsIds = null,

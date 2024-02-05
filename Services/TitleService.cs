@@ -18,6 +18,13 @@ namespace MangaHomeService.Services
             return title;
         }
 
+        public async Task<ICollection<Title>> GetFeatured(int category)
+        {
+            using var dbContext = await contextFactory.CreateDbContextAsync();
+            var titles = await dbContext.FeaturedTitles.Where(t => t.FeaturedCategory == category).Select(t => t.Title).ToListAsync();
+            return titles;
+        }
+
         public async Task<ICollection<Title>> Search(string keyword, int pageNumber = 1, int pageSize = Constants.TitlesPerPage)
         {
             using var dbContext = await contextFactory.CreateDbContextAsync();
