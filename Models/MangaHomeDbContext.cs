@@ -3,7 +3,7 @@ using MangaHomeService.Models.Entities;
 using MangaHomeService.Utils;
 using Microsoft.EntityFrameworkCore;
 
-namespace MangaHomeService.Models
+namespace MangaHomeService
 {
     public class MangaHomeDbContext(DbContextOptions<MangaHomeDbContext> options, ITokenInfoProvider tokenInfoProvider) : DbContext(options)
     {
@@ -34,6 +34,7 @@ namespace MangaHomeService.Models
 
             modelBuilder.ApplyConfiguration(new ChapterConfiguration());
             modelBuilder.ApplyConfiguration(new CommentVoteConfiguration());
+            modelBuilder.ApplyConfiguration(new FeaturedTitleConfiguration());
             modelBuilder.ApplyConfiguration(new TagConfiguration());
             modelBuilder.ApplyConfiguration(new TitleConfiguration());
             modelBuilder.ApplyConfiguration(new TitleRatingConfiguration());
